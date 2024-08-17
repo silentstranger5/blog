@@ -1,13 +1,34 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on My New Hugo Site</title>
+    <title>Posts on My Blog</title>
     <link>http://localhost:1313/posts/</link>
-    <description>Recent content in Posts on My New Hugo Site</description>
+    <description>Recent content in Posts on My Blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 16 Aug 2024 16:20:11 +0300</lastBuildDate>
+    <lastBuildDate>Sat, 17 Aug 2024 11:00:49 +0300</lastBuildDate>
     <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Ideas in Computing</title>
+      <link>http://localhost:1313/posts/ideas-in-computing/</link>
+      <pubDate>Sat, 17 Aug 2024 11:00:49 +0300</pubDate>
+      <guid>http://localhost:1313/posts/ideas-in-computing/</guid>
+      <description>If you got a glimpse of computer science field now, you can probably notice that it is incredibly huge tower of abstractions. There are a lot of various fields and many of them are built as abstractions on top of each other. It is not easy to study the whole domain in deep details. But I think that it is still worth to have at least a basic understanding. Today, after I discussed how computers work and some basics of development, let us discuss a little more advanced ideas.</description>
+    </item>
+    <item>
+      <title>Basic Development</title>
+      <link>http://localhost:1313/posts/basic-development/</link>
+      <pubDate>Sat, 17 Aug 2024 09:12:46 +0300</pubDate>
+      <guid>http://localhost:1313/posts/basic-development/</guid>
+      <description>So, you want to become a developer? It surely is a fine aspiration. But before we proceed, let me ask you a question. Why do you want to become a developer? Do you like computers? Are you intrigued by how they work? Do you wish to command computers in the same manner as sorcerer commands mysterious spirits? Do you want to unfold this world of magic and jump into that rabbit hole?</description>
+    </item>
+    <item>
+      <title>Computers</title>
+      <link>http://localhost:1313/posts/computers/</link>
+      <pubDate>Sat, 17 Aug 2024 09:01:43 +0300</pubDate>
+      <guid>http://localhost:1313/posts/computers/</guid>
+      <description>Before diving into the world of development, it probably would be worth to take a brief look at what computer even is. Computers are incredibly complicated machines performing fairly complex tasks. There is no way that anyone could give a brief and comprehensive explanation of what this all is about. From a closer look, computing is a hell of complexity: design complexity, time complexity, computational complexity&amp;hellip; Well, as most of readers are presumably familiar with the notion of computers, there is no point in overly brief and simple explanation.</description>
+    </item>
     <item>
       <title>My First Post</title>
       <link>http://localhost:1313/posts/my-first-post/</link>
