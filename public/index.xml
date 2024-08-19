@@ -6,8 +6,15 @@
     <description>Recent content on My Blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 17 Aug 2024 11:00:49 +0300</lastBuildDate>
+    <lastBuildDate>Mon, 19 Aug 2024 18:06:20 +0300</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>About Tools</title>
+      <link>http://localhost:1313/posts/about-tools/</link>
+      <pubDate>Mon, 19 Aug 2024 18:06:20 +0300</pubDate>
+      <guid>http://localhost:1313/posts/about-tools/</guid>
+      <description>Development presents us with a significant tradeoff which deeply affects both our tools and nature of our code. That is a tradeoff between a speed of development and speed of execution. Fastest programs are the closest to the machine, and most convenient programs require a number of abstractions, indirections and execution overhead. The most known low-level language (besides assembly, which is just a thin wrapper) is C. There are some more new languages in this field, like Rust or Zig.</description>
+    </item>
     <item>
       <title>Ideas in Computing</title>
       <link>http://localhost:1313/posts/ideas-in-computing/</link>
