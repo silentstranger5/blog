@@ -72,15 +72,3 @@ The last thing I'd like to discuss is hash map. The key here is a thing called h
 hash function computes an integer called hash, which denotes a value position at the array. This allows to 
 access our values by their hash function. Hash functions are generally really fast, so this allows us to use 
 almost instantaneous lookup.
-
-Of course, there are a lot of various references to the concepts I mention here. Other than that, you can check 
-out my implementation of those data structures in my GitHub:
-
-- Here is a [link to array implementation](https://github.com/silentstranger5/dsa/tree/main/array)
-- Here is a [linked list implementation](https://github.com/silentstranger5/dsa/tree/main/list)
-- This is a [binary search tree code](https://github.com/silentstranger5/dsa/tree/main/tree)
-- A [hash map implementation](https://github.com/silentstranger5/dsa/tree/main/hash)
-- And finally, [the repository](https://github.com/silentstranger5/dsa/)
-
-All of this code is written in C, but I hope that it won't be a problem. Also, it contains an interactive 
-session, so you can try this out for yourself in action.

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Networking | My Blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="I want to talk about networking. Not about connections with other people though. Both because I am terrible
+at this, and because I have nothing to say about it. I want to talk about network as an interconnected
+set of computing devices. It is probably nice to have a general idea about how network works, at least at the
+conceptual level. Some tasks can be related to networking, be it online games or blockchain wallets.
+There are, of course, many other applications of that as well. I do not think that it is good to delve too far
+into that topic, unless you are genuinely interested in that. One possible project could be to implement a
+simple HTTP server from TCP protocol abstractions. HTTP requests are fairly straightforward:">
+    <meta name="generator" content="Hugo 0.134.3">
+    
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+    
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/networking/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/networking/">
+  <meta property="og:site_name" content="My Blog">
+  <meta property="og:title" content="Networking">
+  <meta property="og:description" content="I want to talk about networking. Not about connections with other people though. Both because I am terrible at this, and because I have nothing to say about it. I want to talk about network as an interconnected set of computing devices. It is probably nice to have a general idea about how network works, at least at the conceptual level. Some tasks can be related to networking, be it online games or blockchain wallets. There are, of course, many other applications of that as well. I do not think that it is good to delve too far into that topic, unless you are genuinely interested in that. One possible project could be to implement a simple HTTP server from TCP protocol abstractions. HTTP requests are fairly straightforward:">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-10-01T21:58:44+03:00">
+    <meta property="article:modified_time" content="2024-10-01T21:58:44+03:00">
+
+  <meta itemprop="name" content="Networking">
+  <meta itemprop="description" content="I want to talk about networking. Not about connections with other people though. Both because I am terrible at this, and because I have nothing to say about it. I want to talk about network as an interconnected set of computing devices. It is probably nice to have a general idea about how network works, at least at the conceptual level. Some tasks can be related to networking, be it online games or blockchain wallets. There are, of course, many other applications of that as well. I do not think that it is good to delve too far into that topic, unless you are genuinely interested in that. One possible project could be to implement a simple HTTP server from TCP protocol abstractions. HTTP requests are fairly straightforward:">
+  <meta itemprop="datePublished" content="2024-10-01T21:58:44+03:00">
+  <meta itemprop="dateModified" content="2024-10-01T21:58:44+03:00">
+  <meta itemprop="wordCount" content="258">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Networking">
+  <meta name="twitter:description" content="I want to talk about networking. Not about connections with other people though. Both because I am terrible at this, and because I have nothing to say about it. I want to talk about network as an interconnected set of computing devices. It is probably nice to have a general idea about how network works, at least at the conceptual level. Some tasks can be related to networking, be it online games or blockchain wallets. There are, of course, many other applications of that as well. I do not think that it is good to delve too far into that topic, unless you are genuinely interested in that. One possible project could be to implement a simple HTTP server from TCP protocol abstractions. HTTP requests are fairly straightforward:">
+
+	
+  </head>
+
+  <body class="ma0 avenir bg-near-white">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        My Blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/about/" title="About page">
+              About
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="https://github.com/silentstranger5/" title="Projects page">
+              Projects
+            </a>
+          </li>
+          
+        </ul>
+      
+      
+<div class="ananke-socials">
+  
+</div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside>
+      
+
+
+
+
+
+
+
+
+
+
+  <div id="sharing" class="mt3 ananke-socials">
+    
+  </div>
+
+
+      <h1 class="f1 athelas mt3 mb1">Networking</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2024-10-01T21:58:44+03:00">October 1, 2024</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><p>I want to talk about networking. Not about connections with other people though. Both because I am terrible
+at this, and because I have nothing to say about it. I want to talk about network as an interconnected
+set of computing devices. It is probably nice to have a general idea about how network works, at least at the
+conceptual level. Some tasks can be related to networking, be it online games or blockchain wallets.
+There are, of course, many other applications of that as well. I do not think that it is good to delve too far
+into that topic, unless you are genuinely interested in that. One possible project could be to implement a
+simple HTTP server from TCP protocol abstractions. HTTP requests are fairly straightforward:</p>
+<pre tabindex="0"><code>GET / HTTP/1.1
+Host: example.com
+User-Agent: curl/8.6.0
+Accept: */*
+</code></pre><p>Responses are fairly simple as well:</p>
+<pre tabindex="0"><code>HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Date: Mon 1 Jan 2000 12:00:00 GMT
+Content-Length: 123
+
+&lt;!doctype html&gt;
+...
+</code></pre><p>All you have to do is to create a TCP connection, listen to it and then parse the text of the incoming
+request. There is actually a <a href="https://app.codecrafters.io/courses/http-server/overview">great place</a> to try
+and build your own. It is fairly simple.</p>
+<p>Networking is complex and multilayered. As I said earlier, it is good to have a coneptual grasp of what is
+going on, but I don&rsquo;t think that you have to understand all the fine-grained details, especially on the lowest
+levels, since they are more os and hardware specific.
+There is also a <a href="https://developer.mozilla.org/en-US/docs/Learn/Common_questions/Web_mechanics">resource</a>
+on MDN considering &lsquo;web mechanics&rsquo;.</p>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://localhost:1313/" >
+    &copy;  My Blog 2024 
+  </a>
+    <div>
+<div class="ananke-socials">
+  
+</div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

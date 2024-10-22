@@ -7,7 +7,7 @@
     <title>My Blog</title>
     <meta name="viewport" content="width=device-width,minimum-scale=1">
     <meta name="description" content="">
-    <meta name="generator" content="Hugo 0.132.2">
+    <meta name="generator" content="Hugo 0.134.3">
     
     
     
@@ -46,8 +46,8 @@
   <meta property="og:type" content="website">
 
   <meta itemprop="name" content="Posts">
-  <meta itemprop="datePublished" content="2024-08-19T18:06:20+03:00">
-  <meta itemprop="dateModified" content="2024-08-19T18:06:20+03:00">
+  <meta itemprop="datePublished" content="2024-10-01T21:58:44+03:00">
+  <meta itemprop="dateModified" content="2024-10-01T21:58:44+03:00">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Posts">
 
@@ -117,12 +117,70 @@
   <div class="bg-white mb3 pa4 gray overflow-hidden">
     <span class="f6 db">Posts</span>
     <h1 class="f3 near-black">
+      <a href="/posts/networking/" class="link black dim">
+        Networking
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <p>I want to talk about networking. Not about connections with other people though. Both because I am terrible
+at this, and because I have nothing to say about it. I want to talk about network as an interconnected
+set of computing devices. It is probably nice to have a general idea about how network works, at least at the
+conceptual level. Some tasks can be related to networking, be it online games or blockchain wallets.
+There are, of course, many other applications of that as well. I do not think that it is good to delve too far
+into that topic, unless you are genuinely interested in that. One possible project could be to implement a
+simple HTTP server from TCP protocol abstractions. HTTP requests are fairly straightforward:</p>
+    </div>
+    <a href="/posts/networking/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="relative w-100 w-30-l mb4 bg-white">
+          <div class="relative w-100 mb4 bg-white nested-copy-line-height">
+  <div class="bg-white mb3 pa4 gray overflow-hidden">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/development-style/" class="link black dim">
+        Development Style
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <p>There are generally two approaches to development, which fairly contrast each other.
+Imperative style describe how to do things in orderly fashion. Declarative style describes what needs to be done.
+Low-level style is called procedural development style, and high-level style is called object-oriented paradigm.
+Procedural style is essentially constrained with structures and procedures (hence the name).
+Procedure is just another term used for function. Object-Oriented paradigm is centered around objects.
+Objects couple structures and functions operating on them together. This bundle is called an object.
+I will discuss both of those styles in more detail. But before I do that, let us touch on the functional style.</p>
+    </div>
+    <a href="/posts/development-style/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="relative w-100 w-30-l mb4 bg-white">
+          <div class="relative w-100 mb4 bg-white nested-copy-line-height">
+  <div class="bg-white mb3 pa4 gray overflow-hidden">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
       <a href="/posts/about-tools/" class="link black dim">
         About Tools
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      Development presents us with a significant tradeoff which deeply affects both our tools and nature of our code. That is a tradeoff between a speed of development and speed of execution. Fastest programs are the closest to the machine, and most convenient programs require a number of abstractions, indirections and execution overhead. The most known low-level language (besides assembly, which is just a thin wrapper) is C. There are some more new languages in this field, like Rust or Zig.
+      <p>Development presents us with a significant tradeoff which deeply affects both our tools and nature of our code.
+That is a tradeoff between a speed of development and speed of execution. Fastest programs are the closest to
+the machine, and most convenient programs require a number of abstractions, indirections and execution overhead.
+The most known low-level language (besides assembly, which is just a thin wrapper) is C. There are some more
+new languages in this field, like Rust or Zig. I do not mention C++, because it accomplishes an amazing
+achievement of being both human-unreadable and machine-unreadable. Most people enter the world of development
+from high-level dynamically-typed languages, that take care of almost anything you could think of. It makes
+those languages, like Python or JavaScript, very easy to learn. One of tradeoffs here is that those languages
+have poor execution speed due to the fact that they provide a lot of convenience like dynamic typing and
+automatic memory management. Another drawback is that those languages often scale poorly due to their dynamic
+typing nature, because it can be hard to work with data when you are not sure about it&rsquo;s type.</p>
     </div>
     <a href="/posts/about-tools/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
   </div>
@@ -140,7 +198,16 @@
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      If you got a glimpse of computer science field now, you can probably notice that it is incredibly huge tower of abstractions. There are a lot of various fields and many of them are built as abstractions on top of each other. It is not easy to study the whole domain in deep details. But I think that it is still worth to have at least a basic understanding. Today, after I discussed how computers work and some basics of development, let us discuss a little more advanced ideas.
+      <p>If you got a glimpse of computer science field now, you can probably notice that it is incredibly huge tower of
+abstractions. There are a lot of various fields and many of them are built as abstractions on top of each other.
+It is not easy to study the whole domain in deep details. But I think that it is still worth to have at least a
+basic understanding. Today, after I discussed how computers work and some basics of development, let us discuss
+a little more advanced ideas. Your processor can do basic arithmetic and logical operations. On top of that,
+there is an assembly to represent those operations in a little more readable form. A bunch of ones and zeroes
+translate onto mnemonic instructions with register addresses and decimal numbers. Finally, there are some other
+programs that translate your human-readable instructions into assembly called compilers. Thus, your conditionals
+and loops become a series of primitive logical operations in assembly. This is a tower of <em>software</em>
+abstractions. As it turns out, writing programs is not an easy task.</p>
     </div>
     <a href="/posts/ideas-in-computing/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
   </div>
@@ -158,7 +225,20 @@
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      So, you want to become a developer? It surely is a fine aspiration. But before we proceed, let me ask you a question. Why do you want to become a developer? Do you like computers? Are you intrigued by how they work? Do you wish to command computers in the same manner as sorcerer commands mysterious spirits? Do you want to unfold this world of magic and jump into that rabbit hole?
+      <p>So, you want to become a developer? It surely is a fine aspiration. But before we proceed, let me ask you a
+question. Why do you want to become a developer? Do you like computers? Are you intrigued by how they work?
+Do you wish to command computers in the same manner as sorcerer commands mysterious spirits? Do you want to
+unfold this world of magic and jump into that rabbit hole? Was your answer somewhere here? If not, I&rsquo;d like you
+to pause for a second and think. I am deeply convinced that anyone can do anything. I am not saying that it&rsquo;s
+going to be easy, but it&rsquo;s certainly possible. Whatever you want to do, as long as you <em>want</em> to do it, and as
+long as you apply your effort, you can succeed. Again, there is, of course, a place for a talent. But I think
+of &ldquo;talent&rdquo; as a function of determination and experience. So, let me ask you again: why do you want to become
+a developer? Of course, there are money involved, and it was a fairly popular career not long time ago. But if
+you are from 2024, I&rsquo;m sure that you see what is going on. Job market is on dumpster fire, and you must go
+through hell to get a job. I am unemployed right now, although I think I am not applying enough effort to get
+a job. But it certainly not how things should work. Before AI and internet, it was indeed easier to get a job.
+There are <em>a lot</em> of junior developers in any field. And nobody really needs that much junior developers.
+If you are not exceptionally good or lucky, it&rsquo;s going to be really rough.</p>
     </div>
     <a href="/posts/basic-development/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
   </div>
@@ -176,7 +256,15 @@
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      Before diving into the world of development, it probably would be worth to take a brief look at what computer even is. Computers are incredibly complicated machines performing fairly complex tasks. There is no way that anyone could give a brief and comprehensive explanation of what this all is about. From a closer look, computing is a hell of complexity: design complexity, time complexity, computational complexity&hellip; Well, as most of readers are presumably familiar with the notion of computers, there is no point in overly brief and simple explanation.
+      <p>Before diving into the world of development, it probably would be worth to take a brief look at what computer
+even is. Computers are incredibly complicated machines performing fairly complex tasks. There is no way that
+anyone could give a brief and comprehensive explanation of what this all is about. From a closer look, computing
+is a hell of complexity: design complexity, time complexity, computational complexity&hellip; Well, as most of
+readers are presumably familiar with the notion of computers, there is no point in overly brief and simple
+explanation. Of course, it would be impossible to cover even basics with just one post, because computer
+architecture is a very vast topic. Nevertheless, I don&rsquo;t think that it is the most important thing you should
+worry about: photographers have little to no idea about how camera works. But for the sake of general education,
+let&rsquo;s take a brief look on computers that we use every day.</p>
     </div>
     <a href="/posts/computers/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
   </div>
@@ -194,8 +282,9 @@
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      Introduction This is bold text, and this is emphasized text.
-Visit the Hugo website!
+      <h2 id="introduction">Introduction</h2>
+<p>This is <strong>bold</strong> text, and this is <em>emphasized</em> text.</p>
+<p>Visit the <a href="https://gohugo.io">Hugo</a> website!</p>
     </div>
     <a href="/posts/my-first-post/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
   </div>
