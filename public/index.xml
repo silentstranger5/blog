@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>My New Hugo Site</title>
+    <link>http://localhost:1313/</link>
+    <description>Recent content on My New Hugo Site</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 20 Jan 2025 16:06:51 +0300</lastBuildDate>
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>How to Make Your Blog</title>
+      <link>http://localhost:1313/posts/how-to-make-your-blog/</link>
+      <pubDate>Mon, 20 Jan 2025 16:06:51 +0300</pubDate>
+      <guid>http://localhost:1313/posts/how-to-make-your-blog/</guid>
+      <description>&lt;h2 id=&#34;website-constructors&#34;&gt;Website constructors&lt;/h2&gt;&#xA;&lt;p&gt;Do you want to create your blog? There are many possible ways to do that. The most popular and accessible ways are targeted for broad and general audiences. Here are some useful links:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://wordpress.com&#34;&gt;WordPress&lt;/a&gt; is probably the oldest and the most popular website constructor. It has wide customization options.&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://wix.com&#34;&gt;Wix&lt;/a&gt; is a fresh solution targeted at a niche audience.&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://medium.com&#34;&gt;Medium&lt;/a&gt; is another popular option. I&amp;rsquo;ve seen many blogs on this platform that discuss more business or technical topics.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;other-options&#34;&gt;Other Options&lt;/h2&gt;&#xA;&lt;p&gt;Of course, there some many other possible options and platforms that could help you create your blog. But I want to talk about some other options. What if you don&amp;rsquo;t want to use existing ready platforms, and want to try and create something else?&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
