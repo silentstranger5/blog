@@ -6,8 +6,29 @@
     <description>Recent content in Posts on My New Hugo Site</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 20 Jan 2025 16:06:51 +0300</lastBuildDate>
+    <lastBuildDate>Tue, 21 Jan 2025 13:18:53 +0300</lastBuildDate>
     <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>The C Programming Language</title>
+      <link>http://localhost:1313/posts/the-c-programming-language/</link>
+      <pubDate>Tue, 21 Jan 2025 13:18:53 +0300</pubDate>
+      <guid>http://localhost:1313/posts/the-c-programming-language/</guid>
+      <description>&lt;h2 id=&#34;c-language&#34;&gt;C Language&lt;/h2&gt;&#xA;&lt;p&gt;For some unknown reason, I often find myself drawn to C. It&amp;rsquo;s hard for me to tell exactly why&amp;hellip; Above all, I think that the most important reason is the simplicity of this language. It is fairly small, and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.&lt;/p&gt;&#xA;&lt;p&gt;Do not be fooled by this simplicity, though, reader. Even if the language itself as well as standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Bypass Censorship</title>
+      <link>http://localhost:1313/posts/bypass-censorship/</link>
+      <pubDate>Mon, 20 Jan 2025 19:59:58 +0300</pubDate>
+      <guid>http://localhost:1313/posts/bypass-censorship/</guid>
+      <description>&lt;p&gt;Some places around the world are essentially cut off from the Internet. I am talking about countries like Russia and China. This isolation is often a combination of restricted access from both outside (due to sanctions) and inside (due to censorship). In most cases, the reasons for such isolation are political.&lt;/p&gt;&#xA;&lt;p&gt;I am not a politologist or sociologist, nor do I claim to be even remotely competent in such areas. As a citizen of such an isolated country, allow me to clarify that many (at least a significant part with a minimum of 30% of the population, especially those who live in big cities and have internet access) do not agree with political course of action. The rest of the people are either brainwashed by propaganda or completely indifferent and just trying to survive. In many cases, authorities are &amp;ldquo;elected&amp;rdquo; without consent, and the election is just for a show. Authorities use brute force and legal prosecution in order to suppress any opposition. Such terrorism is very effective in the oppression of the population. There is essentially nothing that can be done against unfair law that penalizes you with 10 years of prison or a gun near your head.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Host Your Blog</title>
+      <link>http://localhost:1313/posts/host-your-blog/</link>
+      <pubDate>Mon, 20 Jan 2025 18:34:20 +0300</pubDate>
+      <guid>http://localhost:1313/posts/host-your-blog/</guid>
+      <description>&lt;h2 id=&#34;website-hosting&#34;&gt;Website Hosting&lt;/h2&gt;&#xA;&lt;p&gt;We have successfully created a new website. That required some work, but it still was quite fast and easy (at least in my opinion). We have a problem, though. Nobody can see your website, other than you. When you type:&lt;/p&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;hugo server&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can see what is called a &lt;em&gt;local&lt;/em&gt; version of your website. It means that it is accessible only on your computer (and maybe on your local network if you know your computer IP address). But the whole point of the website is to be visible to other people on the internet. What is the point of your website if nobody can see it?&lt;/p&gt;</description>
+    </item>
     <item>
       <title>How to Make Your Blog</title>
       <link>http://localhost:1313/posts/how-to-make-your-blog/</link>
