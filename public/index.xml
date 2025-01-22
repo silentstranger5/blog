@@ -6,14 +6,21 @@
     <description>Recent content on My New Hugo Site</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 21 Jan 2025 13:18:53 +0300</lastBuildDate>
+    <lastBuildDate>Wed, 22 Jan 2025 14:01:17 +0300</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Using C Libraries</title>
+      <link>http://localhost:1313/posts/using-c-libraries/</link>
+      <pubDate>Wed, 22 Jan 2025 14:01:17 +0300</pubDate>
+      <guid>http://localhost:1313/posts/using-c-libraries/</guid>
+      <description>&lt;p&gt;In the previous post, I&amp;rsquo;ve discussed C language and briefly introduced how to used it. To be honest, if you have programming experience already, chances are that you can use most of the C without issues. There may be some problems with pointers though. Maybe I&amp;rsquo;ll cover it in the next time.&lt;/p&gt;&#xA;&lt;p&gt;When I described C, I said that it is simple language in itself, although it can be tricky to use because there is not much included in the language. Indeed, if you compare it to modern languages, there are many features lacking. I&amp;rsquo;m not even telling about various containers and algorithms like lists, maps or sets.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>The C Programming Language</title>
       <link>http://localhost:1313/posts/the-c-programming-language/</link>
       <pubDate>Tue, 21 Jan 2025 13:18:53 +0300</pubDate>
       <guid>http://localhost:1313/posts/the-c-programming-language/</guid>
-      <description>&lt;h2 id=&#34;c-language&#34;&gt;C Language&lt;/h2&gt;&#xA;&lt;p&gt;For some unknown reason, I often find myself drawn to C. It&amp;rsquo;s hard for me to tell exactly why&amp;hellip; Above all, I think that the most important reason is the simplicity of this language. It is fairly small, and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.&lt;/p&gt;&#xA;&lt;p&gt;Do not be fooled by this simplicity, though, reader. Even if the language itself as well as standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.&lt;/p&gt;</description>
+      <description>&lt;h2 id=&#34;c-language&#34;&gt;C Language&lt;/h2&gt;&#xA;&lt;p&gt;For some unknown reason, I often find myself drawn to C. It&amp;rsquo;s hard for me to tell exactly why&amp;hellip; Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.&lt;/p&gt;&#xA;&lt;p&gt;Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Bypass Censorship</title>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Using C Libraries | My New Hugo Site</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="In the previous post, I&rsquo;ve discussed C language and briefly introduced how to used it. To be honest, if you have programming experience already, chances are that you can use most of the C without issues. There may be some problems with pointers though. Maybe I&rsquo;ll cover it in the next time.
+When I described C, I said that it is simple language in itself, although it can be tricky to use because there is not much included in the language. Indeed, if you compare it to modern languages, there are many features lacking. I&rsquo;m not even telling about various containers and algorithms like lists, maps or sets.">
+    <meta name="generator" content="Hugo 0.141.0">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+    
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/using-c-libraries/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/using-c-libraries/">
+  <meta property="og:site_name" content="My New Hugo Site">
+  <meta property="og:title" content="Using C Libraries">
+  <meta property="og:description" content="In the previous post, I’ve discussed C language and briefly introduced how to used it. To be honest, if you have programming experience already, chances are that you can use most of the C without issues. There may be some problems with pointers though. Maybe I’ll cover it in the next time.
+When I described C, I said that it is simple language in itself, although it can be tricky to use because there is not much included in the language. Indeed, if you compare it to modern languages, there are many features lacking. I’m not even telling about various containers and algorithms like lists, maps or sets.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-01-22T14:01:17+03:00">
+    <meta property="article:modified_time" content="2025-01-22T14:01:17+03:00">
+
+  <meta itemprop="name" content="Using C Libraries">
+  <meta itemprop="description" content="In the previous post, I’ve discussed C language and briefly introduced how to used it. To be honest, if you have programming experience already, chances are that you can use most of the C without issues. There may be some problems with pointers though. Maybe I’ll cover it in the next time.
+When I described C, I said that it is simple language in itself, although it can be tricky to use because there is not much included in the language. Indeed, if you compare it to modern languages, there are many features lacking. I’m not even telling about various containers and algorithms like lists, maps or sets.">
+  <meta itemprop="datePublished" content="2025-01-22T14:01:17+03:00">
+  <meta itemprop="dateModified" content="2025-01-22T14:01:17+03:00">
+  <meta itemprop="wordCount" content="1603">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Using C Libraries">
+  <meta name="twitter:description" content="In the previous post, I’ve discussed C language and briefly introduced how to used it. To be honest, if you have programming experience already, chances are that you can use most of the C without issues. There may be some problems with pointers though. Maybe I’ll cover it in the next time.
+When I described C, I said that it is simple language in itself, although it can be tricky to use because there is not much included in the language. Indeed, if you compare it to modern languages, there are many features lacking. I’m not even telling about various containers and algorithms like lists, maps or sets.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        My New Hugo Site
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Using C Libraries</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2025-01-22T14:01:17+03:00">January 22, 2025</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><p>In the previous post, I&rsquo;ve discussed C language and briefly introduced how to used it. To be honest, if you have programming experience already, chances are that you can use most of the C without issues. There may be some problems with pointers though. Maybe I&rsquo;ll cover it in the next time.</p>
+<p>When I described C, I said that it is simple language in itself, although it can be tricky to use because there is not much included in the language. Indeed, if you compare it to modern languages, there are many features lacking. I&rsquo;m not even telling about various containers and algorithms like lists, maps or sets.</p>
+<p>Take a look at Python or Golang, for example. They include many features for wide variety of purposes, like HTML parsing, SQL interface (or SQLite engine), JSON parsing, image processing, XML parsing, cryptographic libraries, HTTP servers&hellip; This list can go on and on. This definetly makes those languages convenient to use.</p>
+<p>C language lacks most of those features out of the box providing only very basic functionality like string processing conversions between strings and numbers, math functions, memory management and some OS interfaces (for working with files for example). This choice is deliberate: C is very minimalistic language and it is often expected that you write anything that&rsquo;s missing.</p>
+<p>However, C does support usage of libraries. And there is surprisingly wide variety of said libraries for many purposes. Today I want to discuss how to use libraries in C language. It is certainly trickier compared to languages like Python or Go that have their package managers like pip. However, since C is pretty old language, chances are that you probably would be able to find quite a few libraries for this language.</p>
+<p>In fact, many languages, especially those with lower performance (yes, Python, I&rsquo;m talking about you) often provide interfaces to libraries that are actually written in C or C++ (it includes many popular libraries especially those working with data or artificial intelligence).</p>
+<p>Let&rsquo;s try to use <a href="https://openssl.org">OpenSSL</a> library. We are going to implement a simple program that, given an input string, would provide SHA256 hash digest of that string.</p>
+<p>I intend to build the library from its source code and copy library files to our program. I going through this process to show how library can be built from source and how it can be used. Before I proceed, I want to note that there are couple shortcuts that can reduce your time dramaticly and possibly simplify the whole process. I am not going to explain those options in detail right now, but you can always find this information on your own.</p>
+<ul>
+<li>Prebuilt binaries. Many libraries provide prebuilt binaries that you can use without spending time to built them.</li>
+<li>Package managers. This allows not only skip building stage (or at least automate it), but also you don&rsquo;t have to worry about distribution files. For example, you may consider using <a href="https://vcpkg.io">vcpkg</a>.</li>
+</ul>
+<p>Let&rsquo;s get back on track. Download the library and unpack it at any appropriate path. Take a look at the contents:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ACKNOWLEDGEMENTS.md  demos             NOTES-DJGPP.md     README.md
+</span></span><span style="display:flex;"><span>apps                 doc               NOTES-NONSTOP.md   README-PROVIDERS.md
+</span></span><span style="display:flex;"><span>AUTHORS.md           engines           NOTES-PERL.md      README-QUIC.md
+</span></span><span style="display:flex;"><span>build.info           exporters         NOTES-POSIX.md     ssl
+</span></span><span style="display:flex;"><span>CHANGES.md           external          NOTES-UNIX.md      SUPPORT.md
+</span></span><span style="display:flex;"><span>cloudflare-quiche    fuzz              NOTES-VALGRIND.md  test
+</span></span><span style="display:flex;"><span>CODE-OF-CONDUCT.md   HACKING.md        NOTES-VMS.md       tlsfuzzer
+</span></span><span style="display:flex;"><span>config               include           NOTES-WINDOWS.md   tlslite-ng
+</span></span><span style="display:flex;"><span>config.com           INSTALL.md        oqs-provider       tools
+</span></span><span style="display:flex;"><span>configdata.pm.in     LICENSE.txt       os-dep             util
+</span></span><span style="display:flex;"><span>Configurations       ms                providers          VERSION.dat
+</span></span><span style="display:flex;"><span>Configure            NEWS.md           python-ecdsa       VMS
+</span></span><span style="display:flex;"><span>CONTRIBUTING.md      NOTES-ANDROID.md  README-ENGINES.md  wycheproof
+</span></span><span style="display:flex;"><span>crypto               NOTES-ANSI.md     README-FIPS.md
+</span></span></code></pre></div><p>Well, looks like there is a lot of stuff here. It&rsquo;s usually a good idea to start with <code>README.md</code>. There is a lot of useful information here. But we are interested in building it. Here is the contents of the <code>Build and Install</code> section from <code>README</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-md" data-lang="md"><span style="display:flex;"><span>Build and Install
+</span></span><span style="display:flex;"><span>=================
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>After obtaining the Source, have a look at the [<span style="color:#f92672">INSTALL</span>](<span style="color:#a6e22e">INSTALL.md</span>) file for
+</span></span><span style="display:flex;"><span>detailed instructions about building and installing OpenSSL. For some
+</span></span><span style="display:flex;"><span>platforms, the installation instructions are amended by a platform specific
+</span></span><span style="display:flex;"><span>document.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">*</span> [<span style="color:#f92672">Notes for UNIX-like platforms</span>](<span style="color:#a6e22e">NOTES-UNIX.md</span>)
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">*</span> [<span style="color:#f92672">Notes for Android platforms</span>](<span style="color:#a6e22e">NOTES-ANDROID.md</span>)
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">*</span> [<span style="color:#f92672">Notes for Windows platforms</span>](<span style="color:#a6e22e">NOTES-WINDOWS.md</span>)
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">*</span> [<span style="color:#f92672">Notes for the DOS platform with DJGPP</span>](<span style="color:#a6e22e">NOTES-DJGPP.md</span>)
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">*</span> [<span style="color:#f92672">Notes for the OpenVMS platform</span>](<span style="color:#a6e22e">NOTES-VMS.md</span>)
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">*</span> [<span style="color:#f92672">Notes on Perl</span>](<span style="color:#a6e22e">NOTES-PERL.md</span>)
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">*</span> [<span style="color:#f92672">Notes on Valgrind</span>](<span style="color:#a6e22e">NOTES-VALGRIND.md</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Specific notes on upgrading to OpenSSL 3.x from previous versions can be found
+</span></span><span style="display:flex;"><span>in the [ossl-guide-migration(7ossl)] manual page.
+</span></span></code></pre></div><p>As you can see, information on building can be found in <code>INSTALL.md</code>. That&rsquo;s often the case for many libraries (such file is also often called <code>BUILD.md</code> or something like that). Take a look at it. Many platform specific documents have form of <code>NOTES-PLATFORM.md</code>. If you are on UNIX-like machine, take a look at <code>NOTES-UNIX.md</code>. I&rsquo;m going to cover Windows installation here.</p>
+<p>As you can read from <code>NOTES-WINDOWS.md</code>, there are basically three prerequisites for us:</p>
+<ul>
+<li>MSVC compiler. Hopefully you installed it if you followed my previous post.</li>
+<li><a href="https://strawberryperl.com/">Strawberry Perl</a> is a perl environment for windows</li>
+<li><a href="https://nasm.us/">NASM</a> is a popular assembler</li>
+</ul>
+<p>It is recommended to install those programs since installer handles most things automatically. However, I am not going to use this software for anything besides this build. Installers on Windows (and maybe on UNIX systems too) are not always written properly and sometimes leave a trace of files or registry entries / configuration files behind them. If that&rsquo;s not an issue for you, feel free to use installer since it makes things easier. I however intend to download standalone binaries, temporarily add them to <code>PATH</code> variable, build OpenSSL, and remove those files after I&rsquo;m done. After all, I find this approach more convenient for me.</p>
+<p>Now I&rsquo;m going to open to open <code>Developer Power Shell</code> since I intend to use MSVC build tools to build the library.</p>
+<p>Here is what I need to add to <code>PATH</code> variable:</p>
+<pre tabindex="0"><code>/path/to/nasm/
+/path/to/perl/perl/bin
+/path/to/perl/perl/site/bin
+/path/to/perl/c/bin
+</code></pre><p>Those directories might differ depending on your platform. Read documentation provided with portable / zip version of software to learn what to add to the <code>PATH</code>. It may look somewhat like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-pwsh" data-lang="pwsh"><span style="display:flex;"><span>$env:path += <span style="color:#e6db74">&#34;;C:/path/to/nasm;C:/path/to/perl/perl/bin;C:/path/to/perl/site/bin;C:/path/to/perl/c/bin&#34;</span>
+</span></span></code></pre></div><p>Note that this bash syntax is invalid if you use cmd. In order to set up your environment variables properly, please refer to syntax of the shell you are using.</p>
+<p>After I&rsquo;m done with setting up <code>PATH</code>, let&rsquo;s head to openssl directory. Now, according to the docs, I need to use perl to configure the library:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-pwsh" data-lang="pwsh"><span style="display:flex;"><span>perl Configure VC-WIN64A
+</span></span></code></pre></div><p>If you are not on x64 architecture, select the appropriate option for configuration. Read details in the docs.</p>
+<p>Let&rsquo;s build it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-pwsh" data-lang="pwsh"><span style="display:flex;"><span>nmake
+</span></span></code></pre></div><p>Actual building may take some time, depending on your hardware.</p>
+<p>If you feel like it, you may test library as well:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-pwsh" data-lang="pwsh"><span style="display:flex;"><span>nmake test
+</span></span></code></pre></div><p>From here onwards, you have two choices:</p>
+<ul>
+<li>Install the library</li>
+<li>Put it to your project</li>
+</ul>
+<p>To install library, type</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-pwsh" data-lang="pwsh"><span style="display:flex;"><span>nmake install
+</span></span></code></pre></div><p>Admin priveledges might be required for installation.</p>
+<p>If you are going to use library just in one project, it&rsquo;s probably better to just put it here. If that&rsquo;s not the case, it&rsquo;s better to install it.</p>
+<p>I am going to show you how to put library in your project and use it this way.</p>
+<p>Let&rsquo;s create directories for our project. Final structure should look like this:</p>
+<pre tabindex="0"><code>sha
+|-- bin
+|-- include
+|-- lib
+|-- src
+</code></pre><p><code>bin</code> directory will contain our executables and dynamic libraries, <code>include</code> will contain header files, <code>lib</code> will contain static library files, and <code>src</code> will contain source code.</p>
+<p>Note. Find file <code>applink.c</code> and put it into <code>src</code> directory. It will be needed for compilation.</p>
+<p>Now, we need to copy files from library to our project. Copy all <code>.dll</code> files to <code>bin</code>, all files inside <code>include</code> to <code>include</code>, and all <code>.lib</code> files to <code>lib</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cp /path/to/openssl/*.dll /path/to/sha/bin
+</span></span><span style="display:flex;"><span>cp /path/to/openssl/include/* /path/to/sha/include
+</span></span><span style="display:flex;"><span>cp /path/to/openssl/*.lib /path/to/sha/lib
+</span></span></code></pre></div><p>Depending on your editor, configure it to not complain about libraries. Explore documentation of your editor to find details.</p>
+<p>Finally, let&rsquo;s create a source file called <code>sha.c</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;openssl/evp.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;openssl/bio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;openssl/err.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define SIZE 512
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    EVP_MD_CTX <span style="color:#f92672">*</span>ctx <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    EVP_MD <span style="color:#f92672">*</span>sha256 <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>msg <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(SIZE);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> len <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>digest <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Read string */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fgets</span>(msg, SIZE, stdin);
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">*</span><span style="color:#a6e22e">strchr</span>(msg, <span style="color:#e6db74">&#39;\n&#39;</span>) <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Create a context for the digest operation */</span>
+</span></span><span style="display:flex;"><span>    ctx <span style="color:#f92672">=</span> <span style="color:#a6e22e">EVP_MD_CTX_new</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (ctx <span style="color:#f92672">==</span> NULL)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">goto</span> err;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Fetch the SHA256 algorithm implementation for doing the digest */</span>
+</span></span><span style="display:flex;"><span>    sha256 <span style="color:#f92672">=</span> <span style="color:#a6e22e">EVP_MD_fetch</span>(NULL, <span style="color:#e6db74">&#34;SHA256&#34;</span>, NULL);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (sha256 <span style="color:#f92672">==</span> NULL)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">goto</span> err;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Initialize the digest operation */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">EVP_DigestInit_ex</span>(ctx, sha256, NULL))
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">goto</span> err;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Pass the message to be digested */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">EVP_DigestUpdate</span>(ctx, msg, <span style="color:#a6e22e">strlen</span>(msg)))
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">goto</span> err;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Allocate the output buffer */</span>
+</span></span><span style="display:flex;"><span>    digest <span style="color:#f92672">=</span> <span style="color:#a6e22e">OPENSSL_malloc</span>(<span style="color:#a6e22e">EVP_MD_get_size</span>(sha256));
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (digest <span style="color:#f92672">==</span> NULL)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">goto</span> err;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Now calculate the digest itself */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">EVP_DigestFinal_ex</span>(ctx, digest, <span style="color:#f92672">&amp;</span>len))
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">goto</span> err;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Print out the digest result */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">BIO_dump_fp</span>(stdout, digest, len);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    ret <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>err:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Clean up all the resources we allocated */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">free</span>(msg);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">OPENSSL_free</span>(digest);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">EVP_MD_free</span>(sha256);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">EVP_MD_CTX_free</span>(ctx);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (ret <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">ERR_print_errors_fp</span>(stderr);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> ret;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now we need to tell the compiler four things:</p>
+<ul>
+<li>use <code>include</code> as include directory</li>
+<li>put executables and object files in <code>bin</code> directory</li>
+<li>link <code>src/applink.c</code></li>
+<li>link <code>lib/libcrypto.lib</code> (or <code>lib/libcrypto.a</code>)</li>
+</ul>
+<p>Specifics depend on your operating system. Read compiler documentation for details. For example, this is how to do that on MSVC (assuming you are at your project directory):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-pwsh" data-lang="pwsh"><span style="display:flex;"><span>cl /Fe<span style="color:#960050;background-color:#1e0010">:</span>./bin/ /Fo<span style="color:#960050;background-color:#1e0010">:</span>./bin/ /I ./include/ ./src/sha.c ./src/applink.c ./lib/libcrypto.lib
+</span></span></code></pre></div><p>On UNIX, it <em>probably</em> looks like this (not sure though):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cc -o ./bin/sha -I ./include ./src/sha.c ./src/applink.c ./lib/libcrypto.a
+</span></span></code></pre></div><p>If you did not make any mistakes, results probably look like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-pwsh" data-lang="pwsh"><span style="display:flex;"><span>shell&gt; ./bin/main
+</span></span><span style="display:flex;"><span>hello world
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0000</span> - b9 <span style="color:#ae81ff">4d</span> <span style="color:#ae81ff">27</span> b9 <span style="color:#ae81ff">93</span> <span style="color:#ae81ff">4d</span> 3e <span style="color:#ae81ff">08</span>-a5 2e <span style="color:#ae81ff">52</span> d7 da <span style="color:#ae81ff">7d</span> ab fa   .M<span style="color:#960050;background-color:#1e0010">&#39;</span>..M&gt;...R..}..
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0010</span> - c4 <span style="color:#ae81ff">84</span> ef e3 7a <span style="color:#ae81ff">53</span> <span style="color:#ae81ff">80</span> ee-<span style="color:#ae81ff">90</span> <span style="color:#ae81ff">88</span> f7 ac e2 ef cd e9   ....zS..........
+</span></span></code></pre></div><ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://localhost:1313/" >
+    &copy;  My New Hugo Site 2025 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>
