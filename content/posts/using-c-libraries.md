@@ -140,15 +140,15 @@ target_link_libraries(sha PRIVATE OpenSSL::applink)
 {
   "version": 2,
   "configurePresets": [
- {
+  {
       "name": "vcpkg",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
- }
- }
- ]
+      }
+    }
+  ]
 }
 ```
 
@@ -158,15 +158,15 @@ target_link_libraries(sha PRIVATE OpenSSL::applink)
 {
     "version": 2,
     "configurePresets": [
- {
+    {
         "name": "default",
         "inherits": "vcpkg",
         "environment": {
           "VCPKG_ROOT": "<path to vcpkg>"
- }
- }
+    }
+  }
  ]
- }
+}
 ```
 
 10. Create a source file called `sha.c`:
