@@ -4,7 +4,7 @@ draft = false
 title = 'Writing an Algorithm'
 +++
 
-## Implementing SHA256 from scratch
+### Implementing SHA256 from scratch
 
 In the last post, we used the [OpenSSL](https://openssl.org) library to implement the SHA256 message digest algorithm. There may be some cases, however, when you don't want to use a library. For example:
 
@@ -15,7 +15,7 @@ Implementing the SHA256 algorithm from scratch sounds like quite a daunting task
 
 It turns out that the SHA algorithm family is a part of FIPS (Federal Information Processing Standard). This means that this algorithm is not only properly described and standardized, but also such documentation is [openly available](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf). Take a look at this document. It is a bit technical, but it is not large, and it is particularly complicated. Let's walk through it and write our code as we go.
 
-## Constants and definitions
+### Constants and definitions
 
 As always, create some directory and create a new source file (maybe called `sha.c` or however you like to call it).
 
@@ -190,7 +190,7 @@ const uint32_t H0[] = {
 };
 ```
 
-## Reading input
+### Reading input
 
 Let's think about how we get our input. For now, I suggest reading input from the user. Implementation is quite straightforward:
 
@@ -205,7 +205,7 @@ int getline(uint8_t *s, uint32_t size) {
 
 Notice the third line. We are truncating a newline character (`strchr` is used to locate a character in a string at return a pointer to it).
 
-## Message padding
+### Message padding
 
 Now, let's read about preprocessing:
 
@@ -352,7 +352,7 @@ void sha256_padding(sha256_ctx *ctx) {
 
 Notice usage of uniform integer types (like `uint32_t`). We do this because we can't make assumptions about the target machine.
 
-## Message parsing
+### Message parsing
 
 Now let's take care of message parsing. First, let's count how many 512-bit blocks we will need. This is pretty easy:
 
@@ -423,7 +423,7 @@ void sha256_parse(sha256_ctx *ctx) {
 }
 ```
 
-## Initialize context
+### Initialize context
 
 Context initialization is pretty straightforward:
 
@@ -436,6 +436,6 @@ void sha256_init(sha256_ctx *ctx) {
 
 We are just copying values from `H0` into the `H` field of our context. We do not initialize it with zero, since initialization is taken care of in another place.
 
-## Conclusion
+### Conclusion
 
 Phew, that was quite a lot of work. We have not started to implement the algorithm itself yet, but we are pretty much done with all preparations. In the next part, we will cover the hashing algorithm implementation.

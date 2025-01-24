@@ -4,7 +4,7 @@ draft = false
 title = 'The C Programming Language'
 +++
 
-## C Language
+### C Language
 
 For some unknown reason, I often find myself drawn to C. It's hard for me to tell exactly why... Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.
 
@@ -14,7 +14,7 @@ Is it not a contradiction? The language itself is simple, but this simplicity me
 
 Perhaps, the most important of all, memory can be managed indirectly using *pointers* that represent addresses with memory. This enables functions to modify values out of their scope. Your typical variables and arrays are allocated on a memory region called *stack*, whereas another type of memory can be dynamically allocated using *heap*.
 
-## Hello World
+### Hello World
 
 I am not going to dive into those topics, at least not for now. "The C Programming Language" by B. Kernighan and D. Richie is the legendary book on the topic, perhaps the most famous book on programming in history. What I intend on doing today can be expressed using a quote from this book:
 
@@ -46,7 +46,7 @@ int main(void)
 } 
 ```
 
-## About compiler
+### About compiler
 
 Here comes the trickiest part. To create the program, you need software called *compiler*. The *source code* of the program you see above is designed to be *human-readable*. Yes, it's tricky to read this cryptic language, but it's still possible.
 
@@ -83,7 +83,7 @@ c3
 
 This is a *binary file* that contains famous ones and zeros. Note that the actual file does not contain newlines after each command, this is formatting for convenience. You see much more than just ones and zeroes because this file is represented using convenient *hexadecimal notation* where each digit can take any value from 0 to 15. Data here is indeed just a bunch of ones and zeros that CPU knows how to deal with.
 
-## Source code
+### Source code
 
 Let's cover source code line by line.
 
@@ -107,7 +107,7 @@ Notice that we do not define `printf` ourselves. Instead, this function is defin
 
 The last line before closing the curly brace tells that function `main` returns 0. As I mentioned above there is a convention, especially in UNIX systems where programs return value indicating whether the program succeeded or failed. Zero usually means that there is no problem. Any non-zero value means that our program failed during completion and terminated.
 
-## Header files
+### Header files
 
 Now let's go back to the first line. To put it very simply, it tells our compiler that `printf` is a function that accepts a string along with an arbitrary number of additional arguments and returns nothing. Look at this line: `#include <stdio.h>`. To understand what it means, let's consider a couple more examples. Let's say that you have a file like this called `main.c`:
 
@@ -202,7 +202,7 @@ void foo(void)
 
 This code won't compile because functions `bar` and `baz` are not defined. But I am just showing it here to make a point.
 
-## How to compile
+### How to compile
 
 Maybe it's weird that I've put the most important part at the end, but I wanted to pay attention to the source code before compiling it. Unfortunately, obtaining a C compiler is trickier compared to something like Python or Go which you can just download and it works.
 
@@ -262,7 +262,7 @@ echo $?
 
 If everything is okay, it should print `0`.
 
-## Windows notes
+### Windows notes
 
 For Windows, you can download Visual Studio [here](https://visualstudio.microsoft.com/downloads/). You can use Visual Studio IDE if you like, but I prefer to use Visual Studio Build Tools. It is a standalone package that contains all tools for building. You can then use any text editor of your choice, be it `neovim` or `Visual Studio Code`. If your editor does not contain a debugger, you may use `WinDbg` - Windows Debugger.
 

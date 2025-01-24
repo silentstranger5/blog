@@ -4,7 +4,7 @@ draft = false
 title = 'How to Make Your Blog'
 +++
 
-## Website constructors
+### Website constructors
 
 Do you want to create your blog? There are many possible ways to do that. The most popular and accessible ways are targeted for broad and general audiences. Here are some useful links:
 
@@ -12,7 +12,7 @@ Do you want to create your blog? There are many possible ways to do that. The mo
 - [Wix](https://wix.com) is a fresh solution targeted at a niche audience.
 - [Medium](https://medium.com) is another popular option. I've seen many blogs on this platform that discuss more business or technical topics.
 
-## Other Options
+### Other Options
 
 Of course, there some many other possible options and platforms that could help you create your blog. But I want to talk about some other options. What if you don't want to use existing ready platforms, and want to try and create something else?
 
@@ -20,7 +20,7 @@ I want to warn you that the methods that I am going to discuss are more technica
 
 There are two ways to create your blog. Quick and easy, and long and more complex. Don't hurry to discard the second option, though, because it has its use cases as we will discuss later.
 
-## Text Markup
+### Text Markup
 
 Before we dive into details, let us digress a little to discuss text formatting. If you read any sort of blog, you will probably notice that text looks different depending on its meaning. The heading can be big and placed in the middle, some text can be *italicized* for slight emphasis, or **bold** for strong emphasis. There can be some [links]() leading to other pages, or images.
 
@@ -50,7 +50,7 @@ You can see that it contains quite a few details like angle brackets, slashes, e
 This is the reason why a new file format was created, called *markdown*. It is much easier to both read and write, and it's not as strict. Take a look at what it looks like:
 
 ```markdown
-# Page Title
+### Page Title
 
 This is a paragraph.
 
@@ -65,7 +65,7 @@ This is *italic* text and **bold** text.
 
 This is what this text looks like:
 
-# Page Title
+### Page Title
 
 This is a paragraph.
 
@@ -79,13 +79,13 @@ This is *italic* text and **bold** text.
 
 If you are curious about markdown format, [here](https://commonmark.org/help/) is a brief but very helpful reference.
 
-## Markup Framework
+### Markup Framework
 
 As you can see, this is much easier to use compared to HTML. There is a problem, though. As you recall, browsers only support HTML files. They don't support the markdown format. This means that we need to use some software that converts markdown to html (and also applies themes, so that we don't have to write them ourselves).
 
 Many different projects aim to achieve that. I personally like [hugo](https:/gohugo.io). It's fast, modern, and easy to use. I'm using it to build the blog you are reading right now. I'll walk you through details on how to use it, but you can also read details [here](https://gohugo.io/getting-started/quick-start/).
 
-## Hugo Tutorial
+### Hugo Tutorial
 
 Before we proceed, some software should be installed on your computer:
 
@@ -126,7 +126,7 @@ Notice a `draft` field. Pages marked as drafts can be built using a special flag
 Add some markdown to your page:
 
 ```markdown
-## Introduction
+### Introduction
 
 This is **bold** text, and this is *emphasized* text.
 
@@ -143,7 +143,7 @@ You can see that your page is now visible.
 
 Visit the Hugo site. You can find many helpful resources, like site themes or documentation here.
 
-## The Long Way
+### The Long Way
 
 You can probably remember that I mentioned in the beginning that there is a second way that you can use to create your website. Well, it is, of course, longer and more time-consuming, but allows much higher flexibility and customization. In a nutshell, you write your code using HTML, CSS, JavaScript, and other languages. This takes a much longer time but allows you to have much more control over what is going on. I am not going to go into this rabbit hole now, but there are many useful resources to learn about it. For example, [MDN](https://developer.mozilla.org/en-US/) is a canonical reference for web development.
 

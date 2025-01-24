@@ -4,7 +4,7 @@ draft = false
 title = 'Host Your Blog'
 +++
 
-## Website Hosting
+### Website Hosting
 
 We have successfully created a new website. That required some work, but it still was quite fast and easy (at least in my opinion). We have a problem, though. Nobody can see your website, other than you. When you type:
 
@@ -24,7 +24,7 @@ The last thing you need is a nice address, like `www.mywebsite.com`. People neve
 
 As you can see, this process is quite nuanced. This is the reason why many companies take care of most of these things. All you have to do is click a couple of buttons, and your website is ready. This costs money, and you need to pay for this each month.
 
-## Github Pages
+### Github Pages
 
 We are not doing any rocket science here, and our blog will be primarily textual. Do we need to go through all of those steps and pay for hosting each month?
 
@@ -32,7 +32,7 @@ Luckily for us, some solutions provide free hosting for your websites as long as
 
 The most popular solution is [Github Pages](https://pages.github.com/). I am going to cover how to host our website on this platform. You can also read details [here](https://gohugo.io/hosting-and-deployment/hosting-on-github/).
 
-## Github Repository
+### Github Repository
 
 Before we start, you have to create an account on the [github](https://github.com). This is required for GitHub pages but is also useful for GitHub to host your source code repositories.
 
@@ -65,7 +65,7 @@ Finally, let's push our local repository to GitHub:
 git push -u origin main
 ```
 
-## Github Action
+### Github Action
 
 Now that our website is on GitHub, let's make some configurations. Visit your GitHub repository. From the main menu choose Settings->Pages. Change `Source` to `Github Actions`.
 
