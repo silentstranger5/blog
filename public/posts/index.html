@@ -45,8 +45,8 @@
   <meta property="og:type" content="website">
 
   <meta itemprop="name" content="Posts">
-  <meta itemprop="datePublished" content="2025-01-22T14:01:17+03:00">
-  <meta itemprop="dateModified" content="2025-01-22T14:01:17+03:00">
+  <meta itemprop="datePublished" content="2025-01-24T19:02:29+03:00">
+  <meta itemprop="dateModified" content="2025-01-24T19:02:29+03:00">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Posts">
 
@@ -95,13 +95,33 @@
   <div class="bg-white mb3 pa4 gray overflow-hidden">
     <span class="f6 db">Posts</span>
     <h1 class="f3 near-black">
+      <a href="/posts/writing-an-algorithm/" class="link black dim">
+        Writing an Algorithm
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h3 id="implementing-sha256-from-scratch">Implementing SHA256 from scratch</h3>
+<p>In the last post, we used the <a href="https://openssl.org">OpenSSL</a> library to implement the SHA256 message digest algorithm. There may be some cases, however, when you don&rsquo;t want to use a library. For example:</p>
+<p>Notice that we are only using one part of the library&rsquo;s vast functionality once. We probably won&rsquo;t use it for other purposes in the future, not right now, at least. In this case, the overhead of building the entire library might not be worth it.</p>
+    </div>
+    <a href="/posts/writing-an-algorithm/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="relative w-100 w-30-l mb4 bg-white">
+          <div class="relative w-100 mb4 bg-white nested-copy-line-height">
+  <div class="bg-white mb3 pa4 gray overflow-hidden">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
       <a href="/posts/using-c-libraries/" class="link black dim">
         Using C Libraries
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <p>In the previous post, I&rsquo;ve discussed C language and briefly introduced how to used it. To be honest, if you have programming experience already, chances are that you can use most of the C without issues. There may be some problems with pointers though. Maybe I&rsquo;ll cover it in the next time.</p>
-<p>When I described C, I said that it is simple language in itself, although it can be tricky to use because there is not much included in the language. Indeed, if you compare it to modern languages, there are many features lacking. I&rsquo;m not even telling about various containers and algorithms like lists, maps or sets.</p>
+      <p>In the previous post, I discussed C language and briefly introduced how to use it. To be honest, if you have programming experience already, chances are that you can use most of the C without issues. There may be some problems with pointers though. Maybe I&rsquo;ll cover it the next time.</p>
+<p>When I described C, I said that it is a simple language in itself, although it can be tricky to use because there is not much included in the language. Indeed, if you compare it to modern languages, there are many features lacking. I&rsquo;m not even talking about various containers and algorithms like lists, maps, or sets.</p>
     </div>
     <a href="/posts/using-c-libraries/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
   </div>
@@ -119,7 +139,7 @@
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <h2 id="c-language">C Language</h2>
+      <h3 id="c-language">C Language</h3>
 <p>For some unknown reason, I often find myself drawn to C. It&rsquo;s hard for me to tell exactly why&hellip; Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.</p>
 <p>Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.</p>
     </div>
@@ -158,7 +178,7 @@
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <h2 id="website-hosting">Website Hosting</h2>
+      <h3 id="website-hosting">Website Hosting</h3>
 <p>We have successfully created a new website. That required some work, but it still was quite fast and easy (at least in my opinion). We have a problem, though. Nobody can see your website, other than you. When you type:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hugo server
 </span></span></code></pre></div><p>You can see what is called a <em>local</em> version of your website. It means that it is accessible only on your computer (and maybe on your local network if you know your computer IP address). But the whole point of the website is to be visible to other people on the internet. What is the point of your website if nobody can see it?</p>
@@ -179,14 +199,14 @@
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <h2 id="website-constructors">Website constructors</h2>
+      <h3 id="website-constructors">Website constructors</h3>
 <p>Do you want to create your blog? There are many possible ways to do that. The most popular and accessible ways are targeted for broad and general audiences. Here are some useful links:</p>
 <ul>
 <li><a href="https://wordpress.com">WordPress</a> is probably the oldest and the most popular website constructor. It has wide customization options.</li>
 <li><a href="https://wix.com">Wix</a> is a fresh solution targeted at a niche audience.</li>
 <li><a href="https://medium.com">Medium</a> is another popular option. I&rsquo;ve seen many blogs on this platform that discuss more business or technical topics.</li>
 </ul>
-<h2 id="other-options">Other Options</h2>
+<h3 id="other-options">Other Options</h3>
 <p>Of course, there some many other possible options and platforms that could help you create your blog. But I want to talk about some other options. What if you don&rsquo;t want to use existing ready platforms, and want to try and create something else?</p>
     </div>
     <a href="/posts/how-to-make-your-blog/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>

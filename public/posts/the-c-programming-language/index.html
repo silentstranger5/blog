@@ -107,12 +107,12 @@ Do not be fooled by this simplicity, though, reader. Even if the language and st
       
       
     </header>
-    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h2 id="c-language">C Language</h2>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h3 id="c-language">C Language</h3>
 <p>For some unknown reason, I often find myself drawn to C. It&rsquo;s hard for me to tell exactly why&hellip; Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.</p>
 <p>Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.</p>
 <p>Is it not a contradiction? The language itself is simple, but this simplicity means that everything must be built from scratch. The language does not provide abstractions or convenient containers with algorithms, like lists, maps, or sets. Object-oriented mechanisms can not be found here either.</p>
 <p>Perhaps, the most important of all, memory can be managed indirectly using <em>pointers</em> that represent addresses with memory. This enables functions to modify values out of their scope. Your typical variables and arrays are allocated on a memory region called <em>stack</em>, whereas another type of memory can be dynamically allocated using <em>heap</em>.</p>
-<h2 id="hello-world">Hello World</h2>
+<h3 id="hello-world">Hello World</h3>
 <p>I am not going to dive into those topics, at least not for now. &ldquo;The C Programming Language&rdquo; by B. Kernighan and D. Richie is the legendary book on the topic, perhaps the most famous book on programming in history. What I intend on doing today can be expressed using a quote from this book:</p>
 <blockquote>
 <p>The only way to learn a new programming language is by writing programs in it. The first
@@ -135,7 +135,7 @@ mechanical details mastered, everything else is comparatively easy.</p>
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;hello, world</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>} 
-</span></span></code></pre></div><h2 id="about-compiler">About compiler</h2>
+</span></span></code></pre></div><h3 id="about-compiler">About compiler</h3>
 <p>Here comes the trickiest part. To create the program, you need software called <em>compiler</em>. The <em>source code</em> of the program you see above is designed to be <em>human-readable</em>. Yes, it&rsquo;s tricky to read this cryptic language, but it&rsquo;s still possible.</p>
 <p>However, computers can&rsquo;t understand this source code. To execute the code, it would need something more like that:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>.TEXT:
@@ -160,7 +160,7 @@ b8 00 00 00 00
 5d
 c3
 </code></pre><p>This is a <em>binary file</em> that contains famous ones and zeros. Note that the actual file does not contain newlines after each command, this is formatting for convenience. You see much more than just ones and zeroes because this file is represented using convenient <em>hexadecimal notation</em> where each digit can take any value from 0 to 15. Data here is indeed just a bunch of ones and zeros that CPU knows how to deal with.</p>
-<h2 id="source-code">Source code</h2>
+<h3 id="source-code">Source code</h3>
 <p>Let&rsquo;s cover source code line by line.</p>
 <p>To understand what the first line does, we need to take a detour. We will come back to it a bit later. Let&rsquo;s move further.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
@@ -171,7 +171,7 @@ c3
 <p>The next line calls a function called <code>printf</code>. This function performs <em>formatted printing</em>. It is sufficient to note that the symbol <code>\n</code> denotes a newline character. If it is omitted, your program will not transfer to the next line after it is done printing.</p>
 <p>Notice that we do not define <code>printf</code> ourselves. Instead, this function is defined inside a <em>standard library</em>, which is a collection of useful functions and definitions that may be useful in your programs. The standard library is usually supplied with a compiler. It is implicitly linked to all of your programs.</p>
 <p>The last line before closing the curly brace tells that function <code>main</code> returns 0. As I mentioned above there is a convention, especially in UNIX systems where programs return value indicating whether the program succeeded or failed. Zero usually means that there is no problem. Any non-zero value means that our program failed during completion and terminated.</p>
-<h2 id="header-files">Header files</h2>
+<h3 id="header-files">Header files</h3>
 <p>Now let&rsquo;s go back to the first line. To put it very simply, it tells our compiler that <code>printf</code> is a function that accepts a string along with an arbitrary number of additional arguments and returns nothing. Look at this line: <code>#include &lt;stdio.h&gt;</code>. To understand what it means, let&rsquo;s consider a couple more examples. Let&rsquo;s say that you have a file like this called <code>main.c</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">foo</span>();
@@ -228,7 +228,7 @@ new C programs. If the function takes arguments, declare them; if it takes no ar
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">foo</span>(<span style="color:#66d9ef">void</span>)
 </span></span><span style="display:flex;"><span>...
 </span></span></code></pre></div><p>This code won&rsquo;t compile because functions <code>bar</code> and <code>baz</code> are not defined. But I am just showing it here to make a point.</p>
-<h2 id="how-to-compile">How to compile</h2>
+<h3 id="how-to-compile">How to compile</h3>
 <p>Maybe it&rsquo;s weird that I&rsquo;ve put the most important part at the end, but I wanted to pay attention to the source code before compiling it. Unfortunately, obtaining a C compiler is trickier compared to something like Python or Go which you can just download and it works.</p>
 <p>Your compiler generally depends on your operating system. If you are using UNIX-like systems (like Linux or MacOS), you&rsquo;ll need <code>gcc</code> - GNU Compiler Collection or another UNIX-like compiler. On Windows, your best choice is probably <code>MSVC</code> - Microsoft Visual C compiler.</p>
 <p>Most UNIX-like systems have package managers. On Debian-like systems, for example, you can install a compiler like this:</p>
@@ -250,7 +250,7 @@ new C programs. If the function takes arguments, declare them; if it takes no ar
 </span></span></code></pre></div><p>If you want to check the status of your program (whether it was completed without issues or failed), type this:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo $?
 </span></span></code></pre></div><p>If everything is okay, it should print <code>0</code>.</p>
-<h2 id="windows-notes">Windows notes</h2>
+<h3 id="windows-notes">Windows notes</h3>
 <p>For Windows, you can download Visual Studio <a href="https://visualstudio.microsoft.com/downloads/">here</a>. You can use Visual Studio IDE if you like, but I prefer to use Visual Studio Build Tools. It is a standalone package that contains all tools for building. You can then use any text editor of your choice, be it <code>neovim</code> or <code>Visual Studio Code</code>. If your editor does not contain a debugger, you may use <code>WinDbg</code> - Windows Debugger.</p>
 <p>To be able to use the compiler, you have to start <code>developer powershell</code> or <code>developer command line</code>. This program performs the necessary configuration of the environment before starting the shell. You shouldn&rsquo;t use the MSVC compiler outside of it.</p>
 <p>Here is how compilation on Windows looks like:</p>

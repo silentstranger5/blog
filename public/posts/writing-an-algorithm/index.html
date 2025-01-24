@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Writing an Algorithm | My New Hugo Site</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Implementing SHA256 from scratch
+In the last post, we used the OpenSSL library to implement the SHA256 message digest algorithm. There may be some cases, however, when you don&rsquo;t want to use a library. For example:
+Notice that we are only using one part of the library&rsquo;s vast functionality once. We probably won&rsquo;t use it for other purposes in the future, not right now, at least. In this case, the overhead of building the entire library might not be worth it.">
+    <meta name="generator" content="Hugo 0.141.0">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+    
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/writing-an-algorithm/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/writing-an-algorithm/">
+  <meta property="og:site_name" content="My New Hugo Site">
+  <meta property="og:title" content="Writing an Algorithm">
+  <meta property="og:description" content="Implementing SHA256 from scratch In the last post, we used the OpenSSL library to implement the SHA256 message digest algorithm. There may be some cases, however, when you don’t want to use a library. For example:
+Notice that we are only using one part of the library’s vast functionality once. We probably won’t use it for other purposes in the future, not right now, at least. In this case, the overhead of building the entire library might not be worth it.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-01-24T19:02:29+03:00">
+    <meta property="article:modified_time" content="2025-01-24T19:02:29+03:00">
+
+  <meta itemprop="name" content="Writing an Algorithm">
+  <meta itemprop="description" content="Implementing SHA256 from scratch In the last post, we used the OpenSSL library to implement the SHA256 message digest algorithm. There may be some cases, however, when you don’t want to use a library. For example:
+Notice that we are only using one part of the library’s vast functionality once. We probably won’t use it for other purposes in the future, not right now, at least. In this case, the overhead of building the entire library might not be worth it.">
+  <meta itemprop="datePublished" content="2025-01-24T19:02:29+03:00">
+  <meta itemprop="dateModified" content="2025-01-24T19:02:29+03:00">
+  <meta itemprop="wordCount" content="2753">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Writing an Algorithm">
+  <meta name="twitter:description" content="Implementing SHA256 from scratch In the last post, we used the OpenSSL library to implement the SHA256 message digest algorithm. There may be some cases, however, when you don’t want to use a library. For example:
+Notice that we are only using one part of the library’s vast functionality once. We probably won’t use it for other purposes in the future, not right now, at least. In this case, the overhead of building the entire library might not be worth it.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        My New Hugo Site
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Writing an Algorithm</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2025-01-24T19:02:29+03:00">January 24, 2025</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h3 id="implementing-sha256-from-scratch">Implementing SHA256 from scratch</h3>
+<p>In the last post, we used the <a href="https://openssl.org">OpenSSL</a> library to implement the SHA256 message digest algorithm. There may be some cases, however, when you don&rsquo;t want to use a library. For example:</p>
+<p>Notice that we are only using one part of the library&rsquo;s vast functionality once. We probably won&rsquo;t use it for other purposes in the future, not right now, at least. In this case, the overhead of building the entire library might not be worth it.</p>
+<ul>
+<li>Maybe you want to learn how to implement this algorithm yourself. In this case, you can get more insight and experience from implementing it rather than using a ready library.</li>
+</ul>
+<p>Implementing the SHA256 algorithm from scratch sounds like quite a daunting task. It&rsquo;s difficult to think about where to even start. However, such an algorithm is probably widely used and implemented in a variety of languages and platforms. Surely, there has to be <em>something</em> about it somewhere.</p>
+<p>It turns out that the SHA algorithm family is a part of FIPS (Federal Information Processing Standard). This means that this algorithm is not only properly described and standardized, but also such documentation is <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">openly available</a>. Take a look at this document. It is a bit technical, but it is not large, and it is particularly complicated. Let&rsquo;s walk through it and write our code as we go.</p>
+<h3 id="constants-and-definitions">Constants and definitions</h3>
+<p>As always, create some directory and create a new source file (maybe called <code>sha.c</code> or however you like to call it).</p>
+<p>Before we proceed, let&rsquo;s include useful headers from the standard library:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;  // standard input/output</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdint.h&gt; // standard integer types</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt; // useful functions</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt; // string processing</span><span style="color:#75715e">
+</span></span></span></code></pre></div><p>Now let&rsquo;s read about SHA algorithms:</p>
+<pre tabindex="0"><code>1. INTRODUCTION
+
+Each algorithm can be described in two stages: preprocessing and hash computation. 
+Preprocessing involves padding a message, parsing the padded message into m-bit blocks, and 
+setting initialization values to be used in the hash computation. The hash computation generates 
+a message schedule from the padded message and uses that schedule, along with functions, 
+constants, and word operations to iteratively generate a series of hash values. The final hash 
+value generated by the hash computation is used to determine the message digest.
+
+Algorithm   Message Size    Block Size  Word Size   Message Digest Size
+(bits)      (bits)          (bits)      (bits)      (bits)
+SHA-256     &lt; 2 ^ 64        512         32          256
+</code></pre><p>Right away, we can set up some constants:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define w  32 </span><span style="color:#75715e">// word   size in bits
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#define ds 256 </span><span style="color:#75715e">// digest size in bits
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#define m  512 </span><span style="color:#75715e">// block  size in bits
+</span></span></span></code></pre></div><p>Now, there are some characters, operations, notations and terminology. You can read it since this can be useful in the future. Here are the functions that will be used in the algorithm:</p>
+<pre tabindex="0"><code>3.2 Operations on Words
+
+ROTL n(x) = (x &lt;&lt; n) ∨ (x &gt;&gt; w - n)
+ROTR n(x) = (x &gt;&gt; n) ∨ (x &lt;&lt; w - n)
+
+4.1.2 SHA-224 and SHA-256 Functions
+
+Ch(x, y, z)  = (x ∧ y) ⊕ (¬x ∧ z)                    (4.2)
+Maj(x, y, z) = (x ∧ y) ⊕ ( x ∧ z) ⊕ (y ∧ z)         (4.3)
+S0{256}(x) = ROTR 2(x) ⊕ ROTR 13(x) ⊕ ROTR 22(x)    (4.4)
+S1{256}(x) = ROTR 6(x) ⊕ ROTR 11(x) ⊕ ROTR 25(x)    (4.5)
+s0{256}(x) = ROTR 7(x) ⊕ ROTR 18(x) ⊕ SHR   3(x)    (4.6)
+s1{256}(x) = ROTR 17(x) ⊕ ROTR 19(x) ⊕ SHR 10(x)    (4.7)
+</code></pre><p>Those functions are pretty easy to implement as macros. Just change the provided logical symbols into C bitwise operations:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// algorithm functions
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#define ROTL(x, n) ((x &lt;&lt; n) | (x &gt;&gt; (w - n)))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define ROTR(x, n) ((x &gt;&gt; n) | (x &lt;&lt; (w - n)))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define CH(x, y, z) ((x &amp; y) ^ (~x &amp; z))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define MAJ(x, y, z) ((x &amp; y) ^ (x &amp; z) ^ (y &amp; z))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define S0(x) (ROTR(x, 2) ^ ROTR(x, 13) ^ ROTR(x, 22))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define S1(x) (ROTR(x, 6) ^ ROTR(x, 11) ^ ROTR(x, 25))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define s0(x) (ROTR(x, 7) ^ ROTR(x, 18) ^ (x &gt;&gt; 3))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define s1(x) (ROTR(x, 17) ^ ROTR(x, 19) ^ (x &gt;&gt; 10))
+</span></span></span></code></pre></div><p>Before we proceed, notice this quote:</p>
+<blockquote>
+<p>Throughout this specification, the “big-endian” convention is used when expressing
+both 32- and 64-bit words, so that within each word, the most significant bit is stored
+in the left-most bit position.</p>
+</blockquote>
+<p>Most machines nowadays are little-endian. This means that we need to perform conversion for our algorithm to work properly. Those macros look a bit weird, but what they do is check machine endianness and swap bytes from one convention to another:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">//Check if the machine is big-endian
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#define ENDIAN (*(uint16_t *)&#34;\0\xff&#34; &lt; 0x100)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// byteswap functions for little-endian machines
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#define BSWAP32(x) ((uint32_t)((((x) &amp; 0x000000FF) &lt;&lt; 24) | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> (((x) &amp; 0x0000FF00) &lt;&lt; 8)  | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> (((x) &amp; 0x00FF0000) &gt;&gt; 8)  | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> (((x) &amp; 0xFF000000) &gt;&gt; 24)))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define BSWAP64(x) ((uint64_t)((((x) &amp; 0x00000000000000FFULL) &lt;&lt; 56) | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> (((x) &amp; 0x000000000000FF00ULL) &lt;&lt; 40) | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> (((x) &amp; 0x0000000000FF0000ULL) &lt;&lt; 24) | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> (((x) &amp; 0x00000000FF000000ULL) &lt;&lt; 8)  | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> (((x) &amp; 0x000000FF00000000ULL) &gt;&gt; 8)  | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> (((x) &amp; 0x0000FF0000000000ULL) &gt;&gt; 24) | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> (((x) &amp; 0x00FF000000000000ULL) &gt;&gt; 40) | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> (((x) &amp; 0xFF00000000000000ULL) &gt;&gt; 56)))
+</span></span></span></code></pre></div><p>Now, let&rsquo;s take a look at the constants section:</p>
+<pre tabindex="0"><code>4.2.3 SHA-384, SHA-512, SHA-512/224 and SHA-512/256 Constants
+
+SHA-384, SHA-512, SHA-512/224 and SHA-512/256 use the same sequence of eighty constant 
+64-bit words, K0 {512}, K1 {512}, ... K79 {512}. These words represent the first sixty-four bits of the 
+fractional parts of the cube roots of the first eighty prime numbers. In hex, these constant words 
+are (from left to right)
+
+428a2f98 71374491 b5c0fbcf e9b5dba5 3956c25b 59f111f1 923f82a4 ab1c5ed5
+d807aa98 12835b01 243185be 550c7dc3 72be5d74 80deb1fe 9bdc06a7 c19bf174
+e49b69c1 efbe4786 0fc19dc6 240ca1cc 2de92c6f 4a7484aa 5cb0a9dc 76f988da
+983e5152 a831c66d b00327c8 bf597fc7 c6e00bf3 d5a79147 06ca6351 14292967
+27b70a85 2e1b2138 4d2c6dfc 53380d13 650a7354 766a0abb 81c2c92e 92722c85
+a2bfe8a1 a81a664b c24b8b70 c76c51a3 d192e819 d6990624 f40e3585 106aa070
+19a4c116 1e376c08 2748774c 34b0bcb5 391c0cb3 4ed8aa4a 5b9cca4f 682e6ff3
+748f82ee 78a5636f 84c87814 8cc70208 90befffa a4506ceb bef9a3f7 c67178f2
+</code></pre><p>Those constants can be pretty easily implemented as a global array of constant integers:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// algorithm constants
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint32_t</span> K[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x428a2f98</span>, <span style="color:#ae81ff">0x71374491</span>, <span style="color:#ae81ff">0xb5c0fbcf</span>, <span style="color:#ae81ff">0xe9b5dba5</span>, 
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x3956c25b</span>, <span style="color:#ae81ff">0x59f111f1</span>, <span style="color:#ae81ff">0x923f82a4</span>, <span style="color:#ae81ff">0xab1c5ed5</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0xd807aa98</span>, <span style="color:#ae81ff">0x12835b01</span>, <span style="color:#ae81ff">0x243185be</span>, <span style="color:#ae81ff">0x550c7dc3</span>, 
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x72be5d74</span>, <span style="color:#ae81ff">0x80deb1fe</span>, <span style="color:#ae81ff">0x9bdc06a7</span>, <span style="color:#ae81ff">0xc19bf174</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0xe49b69c1</span>, <span style="color:#ae81ff">0xefbe4786</span>, <span style="color:#ae81ff">0x0fc19dc6</span>, <span style="color:#ae81ff">0x240ca1cc</span>, 
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x2de92c6f</span>, <span style="color:#ae81ff">0x4a7484aa</span>, <span style="color:#ae81ff">0x5cb0a9dc</span>, <span style="color:#ae81ff">0x76f988da</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x983e5152</span>, <span style="color:#ae81ff">0xa831c66d</span>, <span style="color:#ae81ff">0xb00327c8</span>, <span style="color:#ae81ff">0xbf597fc7</span>, 
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0xc6e00bf3</span>, <span style="color:#ae81ff">0xd5a79147</span>, <span style="color:#ae81ff">0x06ca6351</span>, <span style="color:#ae81ff">0x14292967</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x27b70a85</span>, <span style="color:#ae81ff">0x2e1b2138</span>, <span style="color:#ae81ff">0x4d2c6dfc</span>, <span style="color:#ae81ff">0x53380d13</span>, 
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x650a7354</span>, <span style="color:#ae81ff">0x766a0abb</span>, <span style="color:#ae81ff">0x81c2c92e</span>, <span style="color:#ae81ff">0x92722c85</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0xa2bfe8a1</span>, <span style="color:#ae81ff">0xa81a664b</span>, <span style="color:#ae81ff">0xc24b8b70</span>, <span style="color:#ae81ff">0xc76c51a3</span>, 
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0xd192e819</span>, <span style="color:#ae81ff">0xd6990624</span>, <span style="color:#ae81ff">0xf40e3585</span>, <span style="color:#ae81ff">0x106aa070</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x19a4c116</span>, <span style="color:#ae81ff">0x1e376c08</span>, <span style="color:#ae81ff">0x2748774c</span>, <span style="color:#ae81ff">0x34b0bcb5</span>, 
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x391c0cb3</span>, <span style="color:#ae81ff">0x4ed8aa4a</span>, <span style="color:#ae81ff">0x5b9cca4f</span>, <span style="color:#ae81ff">0x682e6ff3</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x748f82ee</span>, <span style="color:#ae81ff">0x78a5636f</span>, <span style="color:#ae81ff">0x84c87814</span>, <span style="color:#ae81ff">0x8cc70208</span>, 
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x90befffa</span>, <span style="color:#ae81ff">0xa4506ceb</span>, <span style="color:#ae81ff">0xbef9a3f7</span>, <span style="color:#ae81ff">0xc67178f2</span>,
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>Let&rsquo;s take a look at the initial hash values:</p>
+<pre tabindex="0"><code>5.3.3 SHA-256
+
+For SHA-256, the initial hash value, H(0), shall consist of the following eight 32-bit words, in 
+hex:
+
+H0 = 6a09e667
+H1 = bb67ae85
+H2 = 3c6ef372
+H3 = a54ff53a
+H4 = 510e527f
+H5 = 9b05688c
+H6 = 1f83d9ab
+H7 = 5be0cd19
+</code></pre><p>Those can be implemented pretty easily as well:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// initial hash values
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint32_t</span> H0[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x6a09e667</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0xbb67ae85</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x3c6ef372</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0xa54ff53a</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x510e527f</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x9b05688c</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x1f83d9ab</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x5be0cd19</span>,
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><h3 id="reading-input">Reading input</h3>
+<p>Let&rsquo;s think about how we get our input. For now, I suggest reading input from the user. Implementation is quite straightforward:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// read line from standard input
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">getline</span>(<span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>s, <span style="color:#66d9ef">uint32_t</span> size) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fgets</span>(s, size, stdin);
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">*</span><span style="color:#a6e22e">strchr</span>(s, <span style="color:#e6db74">&#39;\n&#39;</span>) <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">strlen</span>(s);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Notice the third line. We are truncating a newline character (<code>strchr</code> is used to locate a character in a string at return a pointer to it).</p>
+<h3 id="message-padding">Message padding</h3>
+<p>Now, let&rsquo;s read about preprocessing:</p>
+<pre tabindex="0"><code>5.1.1 SHA-1, SHA-224 and SHA-256
+
+Suppose that the length of the message, M, is l bits. Append the bit “1” to the end of the 
+message, followed by k zero bits, where k is the smallest, non-negative solution to the equation 
+l + 1 + k = 448 mod 512. Then append the 64-bit block that is equal to the number l expressed
+using a binary representation. For example, the (8-bit ASCII) message “abc” has length 
+8x3 = 24, so the message is padded with a one-bit, then 448 - (24 + 1) = 423 zero bits, and then
+the message length becomes the 512-bit padded message.
+
+5.2.1 SHA-1, SHA-224 and SHA-256
+For SHA-1, SHA-224, and SHA-256, the message and its padding are parsed into N 512-bit 
+blocks, M(1), M(2), ..., M(N). Since the 512 bits of the input block may be expressed as sixteen 32-
+bit words, the first 32 bits of message block i are denoted M0(i), the next 32 bits are M1(i), and so 
+on up to M15(i).
+</code></pre><p>Right away, we can notice that we&rsquo;ll need two things:</p>
+<ul>
+<li>Message, which is an array of characters</li>
+<li>Message blocks of 512 bits that are used for parsing the message</li>
+</ul>
+<p>Without further ado, let&rsquo;s implement a <code>context</code> that will hold all the necessary information for us:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// message block is block with 16 x 32 byte words = 512 bit
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">uint32_t</span> mblock[m<span style="color:#f92672">/</span><span style="color:#ae81ff">8</span>];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// context stores all necessary information for processing
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>msg; <span style="color:#75715e">// message
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> mblock  <span style="color:#f92672">*</span>mblocks; <span style="color:#75715e">// message blocks
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">size_t</span> size; <span style="color:#75715e">// message size
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">size_t</span> N; <span style="color:#75715e">// number of message blocks
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">uint32_t</span> H[<span style="color:#ae81ff">8</span>]; <span style="color:#75715e">// hash values
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>} sha256_ctx;
+</span></span></code></pre></div><p>Now take a look at the message padding section. Here is what we need to do:</p>
+<ul>
+<li>Allocate a new block of memory and initialize it to zero</li>
+<li>Copy our message to this block</li>
+<li>Set the leftmost bit in byte after message to one</li>
+<li>Set the last 64 bits to the size of the message, in bits</li>
+</ul>
+<p>To allocate new memory, we need to know the size in advance. Let&rsquo;s start with the size of our message. This code assumes that our message is at the <code>msg</code> field of the <code>ctx</code> pointer to context:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">uint64_t</span> l <span style="color:#f92672">=</span> <span style="color:#a6e22e">strlen</span>(ctx<span style="color:#f92672">-&gt;</span>msg) <span style="color:#f92672">*</span> <span style="color:#ae81ff">8</span>;
+</span></span></code></pre></div><p>Now let&rsquo;s count the amount to zeroes that we will append to our message. We won&rsquo;t count 1-bit since we will take care of it separately. We will append 64 bits as the message size, which leaves us with 448 remaining bits. Given the size of the message, it&rsquo;s pretty easy to calculate the amount of zeroes that we will append to the message:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">uint32_t</span> k <span style="color:#f92672">=</span> <span style="color:#ae81ff">448</span> <span style="color:#f92672">-</span> (size <span style="color:#f92672">%</span> <span style="color:#ae81ff">448</span>)
+</span></span></code></pre></div><p>Consider an edge case, however. Let&rsquo;s say that our message is exactly 448 bits. Since the message size takes 64 bits, we have no place to put our terminating 1 bit. In such a case, we have to create a new block of 512 bits between the <code>1</code> bit and the message size. Here is the scheme. The first line is an address, the second line is a value in memory, and the third line is comments. This scheme uses hexadecimal notation.</p>
+<pre tabindex="0"><code>00 01 02 .. 01bf 01c0 01c1 .. 01ff
+61 62 63 ..   63   80   00 ..   00
+&lt; message &gt;        1bit &lt; zeros &gt;
+
+--- new block
+00    ..    ..    .. 01fe 01ff
+00    ..    ..    ..   01   c0
+&lt; zeros &gt;       &lt; message size, 64bit, big-endian &gt; 
+</code></pre><p>Here is how it translates to code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">uint32_t</span> k <span style="color:#f92672">=</span> (l <span style="color:#f92672">%</span> <span style="color:#ae81ff">448</span>) <span style="color:#f92672">?</span> <span style="color:#ae81ff">448</span> <span style="color:#f92672">-</span> (l <span style="color:#f92672">%</span> <span style="color:#ae81ff">448</span>) <span style="color:#f92672">:</span> m; <span style="color:#75715e">// m = 512
+</span></span></span></code></pre></div><p>Remember that we need to write message size in the big-endian convention. This means that if our machine is little-endian, we need to swap the bytes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">uint64_t</span> ls <span style="color:#f92672">=</span> ENDIAN <span style="color:#f92672">?</span> l : <span style="color:#a6e22e">BSWAP64</span>(l); <span style="color:#75715e">// swap l if machine is little-endian
+</span></span></span></code></pre></div><p>The size of our message (in bytes) looks like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>size <span style="color:#f92672">=</span> (l <span style="color:#f92672">+</span> k <span style="color:#f92672">+</span> <span style="color:#ae81ff">64</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">8</span>; <span style="color:#75715e">// message + padding zeros + message size
+</span></span></span></code></pre></div><p>Now let&rsquo;s allocate the buffer and copy our message:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>buf <span style="color:#f92672">=</span> <span style="color:#a6e22e">calloc</span>(ctx<span style="color:#f92672">-&gt;</span>size, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">uint8_t</span>));
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">strcpy</span>(buf, ctx<span style="color:#f92672">-&gt;</span>msg);
+</span></span></code></pre></div><p>Notice that we use <code>calloc</code> instead of <code>malloc</code>. This way, our memory is initialized to zeros.</p>
+<p><code>l</code> denotes the size of the message in bits, which is <code>l / 8</code> in bytes. We need to set the first bit of this byte to 1. Each byte has 8 bits, which means that we need to set the rightmost bit to one (which is just <code>1</code>) and shift it to (8 - 1) positions:</p>
+<pre tabindex="0"><code>0000 0001
+ &lt;-------
+1000 0000
+</code></pre><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>buf[l <span style="color:#f92672">/</span> <span style="color:#ae81ff">8</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;&lt;</span> (<span style="color:#ae81ff">8</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>);
+</span></span></code></pre></div><p>Now we need to copy our big-endian message size <code>ls</code> to the end of the message. Since size takes 64 bits, we need to put it 64 / 8 = 8 bytes before the end:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">memcpy</span>(<span style="color:#f92672">&amp;</span>buf[ctx<span style="color:#f92672">-&gt;</span>size<span style="color:#f92672">-</span><span style="color:#ae81ff">8</span>], <span style="color:#f92672">&amp;</span>ls, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">uint64_t</span>));
+</span></span></code></pre></div><p>Finally, update the context <code>msg</code> field to point to our buffer:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>msg <span style="color:#f92672">=</span> buf;
+</span></span></code></pre></div><p>Notice that we are not calling <code>free</code> for the previous <code>ctx-&gt;msg</code> field. You might think that it will produce a memory leak. However, <code>ctx-&gt;msg</code> was not set to memory on the heap. Instead, it was set to a stack-allocated array that holds our user input. It means that this memory will be freed automatically as soon as a function that allocated this array goes out of scope.</p>
+<p>Here is how our message padding function looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/* message padding */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sha256_padding</span>(sha256_ctx <span style="color:#f92672">*</span>ctx) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint64_t</span> l <span style="color:#f92672">=</span> <span style="color:#a6e22e">strlen</span>(ctx<span style="color:#f92672">-&gt;</span>msg) <span style="color:#f92672">*</span> <span style="color:#ae81ff">8</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint32_t</span> k <span style="color:#f92672">=</span> (l <span style="color:#f92672">%</span> <span style="color:#ae81ff">448</span>) <span style="color:#f92672">?</span> <span style="color:#ae81ff">448</span> <span style="color:#f92672">-</span> (l <span style="color:#f92672">%</span> <span style="color:#ae81ff">448</span>) <span style="color:#f92672">:</span> m;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint64_t</span> ls <span style="color:#f92672">=</span> ENDIAN <span style="color:#f92672">?</span> l : <span style="color:#a6e22e">BSWAP64</span>(l);
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>size <span style="color:#f92672">=</span> (l <span style="color:#f92672">+</span> k <span style="color:#f92672">+</span> <span style="color:#ae81ff">64</span>) <span style="color:#f92672">/</span> <span style="color:#ae81ff">8</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;l = %llu, k = %u, sz = %llu</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, l, k, ctx<span style="color:#f92672">-&gt;</span>size);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>buf <span style="color:#f92672">=</span> <span style="color:#a6e22e">calloc</span>(ctx<span style="color:#f92672">-&gt;</span>size, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">uint8_t</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">strcpy</span>(buf, ctx<span style="color:#f92672">-&gt;</span>msg);
+</span></span><span style="display:flex;"><span>    buf[l <span style="color:#f92672">/</span> <span style="color:#ae81ff">8</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;&lt;</span> (<span style="color:#ae81ff">8</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">memcpy</span>(<span style="color:#f92672">&amp;</span>buf[ctx<span style="color:#f92672">-&gt;</span>size<span style="color:#f92672">-</span><span style="color:#ae81ff">8</span>], <span style="color:#f92672">&amp;</span>ls, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">uint64_t</span>));
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>msg <span style="color:#f92672">=</span> buf;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Notice usage of uniform integer types (like <code>uint32_t</code>). We do this because we can&rsquo;t make assumptions about the target machine.</p>
+<h3 id="message-parsing">Message parsing</h3>
+<p>Now let&rsquo;s take care of message parsing. First, let&rsquo;s count how many 512-bit blocks we will need. This is pretty easy:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>N <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>size <span style="color:#f92672">*</span> <span style="color:#ae81ff">8</span> <span style="color:#f92672">/</span> m;
+</span></span></code></pre></div><p>Remember that <code>N</code> is the number of blocks that we need, <code>size</code> is the size of the (now padded) message in bytes, and <code>m</code> is the number of bits per block.</p>
+<p>Let&rsquo;s allocate new memory:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>mblocks <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(ctx<span style="color:#f92672">-&gt;</span>N <span style="color:#f92672">*</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">uint32_t</span>));
+</span></span></code></pre></div><p>We need to allocate <code>N</code> x 16 x 4 bytes of memory.</p>
+<p>Notice that <code>ctx-&gt;mblocks</code> is a pointer to <code>mblock</code>, and <code>mblock</code>, in turn, is an alias for an array of 16 x 32-bit words. This means that <code>ctx-&gt;mblocks</code> is a pointer to an array, which is essentially an array of arrays (allocated contiguously on the heap). It looks like this:</p>
+<pre tabindex="0"><code>[   &lt;- ctx-&gt;mblocks
+ [ 01 02 03 .. 10 ] &lt;- mblock
+ [ ..    ..    .. ]
+ ...
+]
+</code></pre><p>Now let&rsquo;s fill message blocks with our message. To do that, we need to treat our message, which is an array of bytes, as an array of words, which have 4 bytes:</p>
+<pre tabindex="0"><code>ba ad fo od de ad be ef ..
+0xbaadfood  0xdeadbeef  ..
+</code></pre><p>Let&rsquo;s cast our message, which is a pointer to bytes, to a pointer to words called <code>wrdptr</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">uint32_t</span> <span style="color:#f92672">*</span>wrdptr <span style="color:#f92672">=</span> (<span style="color:#66d9ef">uint32_t</span> <span style="color:#f92672">*</span>) ctx<span style="color:#f92672">-&gt;</span>msg;
+</span></span></code></pre></div><p>Now if you try to just fill the message blocks, they will be filled with big-endian words. However, notice that our machine most likely is a little-endian. We will perform arithmetical operations on message blocks, therefore they must be converted into a convention that our computer works with:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>N; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">16</span>; j<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">uint32_t</span> n <span style="color:#f92672">=</span> wrdptr[i <span style="color:#f92672">*</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">+</span> j];
+</span></span><span style="display:flex;"><span>        ctx<span style="color:#f92672">-&gt;</span>mblocks[i][j] <span style="color:#f92672">=</span> ENDIAN <span style="color:#f92672">?</span> n : <span style="color:#a6e22e">BSWAP32</span>(n);
+</span></span><span style="display:flex;"><span> }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Our outer loop iterates through message blocks (of 16 words) and our inner loop iterates through words inside of a message block. Hence, the index of the word is calculated as <code>i * 16 + j</code>. Such a word is then converted into little-endian notation if necessary.</p>
+<p>That&rsquo;s it for the parsing. Here is what our function looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/* parse message into message blocks */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sha256_parse</span>(sha256_ctx <span style="color:#f92672">*</span>ctx) {
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>N <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>size <span style="color:#f92672">*</span> <span style="color:#ae81ff">8</span> <span style="color:#f92672">/</span> m;
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>mblocks <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(ctx<span style="color:#f92672">-&gt;</span>N <span style="color:#f92672">*</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">uint32_t</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint32_t</span> <span style="color:#f92672">*</span>wrdptr <span style="color:#f92672">=</span> (<span style="color:#66d9ef">uint32_t</span> <span style="color:#f92672">*</span>) ctx<span style="color:#f92672">-&gt;</span>msg;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>N; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">16</span>; j<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">uint32_t</span> n <span style="color:#f92672">=</span> wrdptr[i <span style="color:#f92672">*</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">+</span> j];
+</span></span><span style="display:flex;"><span>            ctx<span style="color:#f92672">-&gt;</span>mblocks[i][j] <span style="color:#f92672">=</span> ENDIAN <span style="color:#f92672">?</span> n : <span style="color:#a6e22e">BSWAP32</span>(n);
+</span></span><span style="display:flex;"><span> }
+</span></span><span style="display:flex;"><span> }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="initialize-context">Initialize context</h3>
+<p>Context initialization is pretty straightforward:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/* initialize context */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sha256_init</span>(sha256_ctx <span style="color:#f92672">*</span>ctx) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">memcpy</span>(ctx<span style="color:#f92672">-&gt;</span>H, H0, <span style="color:#ae81ff">8</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">uint32_t</span>));
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>We are just copying values from <code>H0</code> into the <code>H</code> field of our context. We do not initialize it with zero, since initialization is taken care of in another place.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>Phew, that was quite a lot of work. We have not started to implement the algorithm itself yet, but we are pretty much done with all preparations. In the next part, we will cover the hashing algorithm implementation.</p>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://localhost:1313/" >
+    &copy;  My New Hugo Site 2025 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

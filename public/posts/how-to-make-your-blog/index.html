@@ -113,18 +113,18 @@ WordPress is probably the oldest and the most popular website constructor. It ha
       
       
     </header>
-    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h2 id="website-constructors">Website constructors</h2>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h3 id="website-constructors">Website constructors</h3>
 <p>Do you want to create your blog? There are many possible ways to do that. The most popular and accessible ways are targeted for broad and general audiences. Here are some useful links:</p>
 <ul>
 <li><a href="https://wordpress.com">WordPress</a> is probably the oldest and the most popular website constructor. It has wide customization options.</li>
 <li><a href="https://wix.com">Wix</a> is a fresh solution targeted at a niche audience.</li>
 <li><a href="https://medium.com">Medium</a> is another popular option. I&rsquo;ve seen many blogs on this platform that discuss more business or technical topics.</li>
 </ul>
-<h2 id="other-options">Other Options</h2>
+<h3 id="other-options">Other Options</h3>
 <p>Of course, there some many other possible options and platforms that could help you create your blog. But I want to talk about some other options. What if you don&rsquo;t want to use existing ready platforms, and want to try and create something else?</p>
 <p>I want to warn you that the methods that I am going to discuss are more technical and require more prerequisite knowledge. At the very least, you should know how to use terminal and git. Another method that I am going to discuss later will require even more knowledge in advance.</p>
 <p>There are two ways to create your blog. Quick and easy, and long and more complex. Don&rsquo;t hurry to discard the second option, though, because it has its use cases as we will discuss later.</p>
-<h2 id="text-markup">Text Markup</h2>
+<h3 id="text-markup">Text Markup</h3>
 <p>Before we dive into details, let us digress a little to discuss text formatting. If you read any sort of blog, you will probably notice that text looks different depending on its meaning. The heading can be big and placed in the middle, some text can be <em>italicized</em> for slight emphasis, or <strong>bold</strong> for strong emphasis. There can be some <a href="">links</a> leading to other pages, or images.</p>
 <p>There are many different ways to specify all of those details and features, called <em>markup</em>. For example, Microsoft Office uses .docx files to specify markup text, there are also some markup features supported in email. But we are interested in a <em>web browser</em>, software that you use to read this page right now.</p>
 <p>Web browsers use a special file format called <em>HTML</em> for markup. It looks somewhat like this:</p>
@@ -144,8 +144,8 @@ WordPress is probably the oldest and the most popular website constructor. It ha
 </span></span><span style="display:flex;"><span>&lt;/<span style="color:#f92672">html</span>&gt;
 </span></span></code></pre></div><p>You can see that it contains quite a few details like angle brackets, slashes, equal signs, and quotes. Notice that this file format has strict formatting rules. If you place an element in the wrong place or forget to close your tag, your file will be invalid, and the browser won&rsquo;t display it properly. You can see that this file format can be erroneous, but also quite tedious to write by hand.</p>
 <p>This is the reason why a new file format was created, called <em>markdown</em>. It is much easier to both read and write, and it&rsquo;s not as strict. Take a look at what it looks like:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-markdown" data-lang="markdown"><span style="display:flex;"><span># Page Title
-</span></span><span style="display:flex;"><span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-markdown" data-lang="markdown"><span style="display:flex;"><span><span style="color:#75715e">### Page Title
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
 </span></span><span style="display:flex;"><span>This is a paragraph.
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">-</span> first item
@@ -156,7 +156,7 @@ WordPress is probably the oldest and the most popular website constructor. It ha
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>This is <span style="font-style:italic">*italic*</span> text and <span style="font-weight:bold">**bold**</span> text.
 </span></span></code></pre></div><p>This is what this text looks like:</p>
-<h1 id="page-title">Page Title</h1>
+<h3 id="page-title">Page Title</h3>
 <p>This is a paragraph.</p>
 <ul>
 <li>first item</li>
@@ -166,10 +166,10 @@ WordPress is probably the oldest and the most popular website constructor. It ha
 <p>Here is a <a href="https://example.com">link</a> to a website.</p>
 <p>This is <em>italic</em> text and <strong>bold</strong> text.</p>
 <p>If you are curious about markdown format, <a href="https://commonmark.org/help/">here</a> is a brief but very helpful reference.</p>
-<h2 id="markup-framework">Markup Framework</h2>
+<h3 id="markup-framework">Markup Framework</h3>
 <p>As you can see, this is much easier to use compared to HTML. There is a problem, though. As you recall, browsers only support HTML files. They don&rsquo;t support the markdown format. This means that we need to use some software that converts markdown to html (and also applies themes, so that we don&rsquo;t have to write them ourselves).</p>
 <p>Many different projects aim to achieve that. I personally like <a href="https:/gohugo.io">hugo</a>. It&rsquo;s fast, modern, and easy to use. I&rsquo;m using it to build the blog you are reading right now. I&rsquo;ll walk you through details on how to use it, but you can also read details <a href="https://gohugo.io/getting-started/quick-start/">here</a>.</p>
-<h2 id="hugo-tutorial">Hugo Tutorial</h2>
+<h3 id="hugo-tutorial">Hugo Tutorial</h3>
 <p>Before we proceed, some software should be installed on your computer:</p>
 <ul>
 <li><a href="https://gohugo.io">Hugo</a></li>
@@ -193,7 +193,7 @@ WordPress is probably the oldest and the most popular website constructor. It ha
 </span></span><span style="display:flex;"><span>+++
 </span></span></code></pre></div><p>Notice a <code>draft</code> field. Pages marked as drafts can be built using a special flag, but they won&rsquo;t be visible on the published site. After you are done editing your page, don&rsquo;t forget to change the value of this field to <code>false</code>.</p>
 <p>Add some markdown to your page:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-markdown" data-lang="markdown"><span style="display:flex;"><span><span style="color:#75715e">## Introduction
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-markdown" data-lang="markdown"><span style="display:flex;"><span><span style="color:#75715e">### Introduction
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
 </span></span><span style="display:flex;"><span>This is <span style="font-weight:bold">**bold**</span> text, and this is <span style="font-style:italic">*emphasized*</span> text.
 </span></span><span style="display:flex;"><span>
@@ -202,7 +202,7 @@ WordPress is probably the oldest and the most popular website constructor. It ha
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hugo server -D
 </span></span></code></pre></div><p>You can see that your page is now visible.</p>
 <p>Visit the Hugo site. You can find many helpful resources, like site themes or documentation here.</p>
-<h2 id="the-long-way">The Long Way</h2>
+<h3 id="the-long-way">The Long Way</h3>
 <p>You can probably remember that I mentioned in the beginning that there is a second way that you can use to create your website. Well, it is, of course, longer and more time-consuming, but allows much higher flexibility and customization. In a nutshell, you write your code using HTML, CSS, JavaScript, and other languages. This takes a much longer time but allows you to have much more control over what is going on. I am not going to go into this rabbit hole now, but there are many useful resources to learn about it. For example, <a href="https://developer.mozilla.org/en-US/">MDN</a> is a canonical reference for web development.</p>
 <p>Good luck on your journey and have fun.</p>
 <ul class="pa0">

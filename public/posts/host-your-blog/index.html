@@ -108,7 +108,7 @@ hugo server You can see what is called a local version of your website. It means
       
       
     </header>
-    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h2 id="website-hosting">Website Hosting</h2>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h3 id="website-hosting">Website Hosting</h3>
 <p>We have successfully created a new website. That required some work, but it still was quite fast and easy (at least in my opinion). We have a problem, though. Nobody can see your website, other than you. When you type:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hugo server
 </span></span></code></pre></div><p>You can see what is called a <em>local</em> version of your website. It means that it is accessible only on your computer (and maybe on your local network if you know your computer IP address). But the whole point of the website is to be visible to other people on the internet. What is the point of your website if nobody can see it?</p>
@@ -117,11 +117,11 @@ hugo server You can see what is called a local version of your website. It means
 <p>After that, we need to obtain a globally accessible IP address. It means that anyone around the world should be able to access your computer from the internet using this IP address. This address is usually provided by a hosting company.</p>
 <p>The last thing you need is a nice address, like <code>www.mywebsite.com</code>. People never (almost) use something like <code>42.86.104.28</code> to access a website. We are not computers and prefer to use words instead of numbers. You have to obtain a <em>domain address</em>, which is usually sold for money by domain providers. After that, you need to configure a DNS, such that your domain points to the IP address of your server.</p>
 <p>As you can see, this process is quite nuanced. This is the reason why many companies take care of most of these things. All you have to do is click a couple of buttons, and your website is ready. This costs money, and you need to pay for this each month.</p>
-<h2 id="github-pages">Github Pages</h2>
+<h3 id="github-pages">Github Pages</h3>
 <p>We are not doing any rocket science here, and our blog will be primarily textual. Do we need to go through all of those steps and pay for hosting each month?</p>
 <p>Luckily for us, some solutions provide free hosting for your websites as long as your websites are <em>static</em>, which means that they consist of formatted text and files, and do not contain any computational logic like in web applications (think about blogs or e-commerce websites).</p>
 <p>The most popular solution is <a href="https://pages.github.com/">Github Pages</a>. I am going to cover how to host our website on this platform. You can also read details <a href="https://gohugo.io/hosting-and-deployment/hosting-on-github/">here</a>.</p>
-<h2 id="github-repository">Github Repository</h2>
+<h3 id="github-repository">Github Repository</h3>
 <p>Before we start, you have to create an account on the <a href="https://github.com">github</a>. This is required for GitHub pages but is also useful for GitHub to host your source code repositories.</p>
 <p>After you have created your account and logged in, <a href="https://github.com/new">create a new repository</a>. Call it whatever you like.</p>
 <p>Now you need to &ldquo;push&rdquo; your repository to GitHub. Before we do that, make sure that your repository contains all of your files. Add all files into staging and make a commit:</p>
@@ -134,7 +134,7 @@ hugo server You can see what is called a local version of your website. It means
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git branch -m main
 </span></span></code></pre></div><p>Finally, let&rsquo;s push our local repository to GitHub:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git push -u origin main
-</span></span></code></pre></div><h2 id="github-action">Github Action</h2>
+</span></span></code></pre></div><h3 id="github-action">Github Action</h3>
 <p>Now that our website is on GitHub, let&rsquo;s make some configurations. Visit your GitHub repository. From the main menu choose Settings-&gt;Pages. Change <code>Source</code> to <code>Github Actions</code>.</p>
 <p>Create a new file <code>hugo.yaml</code> in a directory named <code>.github/workflows</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir -p .github/workflows
