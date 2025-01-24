@@ -8,12 +8,12 @@ title = 'Writing an Algorithm'
 
 In the last post, we used the [OpenSSL](https://openssl.org) library to implement the SHA256 message digest algorithm. There may be some cases, however, when you don't want to use a library. For example:
 
-Notice that we are only using one part of the library's vast functionality once. We probably won't use it for other purposes in the future, not right now, at least. In this case, the overhead of building the entire library might not be worth it.
+- Notice that we are only using one part of the library's vast functionality once. We probably won't use it for other purposes in the future, not right now, at least. In this case, the overhead of building the entire library might not be worth it.
 - Maybe you want to learn how to implement this algorithm yourself. In this case, you can get more insight and experience from implementing it rather than using a ready library.
 
 Implementing the SHA256 algorithm from scratch sounds like quite a daunting task. It's difficult to think about where to even start. However, such an algorithm is probably widely used and implemented in a variety of languages and platforms. Surely, there has to be *something* about it somewhere.
 
-It turns out that the SHA algorithm family is a part of FIPS (Federal Information Processing Standard). This means that this algorithm is not only properly described and standardized, but also such documentation is [openly available](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf). Take a look at this document. It is a bit technical, but it is not large, and it is particularly complicated. Let's walk through it and write our code as we go.
+It turns out that the SHA algorithm family is a part of FIPS (Federal Information Processing Standard). This means that this algorithm is not only properly described and standardized, but also such documentation is [openly available](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf). Take a look at this document. It is a bit technical, but it is not large, and it is not very complicated. Let's walk through it and write our code as we go.
 
 ### Constants and definitions
 
@@ -99,17 +99,17 @@ Most machines nowadays are little-endian. This means that we need to perform con
 
 // byteswap functions for little-endian machines
 #define BSWAP32(x) ((uint32_t)((((x) & 0x000000FF) << 24) | \
- (((x) & 0x0000FF00) << 8)  | \
- (((x) & 0x00FF0000) >> 8)  | \
- (((x) & 0xFF000000) >> 24)))
+                                (((x) & 0x0000FF00) << 8)  | \
+                                (((x) & 0x00FF0000) >> 8)  | \
+                                (((x) & 0xFF000000) >> 24)))
 #define BSWAP64(x) ((uint64_t)((((x) & 0x00000000000000FFULL) << 56) | \
- (((x) & 0x000000000000FF00ULL) << 40) | \
- (((x) & 0x0000000000FF0000ULL) << 24) | \
- (((x) & 0x00000000FF000000ULL) << 8)  | \
- (((x) & 0x000000FF00000000ULL) >> 8)  | \
- (((x) & 0x0000FF0000000000ULL) >> 24) | \
- (((x) & 0x00FF000000000000ULL) >> 40) | \
- (((x) & 0xFF00000000000000ULL) >> 56)))
+                                (((x) & 0x000000000000FF00ULL) << 40) | \
+                                (((x) & 0x0000000000FF0000ULL) << 24) | \
+                                (((x) & 0x00000000FF000000ULL) << 8)  | \
+                                (((x) & 0x000000FF00000000ULL) >> 8)  | \
+                                (((x) & 0x0000FF0000000000ULL) >> 24) | \
+                                (((x) & 0x00FF000000000000ULL) >> 40) | \
+                                (((x) & 0xFF00000000000000ULL) >> 56)))
 ```
 
 Now, let's take a look at the constants section:
@@ -198,7 +198,7 @@ Let's think about how we get our input. For now, I suggest reading input from th
 // read line from standard input
 int getline(uint8_t *s, uint32_t size) {
     fgets(s, size, stdin);
- *strchr(s, '\n') = 0;
+    *strchr(s, '\n') = 0;
     return strlen(s);
 }
 ```
@@ -240,7 +240,7 @@ typedef uint32_t mblock[m/8];
 // context stores all necessary information for processing
 typedef struct {
     uint8_t *msg; // message
- mblock  *mblocks; // message blocks
+    mblock  *mblocks; // message blocks
     size_t size; // message size
     size_t N; // number of message blocks
     uint32_t H[8]; // hash values
@@ -374,9 +374,9 @@ Notice that `ctx->mblocks` is a pointer to `mblock`, and `mblock`, in turn, is a
 
 ```
 [   <- ctx->mblocks
- [ 01 02 03 .. 10 ] <- mblock
- [ ..    ..    .. ]
- ...
+    [ 01 02 03 .. 10 ] <- mblock
+    [ ..    ..    .. ]
+    ...
 ]
 ```
 
@@ -400,7 +400,7 @@ for (int i = 0; i < ctx->N; i++) {
     for (int j = 0; j < 16; j++) {
         uint32_t n = wrdptr[i * 16 + j];
         ctx->mblocks[i][j] = ENDIAN ? n : BSWAP32(n);
- }
+    }
 }
 ```
 
@@ -418,8 +418,8 @@ void sha256_parse(sha256_ctx *ctx) {
         for (int j = 0; j < 16; j++) {
             uint32_t n = wrdptr[i * 16 + j];
             ctx->mblocks[i][j] = ENDIAN ? n : BSWAP32(n);
- }
- }
+        }
+    }
 }
 ```
 
