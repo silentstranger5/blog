@@ -4,7 +4,7 @@ draft = false
 title = 'Writing an Algorithm Part 2'
 +++
 
-In the previous post, we were writing a SHA256 implementation. More specifically, we prepared all of the things that will be needed to use an algorithm, such as constants, functions, and data structures. In this part, we are going to implement an algorithm itself. [Here](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) is a document describing algorithm specification.
+In the previous post, we wrote a SHA256 implementation. More specifically, we prepared all of the things needed to use an algorithm, such as constants, functions, and data structures. In this part, we are going to implement an algorithm itself. [Here](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) is a document describing the algorithm specification.
 
 After all of the groundwork, let's take a look at the algorithm:
 
@@ -36,9 +36,9 @@ For i=1 to N:
 
 1. Prepare the message schedule, {Wt}:
 
-	 | Mt(i)					0 <= t <= 15
-Wt = |
-	 | s1{256}(Wt-2)+Wt-7+s0{256}(Wt-15)+Wt-16	16 <= t <= 63
+        | Mt(i)                                     0 <= t <= 15
+Wt =    |
+        | s1{256}(Wt-2)+Wt-7+s0{256}(Wt-15)+Wt-16   16 <= t <= 63
 
 2. Initialize the eight working variables, a, b, c, d, e, f, g, and h, with the (i-1)st hash 
 value:
@@ -77,14 +77,13 @@ H6(i) = g + H6(i-1)
 H7(i) = h + H7(i-1)
 
 After repeating steps one through four a total of N times (i.e., after processing M
-(N)), the resulting 
-256-bit message digest of the message, M, is
+(N)), the resulting 256-bit message digest of the message, M, is
 
 H0(N) || H1(N) || H2(N) || H3(N) || H4(N) || H5(N) || H6(N) || H7(N)
 ```
 
-That looks like a bit of work, but don't worry. We are going to follow this step by step.
-From the start, let's declare all necesarry variables that are going to be used in our algorithm:
+That looks like a bit of work, but don't worry. We'll follow this step by step.
+From the start, let's declare all necessary variables that are going to be used in our algorithm:
 
 ```c
 uint32_t W[64] = {0};                       // message schedule
@@ -92,7 +91,7 @@ uint32_t a, b, c, d, e, f, g, h, T1, T2;    // working variables
 ctx->msg = msg;                             // put message in context
 ```
 
-We assume here that `ctx` is a pointer to the context, and `msg` is an input string from user. Note that we already took care of initializing hash values in `context_init` function earlier. This leaves us with the second step: message preprocessing. As you recall, message preprocessing consists of two stages: padding and parsing. We already implemented functions that take care of that, so we can just use them:
+We assume here that `ctx` is a pointer to the context, and `msg` is an input string from the user. Note that we already initiated hash values in the `context_init` function earlier. This leaves us with the second step: message preprocessing. As you recall, message preprocessing consists of two stages: padding and parsing. We already implemented functions that take care of that, so we can just use them:
 
 ```c
 sha256_padding(ctx);
@@ -107,7 +106,7 @@ for (int i = 0; i < ctx->N; i++) {
 }
 ```
 
-We start from initializing message schedule. For `0 <= t <= 16` this is pretty easy, because we already parsed our message in advance:
+We start by initializing the message schedule. For `0 <= t <= 16` this is pretty easy because we already parsed our message in advance:
 
 ```c
 for (int t = 0; t < 16; t++) {
@@ -136,7 +135,7 @@ g = ctx->H[6];
 h = ctx->H[7];
 ```
 
-The next part is the essence of the algorithm. It uses two temporary variables, called `T1` and `T2` that in turn extensively use our predefined functions like `S1`, `CH`, `MAJ`, as well as constants `K` and message schedule `W`. After that we shift working variables by one, gradually mixing values of temporary variables. Over 64 iterations, variables are mixed pretty well:
+The next part is the essence of the algorithm. It uses two temporary variables, called `T1` and `T2` that extensively use our predefined functions like `S1`, `CH`, and `MAJ`, as well as constants `K` and message schedule `W`. After that we shift working variables by one, gradually mixing values of temporary variables. Over 64 iterations, variables are mixed pretty well:
 
 ```c
 for (int t = 0; t < 64; t++) {
@@ -166,7 +165,7 @@ ctx->H[6] += g;
 ctx->H[7] += h;
 ```
 
-Congratulations, the most important part, the core core of our program is now done. Here is how a complete function looks like:
+Congratulations, the most important part, the core of our program is now done. Here is what a complete function looks like:
 
 ```c
 /* update context */
@@ -215,7 +214,7 @@ void sha256_update(sha256_ctx *ctx, uint8_t *msg) {
 }
 ```
 
-All that left to do is to extract context hash values into message digest. Here is a function to do that:
+All that is left to do is to extract context hash values into the message digest. Here is a function to do that:
 
 ```c
 /* copy hash value into digest buffer */
@@ -229,9 +228,9 @@ void sha256_final(sha256_ctx *ctx, uint8_t *digest) {
 }
 ```
 
-We assume here that `digest` buffer is already initialized and has enough storage. Notice that hash values are stored as little-endian values on little-endian machines. This means that we have to swap bytes of those words before we can treat them as a collection of bytes.
+We assume here that the `digest` buffer is already initialized and has enough storage. Notice that hash values are stored as little-endian values on little-endian machines. This means that we have to swap the bytes of those words before we can treat them as a collection of bytes.
 
-Before we go further, I want to notice that we are not going to use our context anymore. This means that now is a perfect time to free all data from our context (or at least define a function which will be doing it):
+Before we go further, I want to note that we are not going to use our context anymore. This means that now is a perfect time to free all data from our context (or at least define a function that will be doing it):
 
 ```c
 /* free data from context */
