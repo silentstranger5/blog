@@ -172,67 +172,7 @@ labeled a, b, c, d, e, f, g, and h. The words of the hash value are labeled H0(i
 which will hold the initial hash value, H(0), replaced by each successive intermediate hash value
 (after each message block is processed), H(i), and ending with the final hash value, H(N). SHA-256 
 also uses two temporary words, T1 and T2.
-
-6.2.1 SHA-256 Preprocessing
-
-1. Set the initial hash value, H(0), as specified in Sec. 5.3.3.
-2. The message is padded and parsed as specified in Section 5.
-
-6.2.2 SHA-256 Hash Computation
-
-The SHA-256 hash computation uses functions and constants previously defined in Sec. 4.1.2 
-and Sec. 4.2.2, respectively. Addition (+) is performed modulo 232.
-Each message block, M(1), M(2), …, M(N), is processed in order, using the following steps:
-For i=1 to N:
-
-1. Prepare the message schedule, {Wt}:
-
-        | Mt(i)                                     0 &lt;= t &lt;= 15
-Wt =    |
-        | s1{256}(Wt-2)+Wt-7+s0{256}(Wt-15)+Wt-16   16 &lt;= t &lt;= 63
-
-2. Initialize the eight working variables, a, b, c, d, e, f, g, and h, with the (i-1)st hash 
-value:
-
-a = H0(i-1)
-b = H1(i-1)
-c = H2(i-1)
-d = H3(i-1)
-e = H4(i-1)
-f = H5(i-1)
-g = H6(i-1)
-h = H7(i-1)
-
-3. For t=0 to 63:
-
-T1 = h + S1{256}(e) + Ch(e, f, g) + Kt{256} + Wt
-T2 = S0{256}(a) + Maj(a, b, c)
-h = g
-g = f
-f = e
-e = d + T1
-d = c
-c = b
-b = a
-a = T1 + T2
-
-4. Compute the ith intermediate hash value H(i):
-
-H0(i) = a + H0(i-1)
-H1(i) = b + H1(i-1)
-H2(i) = c + H2(i-1)
-H3(i) = d + H3(i-1)
-H4(i) = e + H4(i-1)
-H5(i) = f + H5(i-1)
-H6(i) = g + H6(i-1)
-H7(i) = h + H7(i-1)
-
-After repeating steps one through four a total of N times (i.e., after processing M
-(N)), the resulting 256-bit message digest of the message, M, is
-
-H0(N) || H1(N) || H2(N) || H3(N) || H4(N) || H5(N) || H6(N) || H7(N)
-</code></pre><p>That looks like a bit of work, but don&rsquo;t worry. We&rsquo;ll follow this step by step.
-From the start, let&rsquo;s declare all necessary variables that are going to be used in our algorithm:</p>
+</code></pre><p>From the start, let&rsquo;s declare all necessary variables that are going to be used in our algorithm:</p>
         </div>
           <a href="/posts/sha256/writing-an-algorithm-part-2/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
         

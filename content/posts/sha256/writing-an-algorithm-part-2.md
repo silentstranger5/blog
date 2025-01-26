@@ -22,11 +22,35 @@ which will hold the initial hash value, H(0), replaced by each successive interm
 (after each message block is processed), H(i), and ending with the final hash value, H(N). SHA-256 
 also uses two temporary words, T1 and T2.
 
+```
+From the start, let's declare all necessary variables that are going to be used in our algorithm:
+
+```c
+uint32_t W[64] = {0};                       // message schedule
+uint32_t a, b, c, d, e, f, g, h, T1, T2;    // working variables
+ctx->msg = msg;                             // put message in context
+```
+
+Let's take a look at preprocessing:
+
+```
 6.2.1 SHA-256 Preprocessing
 
 1. Set the initial hash value, H(0), as specified in Sec. 5.3.3.
 2. The message is padded and parsed as specified in Section 5.
 
+```
+
+We assume here that `ctx` is a pointer to the context, and `msg` is an input string from the user. Note that we already initiated hash values in the `context_init` function earlier. This leaves us with the second step: message preprocessing. As you recall, message preprocessing consists of two stages: padding and parsing. We already implemented functions that take care of that, so we can just use them:
+
+```c
+sha256_padding(ctx);
+sha256_parse(ctx);
+```
+
+Finally, let's take a look at the algorithm itself:
+
+```
 6.2.2 SHA-256 Hash Computation
 
 The SHA-256 hash computation uses functions and constants previously defined in Sec. 4.1.2 
@@ -82,21 +106,7 @@ After repeating steps one through four a total of N times (i.e., after processin
 H0(N) || H1(N) || H2(N) || H3(N) || H4(N) || H5(N) || H6(N) || H7(N)
 ```
 
-That looks like a bit of work, but don't worry. We'll follow this step by step.
-From the start, let's declare all necessary variables that are going to be used in our algorithm:
-
-```c
-uint32_t W[64] = {0};                       // message schedule
-uint32_t a, b, c, d, e, f, g, h, T1, T2;    // working variables
-ctx->msg = msg;                             // put message in context
-```
-
-We assume here that `ctx` is a pointer to the context, and `msg` is an input string from the user. Note that we already initiated hash values in the `context_init` function earlier. This leaves us with the second step: message preprocessing. As you recall, message preprocessing consists of two stages: padding and parsing. We already implemented functions that take care of that, so we can just use them:
-
-```c
-sha256_padding(ctx);
-sha256_parse(ctx);
-```
+It looks like a bit of work, but don't worry. We are going to cover it step by step.
 
 As you can see from the algorithm, all further steps are happening inside of the loop:
 
