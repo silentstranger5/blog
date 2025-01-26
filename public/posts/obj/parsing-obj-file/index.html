@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Parsing Obj File | My Blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="OBJ files
+In this series of posts, I am going to write a parser for .obj files. Those files are used to store data about 3d objects like vertex positions, normal vectors, texture coordinates, and material properties. This parser will be written iteratively, one step at a time. Why bother writing such a parser? You will learn:
+
+How to read text files
+How to process strings
+How to manage allocation and storage of data
+
+And maybe something on top of this. This parser is not very complicated but requires a bit of code and a careful approach. An interleaved array that such a parser will produce can be used in projects that expect such data, like OpenGL.">
+    <meta name="generator" content="Hugo 0.141.0">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+    
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/obj/parsing-obj-file/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/obj/parsing-obj-file/">
+  <meta property="og:site_name" content="My Blog">
+  <meta property="og:title" content="Parsing Obj File">
+  <meta property="og:description" content="OBJ files In this series of posts, I am going to write a parser for .obj files. Those files are used to store data about 3d objects like vertex positions, normal vectors, texture coordinates, and material properties. This parser will be written iteratively, one step at a time. Why bother writing such a parser? You will learn:
+How to read text files How to process strings How to manage allocation and storage of data And maybe something on top of this. This parser is not very complicated but requires a bit of code and a careful approach. An interleaved array that such a parser will produce can be used in projects that expect such data, like OpenGL.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-01-26T20:32:35+03:00">
+    <meta property="article:modified_time" content="2025-01-26T20:32:35+03:00">
+
+  <meta itemprop="name" content="Parsing Obj File">
+  <meta itemprop="description" content="OBJ files In this series of posts, I am going to write a parser for .obj files. Those files are used to store data about 3d objects like vertex positions, normal vectors, texture coordinates, and material properties. This parser will be written iteratively, one step at a time. Why bother writing such a parser? You will learn:
+How to read text files How to process strings How to manage allocation and storage of data And maybe something on top of this. This parser is not very complicated but requires a bit of code and a careful approach. An interleaved array that such a parser will produce can be used in projects that expect such data, like OpenGL.">
+  <meta itemprop="datePublished" content="2025-01-26T20:32:35+03:00">
+  <meta itemprop="dateModified" content="2025-01-26T20:32:35+03:00">
+  <meta itemprop="wordCount" content="1547">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Parsing Obj File">
+  <meta name="twitter:description" content="OBJ files In this series of posts, I am going to write a parser for .obj files. Those files are used to store data about 3d objects like vertex positions, normal vectors, texture coordinates, and material properties. This parser will be written iteratively, one step at a time. Why bother writing such a parser? You will learn:
+How to read text files How to process strings How to manage allocation and storage of data And maybe something on top of this. This parser is not very complicated but requires a bit of code and a careful approach. An interleaved array that such a parser will produce can be used in projects that expect such data, like OpenGL.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        My Blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Parsing Obj File</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2025-01-26T20:32:35+03:00">January 26, 2025</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h3 id="obj-files">OBJ files</h3>
+<p>In this series of posts, I am going to write a parser for <code>.obj</code> files. Those files are used to store data about 3d objects like vertex positions, normal vectors, texture coordinates, and material properties. This parser will be written iteratively, one step at a time. Why bother writing such a parser? You will learn:</p>
+<ul>
+<li>How to read text files</li>
+<li>How to process strings</li>
+<li>How to manage allocation and storage of data</li>
+</ul>
+<p>And maybe something on top of this. This parser is not very complicated but requires a bit of code and a careful approach. An interleaved array that such a parser will produce can be used in projects that expect such data, like <code>OpenGL</code>.</p>
+<p>Before we go further, I would like to illustrate the approach that I will be using. Here is a problem. Let&rsquo;s say that we have a file called <code>file.obj</code> that contains data like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-txt" data-lang="txt"><span style="display:flex;"><span>v 0.5773502691896258 0.5773502691896258 0.5773502691896258
+</span></span><span style="display:flex;"><span>v -0.5773502691896258 -0.5773502691896258 0.5773502691896258
+</span></span><span style="display:flex;"><span>v 0.5773502691896258 -0.5773502691896258 -0.5773502691896258
+</span></span><span style="display:flex;"><span>v -0.5773502691896258 0.5773502691896258 -0.5773502691896258
+</span></span><span style="display:flex;"><span>v 0.5773502691896258 3.5773502691896257 0.5773502691896258
+</span></span><span style="display:flex;"><span>v 0.5773502691896258 3.5773502691896257 -0.5773502691896258
+</span></span><span style="display:flex;"><span>v -0.5773502691896258 3.5773502691896257 -0.5773502691896258
+</span></span><span style="display:flex;"><span>v -0.5773502691896258 3.5773502691896257 0.5773502691896258
+</span></span><span style="display:flex;"><span>v 0.5773502691896258 2.4226497308103743 0.5773502691896258
+</span></span><span style="display:flex;"><span>v 0.5773502691896258 2.4226497308103743 -0.5773502691896258
+</span></span><span style="display:flex;"><span>v -0.5773502691896258 2.4226497308103743 0.5773502691896258
+</span></span><span style="display:flex;"><span>v -0.5773502691896258 2.4226497308103743 -0.5773502691896258
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>Let&rsquo;s say that <code>v</code> is a key that represents a vertex. Each vertex is guaranteed to have three coordinates. We need to read this file and return an array of vertices that it contains. How are we going to do that?</p>
+<p>Since we don&rsquo;t know the number of vertices in advance, there are two approaches that we can use:</p>
+<ol>
+<li>Use a dynamic array to store vertices. The array will be automatically resized to store more vertices.</li>
+<li>Read the file two times: the first time to count several vertices and the second time to parse them.</li>
+</ol>
+<p>The first approach is quite cumbersome for several reasons:</p>
+<ol>
+<li>In the future we will need to store not only vertices (or more generally 3-component arrays of floats) but all sorts of data. C is statically typed and therefore requires you to write an implementation for each type. There are some libraries that automate this process (like <a href="https://github.com/stclib/STC">stc</a>), but this will add a new dependency to our project.</li>
+<li>Reallocation is a costly operation: it will copy all elements of each reallocation</li>
+<li>Memory locality is probably suboptimal considering that we will need to call reallocation for each type of dynamic array some number of times</li>
+<li>Code can be arguably more complex (especially if you are writing dynamic arrays on your own)</li>
+</ol>
+<p>In my humble opinion, the second approach is not only more simple but presumably more effective as well.</p>
+<h3 id="simple-parser">Simple parser</h3>
+<p>I am going to write a simple example step by step so that you can understand the core principle of the parser. Before we start, let&rsquo;s include all necessary headers:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;      // standard input/output</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;     // useful functions</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;     // string manipulation</span><span style="color:#75715e">
+</span></span></span></code></pre></div><p>For data, we need a simple structure called <code>vertices</code> that will consist of two fields: number of vertices, and vertex data:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> vertices;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>vertices;
+</span></span><span style="display:flex;"><span>} vertices;
+</span></span></code></pre></div><p>Our <code>main</code> function will accept one argument which is the filename of our file. The first piece is pretty simple. If the number of arguments is not correct, print the usage message and exit the program.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (args <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span>) { <span style="color:#75715e">// check program usage
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;usage: %s file.obj</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, argv[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Next, we allocate all variables on the stack. <code>s</code> is the character buffer that will store lines from the file. <code>vert</code> is an instance of our <code>vertices</code> structure. Notice that it is allocated on the stack and initialized to zero.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">char</span> s[<span style="color:#ae81ff">512</span>]; <span style="color:#75715e">// buffer to store line from the file
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>vertices vert <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>}; <span style="color:#75715e">// vertices instance
+</span></span></span></code></pre></div><p>Then, we open the file and check if it is opened correctly.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>FILE <span style="color:#f92672">*</span>f <span style="color:#f92672">=</span> <span style="color:#a6e22e">fopen</span>(argv[<span style="color:#ae81ff">1</span>], <span style="color:#e6db74">&#34;r&#34;</span>); <span style="color:#75715e">// open file
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>f) { <span style="color:#75715e">// check if file exists
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;failed to open %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, argv[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now, we read the file line by line and check the first word on the line. If it is <code>v</code>, then it means that we found a new vertex. In this case, we increase the number of vertices:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">fgets</span>(s, <span style="color:#ae81ff">512</span>, f)) { <span style="color:#75715e">// read file line by line
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>key <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(s, <span style="color:#e6db74">&#34; &#34;</span>); <span style="color:#75715e">// get first word
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">strcmp</span>(key, <span style="color:#e6db74">&#34;v&#34;</span>)) { <span style="color:#75715e">// check if key == &#34;v&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        vert.nvertices<span style="color:#f92672">++</span>; <span style="color:#75715e">// increase number of vertices
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The function <code>fgets</code> is typically used to read an input from some file. It reads the input until either <code>newline</code> or <code>EOF</code> (end of file) is encountered. Also, notice the <code>strtok</code> function. You can check the reference <a href="https://cplusplus.com/reference/cstring/strtok/">here</a>. We will use this function extensively to split lines by spaces. What it is doing is splitting the line into <code>tokens</code> (pieces of a line) by <code>delimiters</code>. For example this line:</p>
+<pre tabindex="0"><code>v 0.5773502691896258 0.5773502691896258 0.5773502691896258
+</code></pre><p>Tokens by delimiter &rsquo; &rsquo; (space) are:</p>
+<pre tabindex="0"><code>&#34;v&#34;, &#34;0.5773502691896258, &#34;0.5773502691896258&#34;, &#34;0.5773502691896258&#34;
+</code></pre><p>The function <code>strcmp</code> compares two strings and returns <code>0</code> if the strings are equal to each other. We use it to check whether the first token of each line is equal to <code>v</code>, and if it is, this means that the current line denotes a vertex. In this case, we increase the <code>nvertices</code> field by one.</p>
+<p>At this point, we know how many vertices our file contains. This means that we can allocate enough space to store all vertices (given that each vertex contains exactly three coordinates):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>vert.vertices <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> vert.vertices <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>));
+</span></span></code></pre></div><p>Now I am going to do something weird:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>vert.nvertices <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span></code></pre></div><p>I can probably guess the question you ask at this moment: &ldquo;Hey, we spend so much effort to count how many vertices we have, so why do you set this field to zero? What was the point of counting vertices in the first place?&rdquo;</p>
+<p>Well, you see, we are about to read the whole file for the second time. It means that we need to somehow keep track of which vertex line we are currently parsing. Since the amount of vertices does not change between the first and second time we read the file, it will be the same after we are done parsing the vertices. In the meantime, we will use the field <code>nvertices</code> to keep track of the current vertex we are parsing.</p>
+<p>Now, we need to reset the state of our file so that we can read it again from the start. The function <code>rewind</code> is doing just that:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">rewind</span>(f);
+</span></span></code></pre></div><p>Finally, here is the code to parse the vertices from the file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">fgets</span>(s, <span style="color:#ae81ff">512</span>, f)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>key <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(s, <span style="color:#e6db74">&#34; &#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">strcmp</span>(key, <span style="color:#e6db74">&#34;v&#34;</span>)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>vptr <span style="color:#f92672">=</span> vert.vertices <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> vert.nvertices<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>vstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
+</span></span><span style="display:flex;"><span>            vptr[i] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(vstr);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>I suppose that functions <code>fgets</code>, <code>strtok</code>, and <code>strcmp</code> are already familiar to you from the code snippet earlier. <code>vptr</code> is a pointer to the place where we will put vertex coordinates from the current line. I am using the pointer arithmetic, but this expression is equivalent to <code>float *ptr = &amp;vert.vertices[3 * vert.nvertices++];</code>. Recall that <code>vert.nvertices</code> is a current vertex that we are parsing, and since each vertex contains three coordinates, the address that we need is <code>3 * vert.nvertices</code>. We also increment the current vertex number after we copy the address.</p>
+<p><code>vstr</code> is the next token on the current line delimited by space. Notice that we use the <code>NULL</code> pointer to tell <code>strtok</code> function that we intend to continue splitting the current line into tokens. It is a common mistake to put the current line (<code>s</code>) as the first argument since in this case, parsing will start again from the beginning and you will get the first token again.</p>
+<p>Finally, we use the <code>atof</code> function to convert a string to a <code>float</code> number and write it into a vertex.</p>
+<p>We are done parsing all vertices. Now let&rsquo;s print them neatly:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;vertices:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%4d &#34;</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> vert.nvertices; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> (i <span style="color:#f92672">%</span> <span style="color:#ae81ff">3</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">%4d &#34;</span>, i);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[ &#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; j<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, vert.vertices[<span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> j]);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;] &#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">putchar</span>(<span style="color:#e6db74">&#39;\n&#39;</span>);
+</span></span></code></pre></div><p>There is some stuff going on, but I&rsquo;m not going to focus on formatting our output. All of this additional code is just here for our data to look pretty. The outer loop iterates through vertices, and the inner loop iterates through individual coordinates for each vertex. Such coordinate address is calculated as <code>3 * i + j</code> (again, since each vertex contains three coordinates).</p>
+<p>Now all that is left is to close the file and return from our function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">fclose</span>(f);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span></code></pre></div><p>You can check the entire source code <a href="../example.c">here</a>. Compile the source code and try to launch it with the file I showed you earlier (<code>file.obj</code>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./parse file.obj
+</span></span><span style="display:flex;"><span>vertices:
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">0</span> <span style="color:#f92672">[</span>   0.5774   0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774  -0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774  -0.5774  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">3</span> <span style="color:#f92672">[</span>  -0.5774   0.5774  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774   3.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774   3.5774  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">6</span> <span style="color:#f92672">[</span>  -0.5774   3.5774  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774   3.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774   2.4226   0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">9</span> <span style="color:#f92672">[</span>   0.5774   2.4226  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774   2.4226   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774   2.4226  -0.5774 <span style="color:#f92672">]</span>
+</span></span></code></pre></div><ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://localhost:1313/" >
+    &copy;  My Blog 2025 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

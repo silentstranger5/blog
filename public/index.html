@@ -45,8 +45,8 @@
   <meta property="og:type" content="website">
 
   <meta itemprop="name" content="My Blog">
-  <meta itemprop="datePublished" content="2025-01-25T14:38:08+03:00">
-  <meta itemprop="dateModified" content="2025-01-25T14:38:08+03:00">
+  <meta itemprop="datePublished" content="2025-01-26T20:32:35+03:00">
+  <meta itemprop="dateModified" content="2025-01-26T20:32:35+03:00">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="My Blog">
 
@@ -122,12 +122,43 @@
       
       <div class="blah w-100">
         <h1 class="f3 fw1 athelas mt0 lh-title">
+          <a href="/posts/obj/parsing-obj-file/" class="color-inherit dim link">
+            Parsing Obj File
+            </a>
+        </h1>
+        <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
+          <h3 id="obj-files">OBJ files</h3>
+<p>In this series of posts, I am going to write a parser for <code>.obj</code> files. Those files are used to store data about 3d objects like vertex positions, normal vectors, texture coordinates, and material properties. This parser will be written iteratively, one step at a time. Why bother writing such a parser? You will learn:</p>
+<ul>
+<li>How to read text files</li>
+<li>How to process strings</li>
+<li>How to manage allocation and storage of data</li>
+</ul>
+<p>And maybe something on top of this. This parser is not very complicated but requires a bit of code and a careful approach. An interleaved array that such a parser will produce can be used in projects that expect such data, like <code>OpenGL</code>.</p>
+        </div>
+          <a href="/posts/obj/parsing-obj-file/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+        
+      </div>
+    </div>
+  </div>
+</article>
+
+            </div>
+          
+            <div class="relative w-100 mb4">
+              
+<article class="bb b--black-10">
+  <div class="db pv4 ph3 ph0-l no-underline dark-gray">
+    <div class="flex flex-column flex-row-ns">
+      
+      <div class="blah w-100">
+        <h1 class="f3 fw1 athelas mt0 lh-title">
           <a href="/posts/sha256/writing-an-algorithm-part-2/" class="color-inherit dim link">
             Writing an Algorithm Part 2
             </a>
         </h1>
         <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
-          <p>In the previous post, we were writing a SHA256 implementation. More specifically, we prepared all of the things that will be needed to use an algorithm, such as constants, functions, and data structures. In this part, we are going to implement an algorithm itself. <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">Here</a> is a document describing algorithm specification.</p>
+          <p>In the previous post, we wrote a SHA256 implementation. More specifically, we prepared all of the things needed to use an algorithm, such as constants, functions, and data structures. In this part, we are going to implement an algorithm itself. <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">Here</a> is a document describing the algorithm specification.</p>
 <p>After all of the groundwork, let&rsquo;s take a look at the algorithm:</p>
 <pre tabindex="0"><code>6.2 SHA-256
 
@@ -156,9 +187,9 @@ For i=1 to N:
 
 1. Prepare the message schedule, {Wt}:
 
-	 | Mt(i)					0 &lt;= t &lt;= 15
-Wt = |
-	 | s1{256}(Wt-2)+Wt-7+s0{256}(Wt-15)+Wt-16	16 &lt;= t &lt;= 63
+        | Mt(i)                                     0 &lt;= t &lt;= 15
+Wt =    |
+        | s1{256}(Wt-2)+Wt-7+s0{256}(Wt-15)+Wt-16   16 &lt;= t &lt;= 63
 
 2. Initialize the eight working variables, a, b, c, d, e, f, g, and h, with the (i-1)st hash 
 value:
@@ -197,12 +228,11 @@ H6(i) = g + H6(i-1)
 H7(i) = h + H7(i-1)
 
 After repeating steps one through four a total of N times (i.e., after processing M
-(N)), the resulting 
-256-bit message digest of the message, M, is
+(N)), the resulting 256-bit message digest of the message, M, is
 
 H0(N) || H1(N) || H2(N) || H3(N) || H4(N) || H5(N) || H6(N) || H7(N)
-</code></pre><p>That looks like a bit of work, but don&rsquo;t worry. We are going to follow this step by step.
-From the start, let&rsquo;s declare all necesarry variables that are going to be used in our algorithm:</p>
+</code></pre><p>That looks like a bit of work, but don&rsquo;t worry. We&rsquo;ll follow this step by step.
+From the start, let&rsquo;s declare all necessary variables that are going to be used in our algorithm:</p>
         </div>
           <a href="/posts/sha256/writing-an-algorithm-part-2/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
         
@@ -221,7 +251,7 @@ From the start, let&rsquo;s declare all necesarry variables that are going to be
       
       <div class="blah w-100">
         <h1 class="f3 fw1 athelas mt0 lh-title">
-          <a href="/posts/writing-an-algorithm/" class="color-inherit dim link">
+          <a href="/posts/sha256/writing-an-algorithm/" class="color-inherit dim link">
             Writing an Algorithm
             </a>
         </h1>
@@ -234,32 +264,7 @@ From the start, let&rsquo;s declare all necesarry variables that are going to be
 </ul>
 <p>Implementing the SHA256 algorithm from scratch sounds like quite a daunting task. It&rsquo;s difficult to think about where to even start. However, such an algorithm is probably widely used and implemented in a variety of languages and platforms. Surely, there has to be <em>something</em> about it somewhere.</p>
         </div>
-          <a href="/posts/writing-an-algorithm/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
-        
-      </div>
-    </div>
-  </div>
-</article>
-
-            </div>
-          
-            <div class="relative w-100 mb4">
-              
-<article class="bb b--black-10">
-  <div class="db pv4 ph3 ph0-l no-underline dark-gray">
-    <div class="flex flex-column flex-row-ns">
-      
-      <div class="blah w-100">
-        <h1 class="f3 fw1 athelas mt0 lh-title">
-          <a href="/posts/using-c-libraries/" class="color-inherit dim link">
-            Using C Libraries
-            </a>
-        </h1>
-        <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
-          <p>In the previous post, I discussed C language and briefly introduced how to use it. To be honest, if you have programming experience already, chances are that you can use most of the C without issues. There may be some problems with pointers though. Maybe I&rsquo;ll cover it the next time.</p>
-<p>When I described C, I said that it is a simple language in itself, although it can be tricky to use because there is not much included in the language. Indeed, if you compare it to modern languages, there are many features lacking. I&rsquo;m not even talking about various containers and algorithms like lists, maps, or sets.</p>
-        </div>
-          <a href="/posts/using-c-libraries/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+          <a href="/posts/sha256/writing-an-algorithm/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
         
       </div>
     </div>
@@ -276,6 +281,12 @@ From the start, let&rsquo;s declare all necesarry variables that are going to be
           
           
             <h2 class="f5 fw4 mb4 dib mr3">
+              <a href="/posts/using-c-libraries/" class="link black dim">
+                Using C Libraries
+              </a>
+            </h2>
+          
+            <h2 class="f5 fw4 mb4 dib mr3">
               <a href="/posts/the-c-programming-language/" class="link black dim">
                 The C Programming Language
               </a>
@@ -290,12 +301,6 @@ From the start, let&rsquo;s declare all necesarry variables that are going to be
             <h2 class="f5 fw4 mb4 dib mr3">
               <a href="/posts/host-your-blog/" class="link black dim">
                 Host Your Blog
-              </a>
-            </h2>
-          
-            <h2 class="f5 fw4 mb4 dib mr3">
-              <a href="/posts/how-to-make-your-blog/" class="link black dim">
-                How to Make Your Blog
               </a>
             </h2>
           
