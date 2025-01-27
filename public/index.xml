@@ -6,8 +6,15 @@
     <description>Recent content on My Blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 26 Jan 2025 20:32:35 +0300</lastBuildDate>
+    <lastBuildDate>Mon, 27 Jan 2025 13:05:06 +0300</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Parsing Obj File Part 2</title>
+      <link>http://localhost:1313/posts/obj/parsing-obj-file-part-2/</link>
+      <pubDate>Mon, 27 Jan 2025 13:05:06 +0300</pubDate>
+      <guid>http://localhost:1313/posts/obj/parsing-obj-file-part-2/</guid>
+      <description>&lt;p&gt;In this part of the series on parsing &lt;code&gt;.obj&lt;/code&gt; files, we are going to implement a part of the parser that will process keywords from the file. We will not cover faces and materials parsing yet, and we will cover it in later parts.&lt;/p&gt;&#xA;&lt;p&gt;In our previous post, I showed you a simple parser that can parse vertices. Now we will extend and modify it to handle other keys like &lt;code&gt;o&lt;/code&gt;, &lt;code&gt;vn&lt;/code&gt;, and &lt;code&gt;vt&lt;/code&gt;. To do this we need to change our approach to searching keys.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Parsing Obj File</title>
       <link>http://localhost:1313/posts/obj/parsing-obj-file/</link>

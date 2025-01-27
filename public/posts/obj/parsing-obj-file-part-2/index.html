@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Parsing Obj File Part 2 | My Blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="In this part of the series on parsing .obj files, we are going to implement a part of the parser that will process keywords from the file. We will not cover faces and materials parsing yet, and we will cover it in later parts.
+In our previous post, I showed you a simple parser that can parse vertices. Now we will extend and modify it to handle other keys like o, vn, and vt. To do this we need to change our approach to searching keys.">
+    <meta name="generator" content="Hugo 0.141.0">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+    
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/obj/parsing-obj-file-part-2/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/obj/parsing-obj-file-part-2/">
+  <meta property="og:site_name" content="My Blog">
+  <meta property="og:title" content="Parsing Obj File Part 2">
+  <meta property="og:description" content="In this part of the series on parsing .obj files, we are going to implement a part of the parser that will process keywords from the file. We will not cover faces and materials parsing yet, and we will cover it in later parts.
+In our previous post, I showed you a simple parser that can parse vertices. Now we will extend and modify it to handle other keys like o, vn, and vt. To do this we need to change our approach to searching keys.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-01-27T13:05:06+03:00">
+    <meta property="article:modified_time" content="2025-01-27T13:05:06+03:00">
+
+  <meta itemprop="name" content="Parsing Obj File Part 2">
+  <meta itemprop="description" content="In this part of the series on parsing .obj files, we are going to implement a part of the parser that will process keywords from the file. We will not cover faces and materials parsing yet, and we will cover it in later parts.
+In our previous post, I showed you a simple parser that can parse vertices. Now we will extend and modify it to handle other keys like o, vn, and vt. To do this we need to change our approach to searching keys.">
+  <meta itemprop="datePublished" content="2025-01-27T13:05:06+03:00">
+  <meta itemprop="dateModified" content="2025-01-27T13:05:06+03:00">
+  <meta itemprop="wordCount" content="2785">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Parsing Obj File Part 2">
+  <meta name="twitter:description" content="In this part of the series on parsing .obj files, we are going to implement a part of the parser that will process keywords from the file. We will not cover faces and materials parsing yet, and we will cover it in later parts.
+In our previous post, I showed you a simple parser that can parse vertices. Now we will extend and modify it to handle other keys like o, vn, and vt. To do this we need to change our approach to searching keys.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        My Blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Parsing Obj File Part 2</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2025-01-27T13:05:06+03:00">January 27, 2025</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><p>In this part of the series on parsing <code>.obj</code> files, we are going to implement a part of the parser that will process keywords from the file. We will not cover faces and materials parsing yet, and we will cover it in later parts.</p>
+<p>In our previous post, I showed you a simple parser that can parse vertices. Now we will extend and modify it to handle other keys like <code>o</code>, <code>vn</code>, and <code>vt</code>. To do this we need to change our approach to searching keys.</p>
+<p>In a previous post, I used a simple function called <code>strcmp</code> to perform a string comparison. However, since we are going to search for one of multiple possible keys, there is a possible optimization here: a <em>binary search</em>.</p>
+<p>C provides almost no implementation to any algorithm whatsoever. Two tasks, however, are so prevalent in program algorithms, that they made an exception for them and put their implementation in the standard library. Those tasks are <em>searching</em> and <em>sorting</em>. To be more precise, the standard library provides an implementation for <em>binary search</em> and <em>quick sort</em>. Since C is statically typed, standard library implementation is abstracting away from types using a mechanism called <em>void pointers</em>. Essentially, no assumptions are made about the data that is being processed, and all computations are handled using addresses to unknown objects. The only information being provided to the function other than the pointer to data is the size of an element and the number of those elements. It is the user&rsquo;s responsibility to perform casting pointers to corresponding types and perform a comparison between elements.</p>
+<p>As always, create a directory and create a source file to follow along. Before we proceed, let&rsquo;s include headers that we need:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span></span></span></code></pre></div><p>To perform binary searching, we need a sorted array of keys to search from. <code>.obj</code> files define a fairly small number of keys so that you can sort them in your head. Let&rsquo;s define them in a global array:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>objkeys[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;f&#34;</span>, <span style="color:#e6db74">&#34;mtllib&#34;</span>, <span style="color:#e6db74">&#34;o&#34;</span>, <span style="color:#e6db74">&#34;usemtl&#34;</span>, <span style="color:#e6db74">&#34;v&#34;</span>, <span style="color:#e6db74">&#34;vn&#34;</span>, <span style="color:#e6db74">&#34;vt&#34;</span>
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>After we are done searching, we are going to use a <em>position</em> of our key to check what kind of key we have. Let&rsquo;s define an enumeration with key indices:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> objkeysenum { F, MTLLIB, O, USEMTL, V, VN, VT };
+</span></span></code></pre></div><p>For now, we won&rsquo;t touch faces and materials since they will require some additional code. That leaves us with meshes, vertices, normals, and texture coordinates. Let&rsquo;s define a structure called <code>objctx</code> (not &ldquo;Object X&rdquo;, but &ldquo;.obj context&rdquo;) that will contain all fields that we need:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> nmeshes;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> nvertices;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> nnormals;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> ntexcoords;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>vertices;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>normals;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>texcoords;
+</span></span><span style="display:flex;"><span>} objctx;
+</span></span></code></pre></div><p>The first thing that we&rsquo;re going to do is to implement a binary search for our keys. The standard library function for that is called <a href="https://cplusplus.com/reference/cstdlib/bsearch/"><code>bsearch</code></a>. The first three arguments are fairly straightforward, but the last one is a bit tricky. Here is a quote from reference:</p>
+<pre tabindex="0"><code>Pointer to a function that compares two elements.
+This function is called repeatedly by bsearch to compare the key against individual elements in the base. It shall follow the following prototype:
+
+int compar (const void* pkey, const void* pelem);
+
+Taking two pointers as arguments: the first is always key, and the second points to an element of the array (both type-casted to const void*). The function shall return (in a stable and transitive manner):
+
+return value    meaning
+ &lt; 0            The element pointed to by pkey goes before the element pointed to by pelem
+ 0              The element pointed to by pkey is equivalent to the element pointed to by pelem
+ &gt; 0            The element pointed to by pkey goes after the element pointed to by pelem
+</code></pre><p>Notice that both <code>pkey</code> and <code>pelem</code> are <em>pointers</em> to objects. This means that we need to do three things:</p>
+<ul>
+<li>Cast void pointer to pointer to an object of appropriate type</li>
+<li>Dereference this pointer to obtain a value that can be used for comparison</li>
+<li>Perform a comparison between two values</li>
+</ul>
+<p>Since we are comparing strings (which are pointers to characters), then a pointer to a string is a pointer to a pointer to a character. We can use a standard library <code>strcmp</code> function mentioned in the previous post to perform a comparison between strings. Here is what our string comparison function looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">strcomp</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>key, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>elem) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>skey <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>) key;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>selem <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>) elem;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">strcmp</span>(skey, selem);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Notice an <code>o</code> after <code>c</code>, don&rsquo;t confuse it with <code>strcmp</code>. Also, note how we obtain an element from the pointer:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>) key;        <span style="color:#75715e">// cast to pointer to string
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">*</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>) key;       <span style="color:#75715e">// dereference a pointer to string to get a string
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>skey <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>) key;    <span style="color:#75715e">// assign string to `skey` variable
+</span></span></span></code></pre></div><p>Now that we have a comparison function, we can implement a search algorithm itself. Let&rsquo;s say that we are given a string like so:</p>
+<pre tabindex="0"><code>v 0.5773502691896258 0.5773502691896258 0.5773502691896258
+</code></pre><p>We need to find what kind of key such string starts with. To obtain a key from this string, we can use the <code>strtok</code> function that I introduced in the previous post:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>key <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(s, <span style="color:#e6db74">&#34; &#34;</span>);
+</span></span></code></pre></div><p>Now we need to know the number of elements in the <code>objkeys</code> array. You can type it by hand, but there is a better method. In contrast to pointers that only represent an address and always have a fixed size, arrays represent an entire region of memory and their size is equal to the amount of space that their elements occupy. This enables us to calculate several elements in an array like so:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">size_t</span> nkeys <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(objkeys) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>);
+</span></span></code></pre></div><p>The function <code>sizeof</code> returns the number of bytes that a given object occupies. Therefore, to calculate the number of elements in an array, we can divide the size of an array by the size of one element of an array.</p>
+<p>We now have all the information required to perform a binary search:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>kptr <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>) <span style="color:#a6e22e">bsearch</span>(<span style="color:#f92672">&amp;</span>key, objkeys, nkeys, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>), strcomp);
+</span></span></code></pre></div><p>Notice that <code>bsearch</code> returns a <em>pointer</em> to the element that we are looking for. This means that this function will return a pointer to a string, which is a pointer to a pointer to <code>char</code>. We can now check if <code>kptr</code> is a valid address. If it&rsquo;s not, then <code>bsearch</code> could not find the element that we are looking for. In other words, <code>objkeys</code> does not contain the <code>key</code> element. In this case, we can return <code>-1</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>kptr) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Finally, we can subtract the pointer that we got from the <code>objkeys</code> address to get an index of the <code>key</code> and return it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">return</span> kptr <span style="color:#f92672">-</span> objkeys;
+</span></span></code></pre></div><p>Here is what a complete function looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">find_objkey</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>key <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(s, <span style="color:#e6db74">&#34; &#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">size_t</span> nkeys <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(objkeys) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>kptr <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>) <span style="color:#a6e22e">bsearch</span>(<span style="color:#f92672">&amp;</span>key, objkeys, nkeys, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>), strcomp);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>kptr) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> kptr <span style="color:#f92672">-</span> objkeys;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now let&rsquo;s say that we are given a pointer to <code>objects</code> that will store our context information along with a string from the file. We need to implement a function that will update information in the <code>objctx</code> instance depending on a key from the string. More precisely, we are going to count how many meshes, vertices, normals, and texture coordinates we have in our <code>.obj</code> file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">count_key</span>(objctx <span style="color:#f92672">*</span>ctx, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> key <span style="color:#f92672">=</span> <span style="color:#a6e22e">find_objkey</span>(s);   <span style="color:#75715e">// check the type of a string key
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">switch</span> (key) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> O:                 <span style="color:#75715e">// new mesh found
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        ctx<span style="color:#f92672">-&gt;</span>nmeshes<span style="color:#f92672">++</span>;     <span style="color:#75715e">// increase the number of meshes
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> V:                 <span style="color:#75715e">// new vertex found
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        ctx<span style="color:#f92672">-&gt;</span>nvertices<span style="color:#f92672">++</span>;   <span style="color:#75715e">// increase the number of vertices
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> VN:                <span style="color:#75715e">// new normal found
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        ctx<span style="color:#f92672">-&gt;</span>nnormals<span style="color:#f92672">++</span>;    <span style="color:#75715e">// increase the number of normals
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> VT:                <span style="color:#75715e">// new texture coordinate found
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        ctx<span style="color:#f92672">-&gt;</span>ntexcoords<span style="color:#f92672">++</span>;  <span style="color:#75715e">// increase number of tex. coordinates
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>                <span style="color:#75715e">// ignore unknown keys (like comments or empty lines)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>After we are done parsing our file line by line and counting all types of keys, we are ready to allocate memory for those objects:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">objctx_malloc</span>(objctx <span style="color:#f92672">*</span>ctx) {
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>vertices <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> ctx<span style="color:#f92672">-&gt;</span>nvertices <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>));
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>normals <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> ctx<span style="color:#f92672">-&gt;</span>nnormals <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>));
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>texcoords <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> ctx<span style="color:#f92672">-&gt;</span>ntexcoords <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>));
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Notice that vertices and normals contain three coordinates each (since they denote a vector in 3d space) and texture coordinates contain two coordinates (since they denote the position of an image which is a plane).</p>
+<p>Remember that we need to reset all counters to zero to use them to track a current position in an array:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">objctx_reset</span>(objctx <span style="color:#f92672">*</span>ctx) {
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>nvertices <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>nnormals <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>ntexcoords <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now comes the interesting part. We need to implement a parser that will scan a string from a file and write values from this string to an appropriate array of our context depending on the key:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_objline</span>(objctx <span style="color:#f92672">*</span>ctx, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> key <span style="color:#f92672">=</span> <span style="color:#a6e22e">find_objkey</span>(s);       <span style="color:#75715e">// check the type of a string key
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">switch</span> (key) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> V:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>vptr <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>vertices <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> ctx<span style="color:#f92672">-&gt;</span>nvertices<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>verts <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">float</span> vert <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(verts);
+</span></span><span style="display:flex;"><span>            vptr[i] <span style="color:#f92672">=</span> vert;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> VN:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>nptr <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>normals <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> ctx<span style="color:#f92672">-&gt;</span>nnormals<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>norms <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">float</span> norm <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(norms);
+</span></span><span style="display:flex;"><span>            nptr[i] <span style="color:#f92672">=</span> norm;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> VT:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>tptr <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>texcoords <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> ctx<span style="color:#f92672">-&gt;</span>ntexcoords<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">2</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>texs <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">float</span> tex <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(texs);
+</span></span><span style="display:flex;"><span>            tptr[i] <span style="color:#f92672">=</span> tex;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Each case is very similar to the others:</p>
+<ul>
+<li>Get a position of an array where we will put values from the current string</li>
+<li>For a certain number of times (depending on the number of coordinates in a key type):
+    - Scan the next token from the string
+    - Convert it to a <code>float</code> number
+    - Write it to the context array</li>
+</ul>
+<p>Now that we have all of the values from the context, we can finally print them neatly:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">objctx_print</span>(objctx <span style="color:#f92672">*</span>ctx) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;nmeshes: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, ctx<span style="color:#f92672">-&gt;</span>nmeshes);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;nvertices: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, ctx<span style="color:#f92672">-&gt;</span>nvertices);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;nnormals: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, ctx<span style="color:#f92672">-&gt;</span>nnormals);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;ntexcoords: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, ctx<span style="color:#f92672">-&gt;</span>ntexcoords);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;vertices:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%4d &#34;</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>nvertices; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> (i <span style="color:#f92672">%</span> <span style="color:#ae81ff">3</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">%4d &#34;</span>, i);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[ &#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; j<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, ctx<span style="color:#f92672">-&gt;</span>vertices[i <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">+</span> j]);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;] &#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">putchar</span>(<span style="color:#e6db74">&#39;\n&#39;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;normals:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%4d &#34;</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>nnormals; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> (i <span style="color:#f92672">%</span> <span style="color:#ae81ff">3</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">%4d &#34;</span>, i);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[ &#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; j<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, ctx<span style="color:#f92672">-&gt;</span>normals[i <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">+</span> j]);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;] &#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">putchar</span>(<span style="color:#e6db74">&#39;\n&#39;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;texcoords:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%4d &#34;</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>ntexcoords; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> (i <span style="color:#f92672">%</span> <span style="color:#ae81ff">3</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">%4d &#34;</span>, i);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[ &#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">2</span>; j<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, ctx<span style="color:#f92672">-&gt;</span>texcoords[i <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> j]);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;] &#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">putchar</span>(<span style="color:#e6db74">&#39;\n&#39;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now that we are done with our context, don&rsquo;t forget to free all data:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">objctx_free</span>(objctx <span style="color:#f92672">*</span>ctx) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">free</span>(ctx<span style="color:#f92672">-&gt;</span>vertices);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">free</span>(ctx<span style="color:#f92672">-&gt;</span>normals);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">free</span>(ctx<span style="color:#f92672">-&gt;</span>texcoords);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now let&rsquo;s outline the whole program:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_obj</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>filename) {
+</span></span><span style="display:flex;"><span>    FILE <span style="color:#f92672">*</span>f <span style="color:#f92672">=</span> <span style="color:#a6e22e">fopen</span>(filename, <span style="color:#e6db74">&#34;r&#34;</span>); <span style="color:#75715e">// open the file
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>f) {                       <span style="color:#75715e">// check if file exists
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#a6e22e">fprintf</span>(stderr, <span style="color:#e6db74">&#34;failed to open file %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, filename);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> s[<span style="color:#ae81ff">512</span>];                    <span style="color:#75715e">// char buffer to store lines from the file
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    objctx ctx <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>};               <span style="color:#75715e">// context instance initialized on stack to zero
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">fgets</span>(s, <span style="color:#ae81ff">512</span>, f)) {      <span style="color:#75715e">// read file line by line
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#a6e22e">count_key</span>(<span style="color:#f92672">&amp;</span>ctx, s);         <span style="color:#75715e">// count keys in our file
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">objctx_malloc</span>(<span style="color:#f92672">&amp;</span>ctx);            <span style="color:#75715e">// allocate memory to hold values from file
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">objctx_reset</span>(<span style="color:#f92672">&amp;</span>ctx);             <span style="color:#75715e">// reset all counters to zero
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">rewind</span>(f);                      <span style="color:#75715e">// rewind file to the start
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">fgets</span>(s, <span style="color:#ae81ff">512</span>, f)) {      <span style="color:#75715e">// read file line by line
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#a6e22e">parse_objline</span>(<span style="color:#f92672">&amp;</span>ctx, s);     <span style="color:#75715e">// update context values
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">objctx_print</span>(<span style="color:#f92672">&amp;</span>ctx);             <span style="color:#75715e">// print values from context
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">objctx_free</span>(<span style="color:#f92672">&amp;</span>ctx);              <span style="color:#75715e">// free context data
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">fclose</span>(f);                      <span style="color:#75715e">// close the file
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><p>The <code>main</code> function is very simple:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[]) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (argc <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;usage: %s filename.obj</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, argv[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">parse_obj</span>(argv[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Check out the <a href="../obj1.c">source code</a>. Try to compile the program and run it with <a href="../model.obj">this file</a>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./parse model.obj
+</span></span><span style="display:flex;"><span>nmeshes: <span style="color:#ae81ff">5</span>
+</span></span><span style="display:flex;"><span>nvertices: <span style="color:#ae81ff">50</span>
+</span></span><span style="display:flex;"><span>nnormals: <span style="color:#ae81ff">80</span>
+</span></span><span style="display:flex;"><span>ntexcoords: <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>vertices:
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">0</span> <span style="color:#f92672">[</span>   0.5774   0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774  -0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774  -0.5774  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">3</span> <span style="color:#f92672">[</span>  -0.5774   0.5774  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774   3.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774   3.5774  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">6</span> <span style="color:#f92672">[</span>  -0.5774   3.5774  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774   3.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774   2.4226   0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">9</span> <span style="color:#f92672">[</span>   0.5774   2.4226  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774   2.4226   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774   2.4226  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">12</span> <span style="color:#f92672">[</span>   4.0000   0.0000   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.0000   1.0000   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.0000   0.0000   1.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">15</span> <span style="color:#f92672">[</span>   3.0000  -1.0000   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.0000   0.0000  -1.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   2.0000   0.0000   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">18</span> <span style="color:#f92672">[</span>   3.5774   3.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.0000   3.3568   0.9342 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.0000   2.6432   0.9342 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">21</span> <span style="color:#f92672">[</span>   3.5774   2.4226   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.9342   3.0000   0.3568 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.9342   3.0000  -0.3568 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">24</span> <span style="color:#f92672">[</span>   3.5774   3.5774  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.3568   3.9342   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   2.6432   3.9342   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">27</span> <span style="color:#f92672">[</span>   2.4226   3.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.0000   3.3568  -0.9342 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   2.4226   3.5774  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">30</span> <span style="color:#f92672">[</span>   3.5774   2.4226  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.0000   2.6432  -0.9342 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   2.4226   2.4226   0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">33</span> <span style="color:#f92672">[</span>   2.6432   2.0658   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   3.3568   2.0658   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   2.0658   3.0000  -0.3568 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">36</span> <span style="color:#f92672">[</span>   2.0658   3.0000   0.3568 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   2.4226   2.4226  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   6.0000   2.0257   0.8507 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">39</span> <span style="color:#f92672">[</span>   6.0000   0.9743   0.8507 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   6.8507   1.5000   0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   6.5257   2.3507   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">42</span> <span style="color:#f92672">[</span>   5.4743   2.3507   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   5.1493   1.5000   0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   6.0000   2.0257  -0.8507 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">45</span> <span style="color:#f92672">[</span>   6.0000   0.9743  -0.8507 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   5.1493   1.5000  -0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   6.8507   1.5000  -0.5257 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">48</span> <span style="color:#f92672">[</span>   6.5257   0.6493   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   5.4743   0.6493   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>normals:
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">0</span> <span style="color:#f92672">[</span>   0.5774  -0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774   0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774   0.5774  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">3</span> <span style="color:#f92672">[</span>  -0.5774  -0.5774  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   1.0000   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   1.0000   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">6</span> <span style="color:#f92672">[</span>   1.0000   0.0000   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   1.0000   0.0000   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   0.0000   1.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">9</span> <span style="color:#f92672">[</span>   0.0000   0.0000   1.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   0.0000  -1.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   0.0000  -1.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">12</span> <span style="color:#f92672">[</span>   0.0000  -1.0000   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000  -1.0000   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -1.0000   0.0000   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">15</span> <span style="color:#f92672">[</span>  -1.0000   0.0000   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774   0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774  -0.5774  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">18</span> <span style="color:#f92672">[</span>   0.5774  -0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774   0.5774  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774   0.5774  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">21</span> <span style="color:#f92672">[</span>  -0.5774  -0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774   0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774  -0.5774  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">24</span> <span style="color:#f92672">[</span>   0.5257   0.0000   0.8507 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5257   0.0000   0.8507 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5257   0.0000   0.8507 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">27</span> <span style="color:#f92672">[</span>   0.8507   0.5257   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.8507   0.5257   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.8507   0.5257   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">30</span> <span style="color:#f92672">[</span>   0.0000   0.8507   0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   0.8507   0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   0.8507   0.5257 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">33</span> <span style="color:#f92672">[</span>   0.0000   0.8507  -0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   0.8507  -0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   0.8507  -0.5257 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">36</span> <span style="color:#f92672">[</span>   0.5257   0.0000  -0.8507 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5257   0.0000  -0.8507 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5257   0.0000  -0.8507 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">39</span> <span style="color:#f92672">[</span>   0.0000  -0.8507   0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000  -0.8507   0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000  -0.8507   0.5257 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">42</span> <span style="color:#f92672">[</span>   0.8507  -0.5257   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.8507  -0.5257   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.8507  -0.5257   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">45</span> <span style="color:#f92672">[</span>  -0.8507   0.5257   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.8507   0.5257   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.8507   0.5257   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">48</span> <span style="color:#f92672">[</span>  -0.5257   0.0000   0.8507 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5257   0.0000   0.8507 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5257   0.0000   0.8507 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">51</span> <span style="color:#f92672">[</span>   0.0000  -0.8507  -0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000  -0.8507  -0.5257 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000  -0.8507  -0.5257 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">54</span> <span style="color:#f92672">[</span>  -0.5257   0.0000  -0.8507 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5257   0.0000  -0.8507 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5257   0.0000  -0.8507 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">57</span> <span style="color:#f92672">[</span>  -0.8507  -0.5257   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.8507  -0.5257   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.8507  -0.5257   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">60</span> <span style="color:#f92672">[</span>   0.3568   0.0000   0.9342 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   0.9342   0.3568 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774   0.5774   0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">63</span> <span style="color:#f92672">[</span>   0.5774   0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.3568   0.0000   0.9342 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.3568   0.0000  -0.9342 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">66</span> <span style="color:#f92672">[</span>   0.5774   0.5774  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000   0.9342  -0.3568 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.3568   0.0000  -0.9342 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">69</span> <span style="color:#f92672">[</span>  -0.5774   0.5774  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.5774  -0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000  -0.9342   0.3568 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">72</span> <span style="color:#f92672">[</span>  -0.5774  -0.5774   0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.0000  -0.9342  -0.3568 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.5774  -0.5774  -0.5774 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">75</span> <span style="color:#f92672">[</span>   0.5774  -0.5774  -0.5774 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.9342   0.3568   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>   0.9342  -0.3568   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">78</span> <span style="color:#f92672">[</span>  -0.9342   0.3568   0.0000 <span style="color:#f92672">]</span> <span style="color:#f92672">[</span>  -0.9342  -0.3568   0.0000 <span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>texcoords:
+</span></span><span style="display:flex;"><span>   <span style="color:#ae81ff">0</span>
+</span></span></code></pre></div><ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://localhost:1313/" >
+    &copy;  My Blog 2025 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>
