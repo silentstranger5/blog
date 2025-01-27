@@ -100,7 +100,7 @@ We need to find what kind of key such string starts with. To obtain a key from t
 char *key = strtok(s, " ");
 ```
 
-Now we need to know the number of elements in the `objkeys` array. You can type it by hand, but there is a better method. In contrast to pointers that only represent an address and always have a fixed size, arrays represent an entire region of memory and their size is equal to the amount of space that their elements occupy. This enables us to calculate several elements in an array like so:
+Now we need to know the number of elements in the `objkeys` array. You can type it by hand, but there is a better method. In contrast to pointers that only represent an address and always have a fixed size, arrays represent an entire region of memory and their size is equal to the amount of space that their elements occupy. This enables us to calculate the number of elements in an array like so:
 
 ```c
 size_t nkeys = sizeof(objkeys) / sizeof(char *);
@@ -142,7 +142,7 @@ int find_objkey(char *s) {
 }
 ```
 
-Now let's say that we are given a pointer to `objects` that will store our context information along with a string from the file. We need to implement a function that will update information in the `objctx` instance depending on a key from the string. More precisely, we are going to count how many meshes, vertices, normals, and texture coordinates we have in our `.obj` file:
+Now let's say that we are given a pointer to `objctx` that will store our context information along with a string from the file. We need to implement a function that will update information in the `objctx` instance depending on a key from the string. More precisely, we are going to count how many meshes, vertices, normals, and texture coordinates we have in our `.obj` file:
 
 ```c
 void count_key(objctx *ctx, char *s) {
@@ -228,9 +228,9 @@ Each case is very similar to the others:
 
 - Get a position of an array where we will put values from the current string
 - For a certain number of times (depending on the number of coordinates in a key type):
-    - Scan the next token from the string
-    - Convert it to a `float` number
-    - Write it to the context array
+    - Scan the next token from the string
+    - Convert it to a `float` number
+    - Write it to the context array
 
 Now that we have all of the values from the context, we can finally print them neatly:
 
