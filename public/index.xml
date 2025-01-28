@@ -6,8 +6,15 @@
     <description>Recent content on My Blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 27 Jan 2025 13:05:06 +0300</lastBuildDate>
+    <lastBuildDate>Tue, 28 Jan 2025 20:02:37 +0300</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Parsing Obj File Part 3</title>
+      <link>http://localhost:1313/posts/obj/parsing-obj-file-part-3/</link>
+      <pubDate>Tue, 28 Jan 2025 20:02:37 +0300</pubDate>
+      <guid>http://localhost:1313/posts/obj/parsing-obj-file-part-3/</guid>
+      <description>&lt;p&gt;In the previous post, we created a core of the &lt;code&gt;.obj&lt;/code&gt; parser. It can handle keywords now, and store the data from a file. Today, I am going to handle &lt;em&gt;faces&lt;/em&gt;.&lt;/p&gt;&#xA;&lt;p&gt;Faces represent a combination of vertices that comprise one facet of an object. Each face consists of &lt;em&gt;face vertices&lt;/em&gt; which are a triplet of indices that denote a position of the vertex, texture coordinate, and normal, in that order.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Parsing Obj File Part 2</title>
       <link>http://localhost:1313/posts/obj/parsing-obj-file-part-2/</link>

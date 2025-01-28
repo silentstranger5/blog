@@ -50,7 +50,7 @@ In our previous post, I showed you a simple parser that can parse vertices. Now 
 In our previous post, I showed you a simple parser that can parse vertices. Now we will extend and modify it to handle other keys like o, vn, and vt. To do this we need to change our approach to searching keys.">
   <meta itemprop="datePublished" content="2025-01-27T13:05:06+03:00">
   <meta itemprop="dateModified" content="2025-01-27T13:05:06+03:00">
-  <meta itemprop="wordCount" content="2785">
+  <meta itemprop="wordCount" content="2784">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Parsing Obj File Part 2">
   <meta name="twitter:description" content="In this part of the series on parsing .obj files, we are going to implement a part of the parser that will process keywords from the file. We will not cover faces and materials parsing yet, and we will cover it in later parts.
@@ -162,7 +162,7 @@ return value    meaning
 <pre tabindex="0"><code>v 0.5773502691896258 0.5773502691896258 0.5773502691896258
 </code></pre><p>We need to find what kind of key such string starts with. To obtain a key from this string, we can use the <code>strtok</code> function that I introduced in the previous post:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>key <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(s, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span></code></pre></div><p>Now we need to know the number of elements in the <code>objkeys</code> array. You can type it by hand, but there is a better method. In contrast to pointers that only represent an address and always have a fixed size, arrays represent an entire region of memory and their size is equal to the amount of space that their elements occupy. This enables us to calculate several elements in an array like so:</p>
+</span></span></code></pre></div><p>Now we need to know the number of elements in the <code>objkeys</code> array. You can type it by hand, but there is a better method. In contrast to pointers that only represent an address and always have a fixed size, arrays represent an entire region of memory and their size is equal to the amount of space that their elements occupy. This enables us to calculate the number of elements in an array like so:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">size_t</span> nkeys <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(objkeys) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>);
 </span></span></code></pre></div><p>The function <code>sizeof</code> returns the number of bytes that a given object occupies. Therefore, to calculate the number of elements in an array, we can divide the size of an array by the size of one element of an array.</p>
 <p>We now have all the information required to perform a binary search:</p>
@@ -183,7 +183,7 @@ return value    meaning
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> kptr <span style="color:#f92672">-</span> objkeys;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Now let&rsquo;s say that we are given a pointer to <code>objects</code> that will store our context information along with a string from the file. We need to implement a function that will update information in the <code>objctx</code> instance depending on a key from the string. More precisely, we are going to count how many meshes, vertices, normals, and texture coordinates we have in our <code>.obj</code> file:</p>
+</span></span></code></pre></div><p>Now let&rsquo;s say that we are given a pointer to <code>objctx</code> that will store our context information along with a string from the file. We need to implement a function that will update information in the <code>objctx</code> instance depending on a key from the string. More precisely, we are going to count how many meshes, vertices, normals, and texture coordinates we have in our <code>.obj</code> file:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">count_key</span>(objctx <span style="color:#f92672">*</span>ctx, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> key <span style="color:#f92672">=</span> <span style="color:#a6e22e">find_objkey</span>(s);   <span style="color:#75715e">// check the type of a string key
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">switch</span> (key) {
@@ -252,9 +252,12 @@ return value    meaning
 <ul>
 <li>Get a position of an array where we will put values from the current string</li>
 <li>For a certain number of times (depending on the number of coordinates in a key type):
-    - Scan the next token from the string
-    - Convert it to a <code>float</code> number
-    - Write it to the context array</li>
+<ul>
+<li>Scan the next token from the string</li>
+<li>Convert it to a <code>float</code> number</li>
+<li>Write it to the context array</li>
+</ul>
+</li>
 </ul>
 <p>Now that we have all of the values from the context, we can finally print them neatly:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">objctx_print</span>(objctx <span style="color:#f92672">*</span>ctx) {

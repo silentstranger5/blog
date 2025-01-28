@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Parsing Obj File Part 3 | My Blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="In the previous post, we created a core of the .obj parser. It can handle keywords now, and store the data from a file. Today, I am going to handle faces.
+Faces represent a combination of vertices that comprise one facet of an object. Each face consists of face vertices which are a triplet of indices that denote a position of the vertex, texture coordinate, and normal, in that order.">
+    <meta name="generator" content="Hugo 0.141.0">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+    
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/obj/parsing-obj-file-part-3/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/obj/parsing-obj-file-part-3/">
+  <meta property="og:site_name" content="My Blog">
+  <meta property="og:title" content="Parsing Obj File Part 3">
+  <meta property="og:description" content="In the previous post, we created a core of the .obj parser. It can handle keywords now, and store the data from a file. Today, I am going to handle faces.
+Faces represent a combination of vertices that comprise one facet of an object. Each face consists of face vertices which are a triplet of indices that denote a position of the vertex, texture coordinate, and normal, in that order.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-01-28T20:02:37+03:00">
+    <meta property="article:modified_time" content="2025-01-28T20:02:37+03:00">
+
+  <meta itemprop="name" content="Parsing Obj File Part 3">
+  <meta itemprop="description" content="In the previous post, we created a core of the .obj parser. It can handle keywords now, and store the data from a file. Today, I am going to handle faces.
+Faces represent a combination of vertices that comprise one facet of an object. Each face consists of face vertices which are a triplet of indices that denote a position of the vertex, texture coordinate, and normal, in that order.">
+  <meta itemprop="datePublished" content="2025-01-28T20:02:37+03:00">
+  <meta itemprop="dateModified" content="2025-01-28T20:02:37+03:00">
+  <meta itemprop="wordCount" content="2384">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Parsing Obj File Part 3">
+  <meta name="twitter:description" content="In the previous post, we created a core of the .obj parser. It can handle keywords now, and store the data from a file. Today, I am going to handle faces.
+Faces represent a combination of vertices that comprise one facet of an object. Each face consists of face vertices which are a triplet of indices that denote a position of the vertex, texture coordinate, and normal, in that order.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        My Blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Parsing Obj File Part 3</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2025-01-28T20:02:37+03:00">January 28, 2025</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><p>In the previous post, we created a core of the <code>.obj</code> parser. It can handle keywords now, and store the data from a file. Today, I am going to handle <em>faces</em>.</p>
+<p>Faces represent a combination of vertices that comprise one facet of an object. Each face consists of <em>face vertices</em> which are a triplet of indices that denote a position of the vertex, texture coordinate, and normal, in that order.</p>
+<p>Before we go further, let&rsquo;s clarify one detail. There is a distinction between a <em>vertex</em> and <em>face vertex</em>. Consider a vertex from a cube. If you look at it, you might notice that any vertex of a cube is a part of three cube faces. When I simply say &ldquo;vertex&rdquo;, I mean a vertex of an object, like a cube. When I say &ldquo;face vertex&rdquo;, however, I mean a more specific case of the vertex that belongs to a face of an object. Sometimes I might omit &ldquo;face&rdquo; from &ldquo;face vertex&rdquo;. In such case, it should hopefully be clear from the context that I mean a &ldquo;face vertex&rdquo;.</p>
+<p>Let&rsquo;s consider a simple example:</p>
+<pre tabindex="0"><code>f 1//1 2//1 3//1
+</code></pre><p>This means that the object has a face that consists of three vertices. Let&rsquo;s take a look at the first face vertex. Indices that comprise the face vertex are separated by the <code>/</code> (slash) character. This means that the first face vertex consists of:</p>
+<ul>
+<li>first vertex</li>
+<li>first normal</li>
+</ul>
+<p>Note that there is nothing between the two slashes. This means that this vertex (just like any other in this face) does not have a texture coordinate.</p>
+<p>Let&rsquo;s say that the first vertex looks like this:</p>
+<pre tabindex="0"><code>v 3.577350 3.577350 0.577350
+</code></pre><p>And first normal looks like this:</p>
+<pre tabindex="0"><code>vn 0.5257 -0.0000 0.8507
+</code></pre><p>This means that in the form of an interleaved <code>buffer</code> the first face vertex shall look like this (assuming that all absent data points are zero-initialized):</p>
+<pre tabindex="0"><code>[ 3.577350 3.577350 0.577350 ] [ 0.000000 0.000000 ] [ 0.5257 -0.0000 0.8507 ]
+</code></pre><p>We are also going to cover <code>meshes</code>. Right now, our parser is just combining all data, back-to-back. This is also going to be the case for faces and buffers. We need a way to distinguish between different meshes. To do that, we are going to introduce <em>mesh offsets</em>. It will be an array that will consist of face vertex offsets for each mesh. The last element is going to be the total number of face vertices. This way, for any mesh with index <code>i &lt; meshes</code>, the size of the mesh (i.e. amount of face vertices per each mesh) can be calculated like so:</p>
+<pre tabindex="0"><code>meshsize[i] = meshoffsets[i + 1] - meshoffsets[i]
+</code></pre><p>Conversely, the <code>meshoffsets</code> array will be filled like this:</p>
+<pre tabindex="0"><code>[ meshoffset[0], meshoffset[1], ..., meshoffset[nmeshes - 1], nfacevert ]
+</code></pre><p>Without further ado, let&rsquo;s introduce additional fields into the <code>objects</code> structure:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to objectx
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> nfaces;             <span style="color:#75715e">// number of faces
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> nfaceverts;         <span style="color:#75715e">// number of face vertices
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>faces;             <span style="color:#75715e">// faces
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>meshoffsets;       <span style="color:#75715e">// mesh offsets
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>buffer;          <span style="color:#75715e">// interleaved buffer
+</span></span></span></code></pre></div><p>Before we can allocate <code>faces</code> or <code>buffer</code> we need to calculate the amount of face vertices in our file. There is a subtle nuance, however. We are going to <em>triangulate</em> all faces, i. e. we are going to turn all n-gons with n &gt; 3 into triangles. We will cover the triangulation algorithm later, but for now, it is sufficient to note that amount of vertices in the triangulated face is calculated like this:</p>
+<pre tabindex="0"><code>nfaceverts_new = (nfaceverts_old - 2) * 3;
+</code></pre><p>This formula works for any <code>nfaceverts_old &gt;= 3</code>. Note that each face is guaranteed to have at least three vertices, and a face with two or fewer vertices is illegal. With this knowledge, we can now update the <code>count_key</code> function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this inside switch statement in `count_key` function:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">case</span> F:
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>nfaces<span style="color:#f92672">++</span>;                  <span style="color:#75715e">// new face detected
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> nverts <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;                 <span style="color:#75715e">// number of face vertices on this line
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>)) {     <span style="color:#75715e">// while there are face vertices on the line
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        nverts<span style="color:#f92672">++</span>;                   <span style="color:#75715e">// increase `nverts`
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    }
+</span></span><span style="display:flex;"><span>    nverts <span style="color:#f92672">=</span> (nverts <span style="color:#f92672">-</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span>;      <span style="color:#75715e">// apply triangulation formula
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    ctx<span style="color:#f92672">-&gt;</span>nfaceverts <span style="color:#f92672">+=</span> nverts;      <span style="color:#75715e">// add number of face vertices on current line
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                                    <span style="color:#75715e">// to total number of vertices
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">break</span>;
+</span></span></code></pre></div><p>Now that we know how many faces and face vertices we have, we can allocate memory to hold data from the file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to objctx_malloc
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>ctx<span style="color:#f92672">-&gt;</span>faces <span style="color:#f92672">=</span> <span style="color:#a6e22e">calloc</span>(<span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> ctx<span style="color:#f92672">-&gt;</span>nfaceverts, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>buffer <span style="color:#f92672">=</span> <span style="color:#a6e22e">calloc</span>(<span style="color:#ae81ff">8</span> <span style="color:#f92672">*</span> ctx<span style="color:#f92672">-&gt;</span>nfaceverts, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>));
+</span></span><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>meshoffsets <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>((ctx<span style="color:#f92672">-&gt;</span>nmeshes <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span></code></pre></div><p>Note that we allocate 8 numbers per face vertex (3 coordinates per vertex + 2 coordinates for texture + 3 coordinates for normal). We also initialize <code>faces</code> and <code>buffer</code> to zero. We initialize <code>meshoffsets</code> with 1 extra number to hold a total number of face vertices according to our specifications.</p>
+<p>Before we proceed with parsing, we need to reset all corresponding counters to zero:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to objctx_reset
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>ctx<span style="color:#f92672">-&gt;</span>nfaces <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>nfaceverts <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>nmeshes <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span></code></pre></div><p>Now we are going to create a function that will parse a face vertex:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// create new function before parse_objline
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_face</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s, <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>fptr) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>t <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (t <span style="color:#f92672">=</span> <span style="color:#a6e22e">strchr</span>(s, <span style="color:#e6db74">&#39;/&#39;</span>)) {
+</span></span><span style="display:flex;"><span>        fptr[i<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atoi</span>(s);
+</span></span><span style="display:flex;"><span>        s <span style="color:#f92672">=</span> t <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    fptr[i<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atoi</span>(s);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Our function accepts two parameters. <code>s</code> is a string that contains a face vertex (like <code>1/2/3</code>). <code>fptr</code> is a pointer to the place where we need to put a face vertex. The algorithm is pretty simple:</p>
+<pre tabindex="0"><code>while a current string contains character &#39;/&#39; (slash):
+    - parse a float number from the string
+    - put it inside fptr[i]
+    - increment number i
+    - set s to be t + 1 (set s to start one character after t)
+- parse a float number from the string
+- put it inside fptr[i]
+</code></pre><p>Try to reason through this algorithm step by step to parse a simple face vertex (like <code>1/2/3</code>). Carefully check how it works. Also, consider the edge cases:</p>
+<ul>
+<li>What if a middle number is absent? (as in <code>1//2</code>)</li>
+<li>What if the last number is absent? (as in <code>1/2</code>)</li>
+<li>What if only the first number is present? (as in <code>1</code>)</li>
+</ul>
+<p>When you are trying to answer those questions, consider this:</p>
+<ul>
+<li>If <code>atof</code> encounters a non-digit character, it returns <code>0</code></li>
+<li>All three numbers from <code>fptr</code> are initialized to zero</li>
+</ul>
+<p>Now that we prepared all that is needed, the interesting part begins. We are going to cover new cases for the <code>parse_objline</code> function. First, let&rsquo;s cover how to parse <code>o</code> key:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to switch statement inside parse_objline
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">case</span> O:
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>meshoffsets[ctx<span style="color:#f92672">-&gt;</span>nmeshes<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>nfaceverts;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">break</span>;
+</span></span></code></pre></div><p>This code is pretty simple: write a current number of face vertices in a current position of <code>meshoffsets</code> and increment the number of meshes.</p>
+<p>Now let&rsquo;s consider how to parse faces.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to switch statement inside parse_objline
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">case</span> F:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// add code below here
+</span></span></span></code></pre></div><p>The first thing that we need is to create all variables. <code>nvert</code> will store several face vertices on a current line. <code>fverts</code> will be a string that holds the current face vertex string. <code>fptr</code> will point to the <em>start</em> of where we are going to put face vertices from the current line:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> nvert <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>fverts <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>fptr <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>faces <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> ctx<span style="color:#f92672">-&gt;</span>nfaceverts;
+</span></span></code></pre></div><p>We could use <code>fptr</code> as the first argument for the <code>parse_face</code> function, but this means that we have to increment it after each iteration. We can&rsquo;t do that, since we will need a pointer to the <em>start</em> of where we put our face vertices in a moment. Therefore, a new variable called <code>fvptr</code> will be an argument for the <code>parse_face</code> function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>fvptr <span style="color:#f92672">=</span> fptr;
+</span></span></code></pre></div><p>Here is a loop where face parsing happens:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">while</span>(fverts <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">parse_face</span>(fverts, fvptr);
+</span></span><span style="display:flex;"><span>    fvptr <span style="color:#f92672">+=</span> <span style="color:#ae81ff">3</span>;
+</span></span><span style="display:flex;"><span>    nvert<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Notice that we increment <code>fvptr</code> by three (since each face vertex contains three numbers), and <code>nvert</code> by one.</p>
+<p>If we have only three vertices per face, this means that there is not much more work to be done and we can wrap it up. But do you remember when I mentioned face <em>triangulation</em> earlier? Now is the time to implement it.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (nvert <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">3</span>) {    <span style="color:#75715e">// do not perform additional work if face is already a triangle
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// insert code below here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><p>Let&rsquo;s consider a simple example where we have face vertices that only contain vertices and nothing else. You may neglect other data for now.</p>
+<p>Let&rsquo;s say that we have a face like this:</p>
+<pre tabindex="0"><code>f 1 2 3 4
+</code></pre><p>We need to triangulate it to turn a quad into two triangles. How are we going to do it? Fortunately, all n-gons for <code>n &gt; 3</code> have a useful property that is specified by <code>.obj</code> files. They are specified in the form of <em>triangle fans</em>, which means that there is a simple and deterministic way to triangulate any n-gon. Here is how to do it:</p>
+<pre tabindex="0"><code>for i = 0; i &lt; nvertices - 2; i++ do:
+    add a new vertex face[0]
+    add a new vertex face[i + 1]
+    add a new vertex face[i + 2]
+end
+</code></pre><p>Here, <code>face</code> is an array of face vertices on a current line. Three specified vertices form a new triangle. If you look at this algorithm carefully, you can see where the triangulation formula mentioned above comes from.</p>
+<p>After execution of this algorithm, a triangulated face should look like this:</p>
+<pre tabindex="0"><code>f 1 2 3
+f 1 3 4
+</code></pre><p>It&rsquo;s a nice and simple algorithm, but we can&rsquo;t use it just yet. Before we do that, we need to copy all vertices from the current line into a new place, so that we can put triangulated face vertices back into the <code>faces</code> field. Let&rsquo;s do this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>fcptr <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> nvert <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">memcpy</span>(fcptr, fptr, <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> nvert <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span></code></pre></div><p>Here, <code>fcptr</code> is a place that will store a copy of the face vertices from the current line. The <code>memcpy</code> function performs a memory copy to the destination from a source.</p>
+<p>Finally, let&rsquo;s perform triangulation and &ldquo;unwrap&rdquo; data from <code>fcptr</code> into <code>fptr</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> nvert <span style="color:#f92672">-</span> <span style="color:#ae81ff">2</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">memcpy</span>(fptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">9</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">0</span>, fcptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">memcpy</span>(fptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">9</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span>, fcptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>), <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">memcpy</span>(fptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">9</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">6</span>, fcptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>), <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now that we are done with triangulation, let&rsquo;s free data from <code>fcptr</code> since we won&rsquo;t need it and apply triangulation formula to get correct number of face vertices:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">free</span>(fcptr);
+</span></span><span style="display:flex;"><span>nvert <span style="color:#f92672">=</span> (nvert <span style="color:#f92672">-</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span>;
+</span></span></code></pre></div><p>Now that we are done with triangulation, you can close an <code>if</code> statement. Don&rsquo;t forget to update the number of faces and face vertices. Close the case branch.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>nfaceverts <span style="color:#f92672">+=</span> nvert;
+</span></span><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>nfaces<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">break</span>;
+</span></span></code></pre></div><p>Here is what the entire case looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">case</span> F:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> nvert <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>fverts <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>fptr <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>faces <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> ctx<span style="color:#f92672">-&gt;</span>nfaceverts;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>fvptr <span style="color:#f92672">=</span> fptr;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span>(fverts <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">parse_face</span>(fverts, fvptr);
+</span></span><span style="display:flex;"><span>        fvptr <span style="color:#f92672">+=</span> <span style="color:#ae81ff">3</span>;
+</span></span><span style="display:flex;"><span>        nvert<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (nvert <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">3</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>fcptr <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> nvert <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">memcpy</span>(fcptr, fptr, <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> nvert <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> nvert <span style="color:#f92672">-</span> <span style="color:#ae81ff">2</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">memcpy</span>(fptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">9</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">0</span>, fcptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">memcpy</span>(fptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">9</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span>, fcptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>), <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">memcpy</span>(fptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">9</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">6</span>, fcptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> (i <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>), <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">free</span>(fcptr);
+</span></span><span style="display:flex;"><span>        nvert <span style="color:#f92672">=</span> (nvert <span style="color:#f92672">-</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>nfaceverts <span style="color:#f92672">+=</span> nvert;
+</span></span><span style="display:flex;"><span>    ctx<span style="color:#f92672">-&gt;</span>nfaces<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">break</span>;
+</span></span></code></pre></div><p>Now that we have triangulated face vertex indices, it&rsquo;s time to build an interleaved buffer that will contain all data from faces. Create a new function.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// create new function after parse_objline
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">build_buffer</span>(objctx <span style="color:#f92672">*</span>ctx) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>nfaceverts; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>bptr <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>buffer <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span> <span style="color:#f92672">*</span> i;      <span style="color:#75715e">// pointer to the place in the buffer where we&#39;ll put the data
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>fptr <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>faces <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> i;         <span style="color:#75715e">// pointer to the current face vertex
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> vert <span style="color:#f92672">=</span> fptr[<span style="color:#ae81ff">0</span>];                     <span style="color:#75715e">// vertex is the first number
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> texc <span style="color:#f92672">=</span> fptr[<span style="color:#ae81ff">1</span>];                     <span style="color:#75715e">// texture coordinate
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> norm <span style="color:#f92672">=</span> fptr[<span style="color:#ae81ff">2</span>];                     <span style="color:#75715e">// normal vector
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (vert) {                             <span style="color:#75715e">// if vertex exists
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#a6e22e">memcpy</span>(bptr, ctx<span style="color:#f92672">-&gt;</span>vertices <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> (vert <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>), <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>));        <span style="color:#75715e">// copy the vertex
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (texc) {                             <span style="color:#75715e">// if texture coordinate exists
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#a6e22e">memcpy</span>(bptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span>, ctx<span style="color:#f92672">-&gt;</span>texcoords <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> (texc <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>), <span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>));   <span style="color:#75715e">// copy the tex. coordinate
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (norm) {                             <span style="color:#75715e">// if normal exists
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#a6e22e">memcpy</span>(bptr <span style="color:#f92672">+</span> <span style="color:#ae81ff">5</span>, ctx<span style="color:#f92672">-&gt;</span>normals <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> (norm <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>), <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>));     <span style="color:#75715e">// copy the normal
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now that we have all the new data in the context, we can print it out neatly:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to objctx_print
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;mesh offsets:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>nmeshes <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> (i <span style="color:#f92672">%</span> <span style="color:#ae81ff">16</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">putchar</span>(<span style="color:#e6db74">&#39;\n&#39;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%4d &#34;</span>, ctx<span style="color:#f92672">-&gt;</span>meshoffsets[i]);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">putchar</span>(<span style="color:#e6db74">&#39;\n&#39;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;faces:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%4d &#34;</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>nfaceverts; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> (i <span style="color:#f92672">%</span> <span style="color:#ae81ff">3</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">%4d &#34;</span>, i);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[ &#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; j<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%4d &#34;</span>, ctx<span style="color:#f92672">-&gt;</span>faces[i <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">+</span> j]);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;] &#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">putchar</span>(<span style="color:#e6db74">&#39;\n&#39;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;buffer:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>nfaceverts; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%4d &#34;</span>, i);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> nd[] <span style="color:#f92672">=</span> {<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>};
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> offs[] <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">5</span>};
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; j<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[ &#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; k <span style="color:#f92672">&lt;</span> nd[j]; k<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, ctx<span style="color:#f92672">-&gt;</span>buffer[<span style="color:#ae81ff">8</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> offs[j] <span style="color:#f92672">+</span> k]);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;] &#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">putchar</span>(<span style="color:#e6db74">&#39;\n&#39;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Don&rsquo;t forget to free all new fields from the context:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to objctx_free
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">free</span>(ctx<span style="color:#f92672">-&gt;</span>faces);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">free</span>(ctx<span style="color:#f92672">-&gt;</span>buffer);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">free</span>(ctx<span style="color:#f92672">-&gt;</span>meshoffsets);
+</span></span></code></pre></div><p>All that you need to do in <code>main</code> is to insert two lines:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to main after end of the second while loop
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>ctx.meshoffsets[ctx.nmeshes] <span style="color:#f92672">=</span> ctx.nfaceverts;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">build_buffer</span>(<span style="color:#f92672">&amp;</span>ctx);
+</span></span></code></pre></div><p>That&rsquo;s it. Try to compile the program and check if it works with the file from the previous post. Now you should see more data being printed, like mesh offsets, face indices, and buffers.</p>
+<p>You can also check out the <a href="../obj2.c">source code</a>.</p>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://localhost:1313/" >
+    &copy;  My Blog 2025 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

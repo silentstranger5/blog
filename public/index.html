@@ -45,8 +45,8 @@
   <meta property="og:type" content="website">
 
   <meta itemprop="name" content="My Blog">
-  <meta itemprop="datePublished" content="2025-01-27T13:05:06+03:00">
-  <meta itemprop="dateModified" content="2025-01-27T13:05:06+03:00">
+  <meta itemprop="datePublished" content="2025-01-28T20:02:37+03:00">
+  <meta itemprop="dateModified" content="2025-01-28T20:02:37+03:00">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="My Blog">
 
@@ -122,6 +122,31 @@
       
       <div class="blah w-100">
         <h1 class="f3 fw1 athelas mt0 lh-title">
+          <a href="/posts/obj/parsing-obj-file-part-3/" class="color-inherit dim link">
+            Parsing Obj File Part 3
+            </a>
+        </h1>
+        <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
+          <p>In the previous post, we created a core of the <code>.obj</code> parser. It can handle keywords now, and store the data from a file. Today, I am going to handle <em>faces</em>.</p>
+<p>Faces represent a combination of vertices that comprise one facet of an object. Each face consists of <em>face vertices</em> which are a triplet of indices that denote a position of the vertex, texture coordinate, and normal, in that order.</p>
+        </div>
+          <a href="/posts/obj/parsing-obj-file-part-3/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+        
+      </div>
+    </div>
+  </div>
+</article>
+
+            </div>
+          
+            <div class="relative w-100 mb4">
+              
+<article class="bb b--black-10">
+  <div class="db pv4 ph3 ph0-l no-underline dark-gray">
+    <div class="flex flex-column flex-row-ns">
+      
+      <div class="blah w-100">
+        <h1 class="f3 fw1 athelas mt0 lh-title">
           <a href="/posts/obj/parsing-obj-file-part-2/" class="color-inherit dim link">
             Parsing Obj File Part 2
             </a>
@@ -170,50 +195,18 @@
 
             </div>
           
-            <div class="relative w-100 mb4">
-              
-<article class="bb b--black-10">
-  <div class="db pv4 ph3 ph0-l no-underline dark-gray">
-    <div class="flex flex-column flex-row-ns">
-      
-      <div class="blah w-100">
-        <h1 class="f3 fw1 athelas mt0 lh-title">
-          <a href="/posts/sha256/writing-an-algorithm-part-2/" class="color-inherit dim link">
-            Writing an Algorithm Part 2
-            </a>
-        </h1>
-        <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
-          <p>In the previous post, we wrote a SHA256 implementation. More specifically, we prepared all of the things needed to use an algorithm, such as constants, functions, and data structures. In this part, we are going to implement an algorithm itself. <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">Here</a> is a document describing the algorithm specification.</p>
-<p>After all of the groundwork, let&rsquo;s take a look at the algorithm:</p>
-<pre tabindex="0"><code>6.2 SHA-256
-
-SHA-256 may be used to hash a message, M, having a length of l bits, where 0 &lt;= l &lt; 2 ^ 64. The 
-algorithm uses 1) a message schedule of sixty-four 32-bit words, 2) eight working variables of 32 
-bits each, and 3) a hash value of eight 32-bit words. The final result of SHA-256 is a 256-bit 
-message digest.
-
-The words of the message schedule are labeled W0, W1,…, W63. The eight working variables are 
-labeled a, b, c, d, e, f, g, and h. The words of the hash value are labeled H0(i), H1(i), ..., H7(i), 
-which will hold the initial hash value, H(0), replaced by each successive intermediate hash value
-(after each message block is processed), H(i), and ending with the final hash value, H(N). SHA-256 
-also uses two temporary words, T1 and T2.
-</code></pre><p>From the start, let&rsquo;s declare all necessary variables that are going to be used in our algorithm:</p>
-        </div>
-          <a href="/posts/sha256/writing-an-algorithm-part-2/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
-        
-      </div>
-    </div>
-  </div>
-</article>
-
-            </div>
-          
         </section>
 
         
         <section class="w-100">
           <h1 class="f3">More</h1>
           
+          
+            <h2 class="f5 fw4 mb4 dib mr3">
+              <a href="/posts/sha256/writing-an-algorithm-part-2/" class="link black dim">
+                Writing an Algorithm Part 2
+              </a>
+            </h2>
           
             <h2 class="f5 fw4 mb4 dib mr3">
               <a href="/posts/sha256/writing-an-algorithm/" class="link black dim">
@@ -230,12 +223,6 @@ also uses two temporary words, T1 and T2.
             <h2 class="f5 fw4 mb4 dib mr3">
               <a href="/posts/the-c-programming-language/" class="link black dim">
                 The C Programming Language
-              </a>
-            </h2>
-          
-            <h2 class="f5 fw4 mb4 dib mr3">
-              <a href="/posts/bypass-censorship/" class="link black dim">
-                Bypass Censorship
               </a>
             </h2>
           
