@@ -504,4 +504,4 @@ parse_materials(&ctx);
 
 Try to compile the program. It should now print materials data.
 
-You can also check out [source code](.../obj3.c) as always.
+You can also check out [source code](../obj3.c) as always.
