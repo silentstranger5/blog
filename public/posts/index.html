@@ -45,8 +45,8 @@
   <meta property="og:type" content="website">
 
   <meta itemprop="name" content="Posts">
-  <meta itemprop="datePublished" content="2025-01-28T20:02:37+03:00">
-  <meta itemprop="dateModified" content="2025-01-28T20:02:37+03:00">
+  <meta itemprop="datePublished" content="2025-01-29T19:37:05+03:00">
+  <meta itemprop="dateModified" content="2025-01-29T19:37:05+03:00">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Posts">
 
@@ -95,14 +95,32 @@
   <div class="bg-white mb3 pa4 gray overflow-hidden">
     <span class="f6 db">Posts</span>
     <h1 class="f3 near-black">
+      <a href="/posts/obj/parsing-obj-file-part-4/" class="link black dim">
+        Parsing Obj File Part 4
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <p>In the previous post, we added face parsing to our parser. In this (hopefully) last part of the series, I&rsquo;m going to add the last feature: parsing materials.</p>
+<p>Materials define various optical characteristics of the material that an object has. Materials are usually stored in a separate file. We need to define the keys of material files and corresponding values since the parsing algorithm will be pretty similar to that for <code>.obj</code> files. This list is a bit longer, but hopefully, it&rsquo;s still sortable by hand. Let&rsquo;s define keys and place values:</p>
+    </div>
+    <a href="/posts/obj/parsing-obj-file-part-4/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="relative w-100 w-30-l mb4 bg-white">
+          <div class="relative w-100 mb4 bg-white nested-copy-line-height">
+  <div class="bg-white mb3 pa4 gray overflow-hidden">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
       <a href="/posts/obj/parsing-obj-file-part-3/" class="link black dim">
         Parsing Obj File Part 3
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <p>In the previous post, we created a core of <code>.obj</code> parser. It can handle keywords now, and store the data from a file. Today, I am going to handle <em>faces</em>.</p>
-<p>Faces represent a combination of vertices that comprise one facet of an object. Each face consists of <em>face vertices</em> which are a triplet of indices that denote a position of vertex, texture coordinate and normal, in that order.</p>
-<p>Before we go further, let&rsquo;s clarify one detail. There is a distinction between a <em>vertex</em> and <em>face vertex</em>. Consider a vertex from a cube. If you look at it, you might notice that any vertex of a cube is a part of three cube faces. When I simply say &ldquo;vertex&rdquo;, I mean a vertex of an object, like cube. When I say &ldquo;face vertex&rdquo;, however, I mean more specific case of vertex that belongs to a face of an object. Sometimes I might omit &ldquo;face&rdquo; from &ldquo;face vertex&rdquo;. In such case, it should hopefully be clear from the context that I mean a &ldquo;face vertex&rdquo;.</p>
+      <p>In the previous post, we created a core of the <code>.obj</code> parser. It can handle keywords now, and store the data from a file. Today, I am going to handle <em>faces</em>.</p>
+<p>Faces represent a combination of vertices that comprise one facet of an object. Each face consists of <em>face vertices</em> which are a triplet of indices that denote a position of the vertex, texture coordinate, and normal, in that order.</p>
     </div>
     <a href="/posts/obj/parsing-obj-file-part-3/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
   </div>
@@ -289,33 +307,27 @@ also uses two temporary words, T1 and T2.
 
         </div>
       
-        <div class="relative w-100 w-30-l mb4 bg-white">
-          <div class="relative w-100 mb4 bg-white nested-copy-line-height">
-  <div class="bg-white mb3 pa4 gray overflow-hidden">
-    <span class="f6 db">Posts</span>
-    <h1 class="f3 near-black">
-      <a href="/posts/how-to-make-your-blog/" class="link black dim">
-        How to Make Your Blog
-      </a>
-    </h1>
-    <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <h3 id="website-constructors">Website constructors</h3>
-<p>Do you want to create your blog? There are many possible ways to do that. The most popular and accessible ways are targeted for broad and general audiences. Here are some useful links:</p>
-<ul>
-<li><a href="https://wordpress.com">WordPress</a> is probably the oldest and the most popular website constructor. It has wide customization options.</li>
-<li><a href="https://wix.com">Wix</a> is a fresh solution targeted at a niche audience.</li>
-<li><a href="https://medium.com">Medium</a> is another popular option. I&rsquo;ve seen many blogs on this platform that discuss more business or technical topics.</li>
-</ul>
-<h3 id="other-options">Other Options</h3>
-<p>Of course, there some many other possible options and platforms that could help you create your blog. But I want to talk about some other options. What if you don&rsquo;t want to use existing ready platforms, and want to try and create something else?</p>
-    </div>
-    <a href="/posts/how-to-make-your-blog/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
-  </div>
-</div>
-
-        </div>
-      
-    </section></article>
+    </section>
+    <ul class="pagination pagination-default">
+      <li class="page-item disabled">
+        <a aria-disabled="true" aria-label="First" class="page-link" role="button" tabindex="-1"><span aria-hidden="true">&laquo;&laquo;</span></a>
+      </li>
+      <li class="page-item disabled">
+        <a aria-disabled="true" aria-label="Previous" class="page-link" role="button" tabindex="-1"><span aria-hidden="true">&laquo;</span></a>
+      </li>
+      <li class="page-item active">
+        <a aria-current="page" aria-label="Page 1" class="page-link" role="button">1</a>
+      </li>
+      <li class="page-item">
+        <a href="/posts/page/2/" aria-label="Page 2" class="page-link" role="button">2</a>
+      </li>
+      <li class="page-item">
+        <a href="/posts/page/2/" aria-label="Next" class="page-link" role="button"><span aria-hidden="true">&raquo;</span></a>
+      </li>
+      <li class="page-item">
+        <a href="/posts/page/2/" aria-label="Last" class="page-link" role="button"><span aria-hidden="true">&raquo;&raquo;</span></a>
+      </li>
+    </ul></article>
 
     </main>
     <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">

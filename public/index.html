@@ -45,8 +45,8 @@
   <meta property="og:type" content="website">
 
   <meta itemprop="name" content="My Blog">
-  <meta itemprop="datePublished" content="2025-01-28T20:02:37+03:00">
-  <meta itemprop="dateModified" content="2025-01-28T20:02:37+03:00">
+  <meta itemprop="datePublished" content="2025-01-29T19:37:05+03:00">
+  <meta itemprop="dateModified" content="2025-01-29T19:37:05+03:00">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="My Blog">
 
@@ -122,6 +122,31 @@
       
       <div class="blah w-100">
         <h1 class="f3 fw1 athelas mt0 lh-title">
+          <a href="/posts/obj/parsing-obj-file-part-4/" class="color-inherit dim link">
+            Parsing Obj File Part 4
+            </a>
+        </h1>
+        <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
+          <p>In the previous post, we added face parsing to our parser. In this (hopefully) last part of the series, I&rsquo;m going to add the last feature: parsing materials.</p>
+<p>Materials define various optical characteristics of the material that an object has. Materials are usually stored in a separate file. We need to define the keys of material files and corresponding values since the parsing algorithm will be pretty similar to that for <code>.obj</code> files. This list is a bit longer, but hopefully, it&rsquo;s still sortable by hand. Let&rsquo;s define keys and place values:</p>
+        </div>
+          <a href="/posts/obj/parsing-obj-file-part-4/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+        
+      </div>
+    </div>
+  </div>
+</article>
+
+            </div>
+          
+            <div class="relative w-100 mb4">
+              
+<article class="bb b--black-10">
+  <div class="db pv4 ph3 ph0-l no-underline dark-gray">
+    <div class="flex flex-column flex-row-ns">
+      
+      <div class="blah w-100">
+        <h1 class="f3 fw1 athelas mt0 lh-title">
           <a href="/posts/obj/parsing-obj-file-part-3/" class="color-inherit dim link">
             Parsing Obj File Part 3
             </a>
@@ -164,43 +189,18 @@
 
             </div>
           
-            <div class="relative w-100 mb4">
-              
-<article class="bb b--black-10">
-  <div class="db pv4 ph3 ph0-l no-underline dark-gray">
-    <div class="flex flex-column flex-row-ns">
-      
-      <div class="blah w-100">
-        <h1 class="f3 fw1 athelas mt0 lh-title">
-          <a href="/posts/obj/parsing-obj-file/" class="color-inherit dim link">
-            Parsing Obj File
-            </a>
-        </h1>
-        <div class="f6 f5-l lh-copy nested-copy-line-height nested-links">
-          <h3 id="obj-files">OBJ files</h3>
-<p>In this series of posts, I am going to write a parser for <code>.obj</code> files. Those files are used to store data about 3d objects like vertex positions, normal vectors, texture coordinates, and material properties. This parser will be written iteratively, one step at a time. Why bother writing such a parser? You will learn:</p>
-<ul>
-<li>How to read text files</li>
-<li>How to process strings</li>
-<li>How to manage allocation and storage of data</li>
-</ul>
-<p>And maybe something on top of this. This parser is not very complicated but requires a bit of code and a careful approach. An interleaved array that such a parser will produce can be used in projects that expect such data, like <code>OpenGL</code>.</p>
-        </div>
-          <a href="/posts/obj/parsing-obj-file/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
-        
-      </div>
-    </div>
-  </div>
-</article>
-
-            </div>
-          
         </section>
 
         
         <section class="w-100">
           <h1 class="f3">More</h1>
           
+          
+            <h2 class="f5 fw4 mb4 dib mr3">
+              <a href="/posts/obj/parsing-obj-file/" class="link black dim">
+                Parsing Obj File
+              </a>
+            </h2>
           
             <h2 class="f5 fw4 mb4 dib mr3">
               <a href="/posts/sha256/writing-an-algorithm-part-2/" class="link black dim">
@@ -217,12 +217,6 @@
             <h2 class="f5 fw4 mb4 dib mr3">
               <a href="/posts/using-c-libraries/" class="link black dim">
                 Using C Libraries
-              </a>
-            </h2>
-          
-            <h2 class="f5 fw4 mb4 dib mr3">
-              <a href="/posts/the-c-programming-language/" class="link black dim">
-                The C Programming Language
               </a>
             </h2>
           
