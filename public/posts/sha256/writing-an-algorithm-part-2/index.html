@@ -65,7 +65,7 @@ After all of the groundwork, let’s take a look at the algorithm:
 6.2 SHA-256 SHA-256 may be used to hash a message, M, having a length of l bits, where 0 &lt;= l &lt; 2 ^ 64. The algorithm uses 1) a message schedule of sixty-four 32-bit words, 2) eight working variables of 32 bits each, and 3) a hash value of eight 32-bit words. The final result of SHA-256 is a 256-bit message digest. The words of the message schedule are labeled W0, W1,…, W63. The eight working variables are labeled a, b, c, d, e, f, g, and h. The words of the hash value are labeled H0(i), H1(i), ..., H7(i), which will hold the initial hash value, H(0), replaced by each successive intermediate hash value (after each message block is processed), H(i), and ending with the final hash value, H(N). SHA-256 also uses two temporary words, T1 and T2. From the start, let’s declare all necessary variables that are going to be used in our algorithm:">
   <meta itemprop="datePublished" content="2025-01-25T14:38:08+03:00">
   <meta itemprop="dateModified" content="2025-01-25T14:38:08+03:00">
-  <meta itemprop="wordCount" content="1445">
+  <meta itemprop="wordCount" content="1443">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Writing an Algorithm Part 2">
   <meta name="twitter:description" content="In the previous post, we wrote a SHA256 implementation. More specifically, we prepared all of the things needed to use an algorithm, such as constants, functions, and data structures. In this part, we are going to implement an algorithm itself. Here is a document describing the algorithm specification.
@@ -336,7 +336,7 @@ H0(N) || H1(N) || H2(N) || H3(N) || H4(N) || H5(N) || H6(N) || H7(N)
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">digest_print</span>(digest);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Try to compile the program. Hopefully, it should work. If you are stuck, check the entire source code <a href="../sha.c">here</a>.</p>
+</span></span></code></pre></div><p>Try to compile the program. Hopefully, it should work. You can also check out the <a href="../sha.c">source code</a>.</p>
 <ul class="pa0">
   
 </ul>

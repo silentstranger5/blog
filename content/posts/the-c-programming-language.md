@@ -8,9 +8,9 @@ title = 'The C Programming Language'
 
 For some unknown reason, I often find myself drawn to C. It's hard for me to tell exactly why... Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.
 
-Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.
+Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal and even if they are close enough to primitive instructions, this language is not simple to use.
 
-Is it not a contradiction? The language itself is simple, but this simplicity means that everything must be built from scratch. The language does not provide abstractions or convenient containers with algorithms, like lists, maps, or sets. Object-oriented mechanisms can not be found here either.
+Is it not a contradiction? The language itself is simple, but this simplicity means everything must be built from scratch. The language does not provide abstractions or convenient containers with algorithms, like lists, maps, or sets. Object-oriented mechanisms can not be found here either.
 
 Perhaps, the most important of all, memory can be managed indirectly using *pointers* that represent addresses with memory. This enables functions to modify values out of their scope. Your typical variables and arrays are allocated on a memory region called *stack*, whereas another type of memory can be dynamically allocated using *heap*.
 
@@ -41,29 +41,29 @@ Now use your text editor to paste this code into `hello.c`:
 
 int main(void) 
 {
-    printf("hello, world\n");
-    return 0;
+    printf("hello, world\n");
+    return 0;
 } 
 ```
 
 ### About compiler
 
-Here comes the trickiest part. To create the program, you need software called *compiler*. The *source code* of the program you see above is designed to be *human-readable*. Yes, it's tricky to read this cryptic language, but it's still possible.
+Here comes the trickiest part. To create the program, you need a software called *compiler*. The *source code* of the program you see above is designed to be *human-readable*. Yes, it's tricky to read this cryptic language, but it's still possible.
 
 However, computers can't understand this source code. To execute the code, it would need something more like that:
 
 ```asm
 .TEXT:
- .string "hello world"
+    .string "hello world"
 main:
- push bp
- mov rbp, rsp
- mov edi, OFFSET FLAT:.TEXT
- mov eax, 0
- call printf
- mov eax, 0
- pop rbp
- ret
+    push bp
+    mov rbp, rsp
+    mov edi, OFFSET FLAT:.TEXT
+    mov eax, 0
+    call printf
+    mov eax, 0
+    pop rbp
+    ret
 ```
 
 This is *assembly*, low-level code representation, where each line maps roughly to one instruction of CPU. Computer actually can't understand this language either, but it's much closer to what a computer is doing. This form is still designed to be human-readable with each instruction having a mnemonic name (like `mov` for "move") instead of binary numbers. I admit though that reading assembly is harder compared to more *high-level* source code.
@@ -81,7 +81,7 @@ b8 00 00 00 00
 c3
 ```
 
-This is a *binary file* that contains famous ones and zeros. Note that the actual file does not contain newlines after each command, this is formatting for convenience. You see much more than just ones and zeroes because this file is represented using convenient *hexadecimal notation* where each digit can take any value from 0 to 15. Data here is indeed just a bunch of ones and zeros that CPU knows how to deal with.
+This is a *binary file* that contains famous ones and zeros. Note that the actual file does not contain newlines after each command, this is formatting for convenience. You see much more than just ones and zeroes because this file is represented using convenient *hexadecimal notation* where each digit can take any value from 0 to 15. Data here is indeed just a bunch of ones and zeros that the CPU knows how to deal with.
 
 ### Source code
 
@@ -113,7 +113,7 @@ Now let's go back to the first line. To put it very simply, it tells our compile
 
 ```c
 int main(void) {
-    foo();
+    foo();
 }
 ```
 
@@ -128,7 +128,7 @@ What is happening here? Well, let's try to think about it. We are trying to call
 ```c
 #include <stdio.h>
 void foo() {
-    printf("foo\n");
+    printf("foo\n");
 }
 ```
 
@@ -159,7 +159,7 @@ Well, what is this *declaration* and what does it look like? The declaration is 
 void foo(void);
 
 int main(void) {
-    foo();
+    foo();
 }
 ```
 
@@ -195,6 +195,7 @@ More specifically, `#include` means that the preprocessor has to copy all conten
 void foo(void);
 int bar(int, int);
 float baz(float);
+...
 
 void foo(void)
 ...
@@ -206,18 +207,22 @@ This code won't compile because functions `bar` and `baz` are not defined. But I
 
 Maybe it's weird that I've put the most important part at the end, but I wanted to pay attention to the source code before compiling it. Unfortunately, obtaining a C compiler is trickier compared to something like Python or Go which you can just download and it works.
 
-Your compiler generally depends on your operating system. If you are using UNIX-like systems (like Linux or MacOS), you'll need `gcc` - GNU Compiler Collection or another UNIX-like compiler. On Windows, your best choice is probably `MSVC` - Microsoft Visual C compiler.
+Your compiler generally depends on your operating system. 
+
+### UNIX notes
+
+If you are using UNIX-like systems (like Linux or MacOS), you'll need `gcc` - GNU Compiler Collection or any other UNIX compiler.
 
 Most UNIX-like systems have package managers. On Debian-like systems, for example, you can install a compiler like this:
 
 ```bash
-sudo apt install gcc
+apt install gcc
 ```
 
 Although, it's probably best to install all useful tools for building like this:
 
 ```bash
-sudo apt install build-essential
+apt install build-essential
 ```
 
 It's fairly similar on Mac:
@@ -232,9 +237,9 @@ Compiling on UNIX-like systems is easy:
 gcc hello.c
 ```
 
-Some systems have an alias for compiler called `cc` which stands for `C Compiler`. This alias is from UNIX systems, where it was the name of the compiler program. It may or may not be available on your system, but I intend to use it hereafter for the sake of brevity.
+Some systems have an alias for compiler called `cc` which stands for `C Compiler`. This alias is from the original UNIX systems, where it was the name of the compiler program. It may or may not be available on your system, but I intend to use it hereafter for the sake of brevity.
 
-You can see that your directory now contains a file called `a.out`. This is the default executable name that we have for historical reasons. It probably means "assembly output". If you want to change the name of your executable, specify it with the `-o` flag like this:
+You can see that your directory now contains a file called `a.out`. This is the default executable name that we have for historical reasons. It means "assembly output". If you want to change the name of your executable, specify it with the `-o` flag like this:
 
 ```bash
 cc -o hello hello.c
@@ -244,15 +249,10 @@ Now you can execute your program like this:
 
 ```bash
 ./hello
+hello, world
 ```
 
 A dot with a slash in the beginning tells your shell that you intend to execute the file from your current directory (`.`) instead of searching for it in the default path. Many shells do not include the current directory in the executable search path by default.
-
-If everything is okay, your program should print this and exit:
-
-```bash
-hello, world
-```
 
 If you want to check the status of your program (whether it was completed without issues or failed), type this:
 
@@ -262,9 +262,11 @@ echo $?
 
 If everything is okay, it should print `0`.
 
+You can also check the [GCC manual](https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/) for additional information.
+
 ### Windows notes
 
-For Windows, you can download Visual Studio [here](https://visualstudio.microsoft.com/downloads/). You can use Visual Studio IDE if you like, but I prefer to use Visual Studio Build Tools. It is a standalone package that contains all tools for building. You can then use any text editor of your choice, be it `neovim` or `Visual Studio Code`. If your editor does not contain a debugger, you may use `WinDbg` - Windows Debugger.
+On Windows systems, the best choice for the compiler is probably `MSVC` which is a part of `Visual Studio`. You can download Visual Studio [here](https://visualstudio.microsoft.com/downloads/). You can use Visual Studio IDE if you like, but I prefer to use Visual Studio Build Tools. It is a standalone package that contains all tools for building. You can then use any text editor of your choice, be it `neovim`, `Visual Studio Code`, or something else. If your editor does not contain a debugger, you may use `WinDbg` - Windows Debugger.
 
 To be able to use the compiler, you have to start `developer powershell` or `developer command line`. This program performs the necessary configuration of the environment before starting the shell. You shouldn't use the MSVC compiler outside of it.
 
@@ -278,4 +280,84 @@ You can execute your program like this:
 
 ```pwsh
 ./hello
+hello, world
 ```
+
+You can also check out the [MSVC compiler reference](https://learn.microsoft.com/en-us/cpp/build/reference/compiling-a-c-cpp-program?view=msvc-170) for additional information.
+
+### CMake
+
+As we discussed already, the compiler depends on your platform. I haven't heard about the cross-platform C compiler yet. However, even if that's the case, *building* projects can be cross-platform.
+
+In our example, we use just one command to build our executable. However, it's not always this simple. Often you need to type many different commands to do that. To avoid typing all of those commands over and over again, *building systems* were created. Generally, the most popular building option is a `makefile`. It can look like this:
+
+```makefile
+main: main.o
+ cc -o main main.o
+
+main.o: main.c
+ cc -c main.c
+```
+
+You can use it just by typing `make`.
+
+This file is quite simple and you can probably read it without many problems. If you want to learn more, check out the [make utility manual](https://www.gnu.org/software/make/manual/html_node/index.html).
+
+However, makefiles are platform-dependent as well. On Windows, makefiles are built using the `nmake` utility with the `msvc` compiler and have a specific flavor. The example above could look like this:
+
+```makefile
+main: main.obj
+    cl -Fe:main main.obj
+
+main.obj: main.c
+    cl -Fo:main -c main.c
+```
+
+If you want to learn more about this tool, check out the [nmake reference](https://learn.microsoft.com/en-us/cpp/build/reference/nmake-reference?view=msvc-170).
+
+This means that if you want to target both UNIX and Windows platforms, for example, you will need to provide makefiles in both flavors.
+
+There is a popular cross-platform building system that supports both platforms. This means that you can provide just one `makefile` and it can be used to build your source code on any platform (assuming that your source code can be compiled on any platform which is usually the case unless you use anything platform-specific). This building system is called `CMake`.
+
+If you want to use CMake, you will need to [download](https://cmake.org) and install it. If you use Visual Studio, it is installed by default.
+
+To use CMake, create a new file called `CMakeLists.txt` in your directory:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+
+project(hello C)
+
+add_executable(hello main.c)
+```
+
+Now, configure your project:
+
+```bash
+cmake -B build -S .
+```
+
+Here, the `-B` flag denotes a building directory (it is used to build your project), and `-S` denotes a source code directory. Note that at this point, the directory `build` does not exist yet. It will be automatically created after this command. Recall that `.` denotes the current directory. It is generally a good idea to specify a separate building directory since `CMake` generates a lot of files and you probably don't want to clutter your project with building files.
+
+Finally, let's build the project:
+
+```bash
+cmake --build build
+```
+
+The project is usually built in a *debug* configuration. It is used to provide additional information necessary for debugging. If you want to build the project faster, you can specify *release* configuration:
+
+```bash
+cmake --build build --config release
+```
+
+After you are done, you can execute the program like this:
+
+```bash
+build/debug/hello
+hello, world
+```
+
+If you specified the *release* configuration, change `debug` directory to `release`.
+
+If you want to learn more about this tool, you can check out the [CMake documentation](https://cmake.org/cmake/help/latest/index.html). You can also try a [CMake tutorial](https://cmake.org/cmake/help/latest/guide/tutorial/index.html) to learn how to use the CMake in practice.

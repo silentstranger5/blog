@@ -286,4 +286,4 @@ int main(void) {
 }
 ```
 
-Try to compile the program. Hopefully, it should work. If you are stuck, check the entire source code [here](../sha.c).
+Try to compile the program. Hopefully, it should work. You can also check out the [source code](../sha.c).

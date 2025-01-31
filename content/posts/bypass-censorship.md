@@ -22,12 +22,12 @@ Here is a list of resources that allow one to bypass censorship:
 
 - [Psiphon](https://psiphon.ca) is a Canadian project for censorship bypass. It has proven to be a reliable tool.
 - [Lantern](https://lantern.io) is another tool to bypass restrictions. It uses a network of other users.
-- [PlanetVPN](https://freevpnplanet.com)
-- [TurboVPN](https://turbovpn.com)
-- [OpenVPN](https://openvpn.net) is an open-source tool developed by the community.
-- [Wireguard](https://wireguard.com) is another open source project.
+- [PlanetVPN](https://freevpnplanet.com) is a VPN client
+- [TurboVPN](https://turbovpn.com) is another VPN client
+- [Hiddify](https://hiddify.com) is my personal recomendation. It supports a wide range of proxy protocols
 - [Outline](https://getoutline.org) is a pair of VPN managers and clients that use keys for the connection.
-- [Hiddify](https://hiddify.com) is my personal recomendation. It supports a wide range of proxy protocols including Hysteria2, TUIC, SSH, Reality, VMess, VLESS, Trojan, and many more.
+- [OpenVPN](https://openvpn.net) is an open-source tool developed by community.
+- [Wireguard](https://wireguard.com) is another open source project.
 
 Beware that it may be difficult to access some of those websites. If you are in a censored country, many or all of those sites may not be available. Try to use Webproxy if you will be able to find a working one.
 
@@ -37,6 +37,11 @@ Another possible option is to deploy your own VPN. You will need to buy a server
 
 If you can't afford to buy a VPN and are not using provided VPN options for whatever reasons, there are some more options left to find servers. Beware that neither the privacy nor security of such servers can be guaranteed under any circumstances. Do not use them if you value your privacy or data. You have been warned.
 
-- [Outline keys](https://outlinekeys.com/) with filters by protocol and country
-- [Epodonios V2Ray Configs](https://github.com/Epodonios/v2ray-configs) contains free V2Ray configs that update every hour or so
-- [Barry-Far's V2Ray Configs](https://github.com/barry-far/V2ray-Configs) another repository with V2Ray configs
+- [Outline keys](https://outlinekeys.com/)
+- [Opentunnel](https://opentunnel.net)
+- [FreeVPN](https://www.freevpn.us)
+- [SSH-tunnel](https://www.ssh-tunnel.net)
+- [OpenProxyList](https://openproxylist.com)
+- [V2Nodes](https://www.v2nodes.com)
+- [Epodonios V2Ray configs](https://github.com/Epodonios/v2ray-configs)
+- [Barry-Far V2Ray configs](https://github.com/barry-far/V2ray-Configs)

@@ -41,8 +41,8 @@ I am going to cover details that are related to Windows (although this should wo
 
 To use the package manager we will need three things:
 
-- [git](https://git-scm.com), which is hopefully already installed if you followed previous posts
-- [CMake](https://cmake.org), which is installed with VS Build Tools by default
+- [git](https://git-scm.com), a source code manager
+- [CMake](https://cmake.org), a building system
 - [vcpkg](https://vcpkg.io), a package manager for C/C++
 
 I am going to tell you how to use `vcpkg` with your projects. You can also read details [here](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started).
@@ -138,38 +138,27 @@ target_link_libraries(sha PRIVATE OpenSSL::applink)
 
 ```json
 {
-  "version": 2,
-  "configurePresets": [
-  {
-      "name": "vcpkg",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build",
-      "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-      }
-    }
-  ]
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "vcpkg",
+            "displayName": "Configure preset using toolchain file",
+            "description": "Sets Ninja generator, build and install directory",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+            }
+        }
+    ]
 }
 ```
 
-9. Create a file called `CMakeUserPresets.json`:
+This preset was automatically generated. You can edit or remove unnecessary fields. If you edit `binaryDir` field, don't forget to update building directory in the commands below.
 
-```json
-{
-    "version": 2,
-    "configurePresets": [
-    {
-        "name": "default",
-        "inherits": "vcpkg",
-        "environment": {
-          "VCPKG_ROOT": "<path to vcpkg>"
-    }
-  }
- ]
-}
-```
-
-10. Create a source file called `sha.c`:
+9. Create a source file called `sha.c`:
 
 ```c
 #include <stdio.h>
@@ -242,19 +231,19 @@ err:
 11. Configure build with CMake:
 
 ```pwsh
-cmake --preset=default
+cmake --preset=vcpkg
 ```
 
 12. Build project:
 
 ```pwsh
-cmake --build build
+cmake --build out/build/vcpkg
 ```
 
 13. Run the application:
 
 ```pwsh
-.\build\sha
+out/build/vcpkg/sha
 
 Input message: hello world
 0000 - b9 4d 27 b9 93 4d 3e 08-a5 2e 52 d7 da 7d ab fa   .M'..M>...R..}..

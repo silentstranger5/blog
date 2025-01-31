@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width,minimum-scale=1">
     <meta name="description" content="C Language
 For some unknown reason, I often find myself drawn to C. It&rsquo;s hard for me to tell exactly why&hellip; Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.
-Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.">
+Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal and even if they are close enough to primitive instructions, this language is not simple to use.">
     <meta name="generator" content="Hugo 0.141.0">
     
     
@@ -39,7 +39,7 @@ Do not be fooled by this simplicity, though, reader. Even if the language and st
   <meta property="og:site_name" content="My Blog">
   <meta property="og:title" content="The C Programming Language">
   <meta property="og:description" content="C Language For some unknown reason, I often find myself drawn to C. It’s hard for me to tell exactly why… Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.
-Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.">
+Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal and even if they are close enough to primitive instructions, this language is not simple to use.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="article">
     <meta property="article:section" content="posts">
@@ -48,14 +48,14 @@ Do not be fooled by this simplicity, though, reader. Even if the language and st
 
   <meta itemprop="name" content="The C Programming Language">
   <meta itemprop="description" content="C Language For some unknown reason, I often find myself drawn to C. It’s hard for me to tell exactly why… Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.
-Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.">
+Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal and even if they are close enough to primitive instructions, this language is not simple to use.">
   <meta itemprop="datePublished" content="2025-01-21T13:18:53+03:00">
   <meta itemprop="dateModified" content="2025-01-21T13:18:53+03:00">
-  <meta itemprop="wordCount" content="2158">
+  <meta itemprop="wordCount" content="2688">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="The C Programming Language">
   <meta name="twitter:description" content="C Language For some unknown reason, I often find myself drawn to C. It’s hard for me to tell exactly why… Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.
-Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.">
+Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal and even if they are close enough to primitive instructions, this language is not simple to use.">
 
 	
   </head><body class="ma0 avenir bg-near-white development">
@@ -109,8 +109,8 @@ Do not be fooled by this simplicity, though, reader. Even if the language and st
     </header>
     <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h3 id="c-language">C Language</h3>
 <p>For some unknown reason, I often find myself drawn to C. It&rsquo;s hard for me to tell exactly why&hellip; Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.</p>
-<p>Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal, and even if it is close enough to primitive instructions, this language is not simple to use.</p>
-<p>Is it not a contradiction? The language itself is simple, but this simplicity means that everything must be built from scratch. The language does not provide abstractions or convenient containers with algorithms, like lists, maps, or sets. Object-oriented mechanisms can not be found here either.</p>
+<p>Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal and even if they are close enough to primitive instructions, this language is not simple to use.</p>
+<p>Is it not a contradiction? The language itself is simple, but this simplicity means everything must be built from scratch. The language does not provide abstractions or convenient containers with algorithms, like lists, maps, or sets. Object-oriented mechanisms can not be found here either.</p>
 <p>Perhaps, the most important of all, memory can be managed indirectly using <em>pointers</em> that represent addresses with memory. This enables functions to modify values out of their scope. Your typical variables and arrays are allocated on a memory region called <em>stack</em>, whereas another type of memory can be dynamically allocated using <em>heap</em>.</p>
 <h3 id="hello-world">Hello World</h3>
 <p>I am not going to dive into those topics, at least not for now. &ldquo;The C Programming Language&rdquo; by B. Kernighan and D. Richie is the legendary book on the topic, perhaps the most famous book on programming in history. What I intend on doing today can be expressed using a quote from this book:</p>
@@ -132,23 +132,23 @@ mechanical details mastered, everything else is comparatively easy.</p>
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) 
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;hello, world</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;hello, world</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>} 
 </span></span></code></pre></div><h3 id="about-compiler">About compiler</h3>
-<p>Here comes the trickiest part. To create the program, you need software called <em>compiler</em>. The <em>source code</em> of the program you see above is designed to be <em>human-readable</em>. Yes, it&rsquo;s tricky to read this cryptic language, but it&rsquo;s still possible.</p>
+<p>Here comes the trickiest part. To create the program, you need a software called <em>compiler</em>. The <em>source code</em> of the program you see above is designed to be <em>human-readable</em>. Yes, it&rsquo;s tricky to read this cryptic language, but it&rsquo;s still possible.</p>
 <p>However, computers can&rsquo;t understand this source code. To execute the code, it would need something more like that:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>.TEXT:
-</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">.string</span> <span style="color:#e6db74">&#34;hello world&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">.string</span> <span style="color:#e6db74">&#34;hello world&#34;</span>
 </span></span><span style="display:flex;"><span>main:
-</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">push</span> <span style="color:#66d9ef">bp</span>
-</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rbp</span>, <span style="color:#66d9ef">rsp</span>
-</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">edi</span>, <span style="color:#66d9ef">OFFSET</span> <span style="color:#66d9ef">FLAT</span>:.<span style="color:#66d9ef">TEXT</span>
-</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">call</span> <span style="color:#66d9ef">printf</span>
-</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">pop</span> <span style="color:#66d9ef">rbp</span>
-</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">ret</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">push</span> <span style="color:#66d9ef">bp</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rbp</span>, <span style="color:#66d9ef">rsp</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">edi</span>, <span style="color:#66d9ef">OFFSET</span> <span style="color:#66d9ef">FLAT</span>:.<span style="color:#66d9ef">TEXT</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">call</span> <span style="color:#66d9ef">printf</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pop</span> <span style="color:#66d9ef">rbp</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ret</span>
 </span></span></code></pre></div><p>This is <em>assembly</em>, low-level code representation, where each line maps roughly to one instruction of CPU. Computer actually can&rsquo;t understand this language either, but it&rsquo;s much closer to what a computer is doing. This form is still designed to be human-readable with each instruction having a mnemonic name (like <code>mov</code> for &ldquo;move&rdquo;) instead of binary numbers. I admit though that reading assembly is harder compared to more <em>high-level</em> source code.</p>
 <p>What computer understands is something like this:</p>
 <pre tabindex="0"><code class="language-bin" data-lang="bin">55 
@@ -159,7 +159,7 @@ e8 00 00 00 00
 b8 00 00 00 00
 5d
 c3
-</code></pre><p>This is a <em>binary file</em> that contains famous ones and zeros. Note that the actual file does not contain newlines after each command, this is formatting for convenience. You see much more than just ones and zeroes because this file is represented using convenient <em>hexadecimal notation</em> where each digit can take any value from 0 to 15. Data here is indeed just a bunch of ones and zeros that CPU knows how to deal with.</p>
+</code></pre><p>This is a <em>binary file</em> that contains famous ones and zeros. Note that the actual file does not contain newlines after each command, this is formatting for convenience. You see much more than just ones and zeroes because this file is represented using convenient <em>hexadecimal notation</em> where each digit can take any value from 0 to 15. Data here is indeed just a bunch of ones and zeros that the CPU knows how to deal with.</p>
 <h3 id="source-code">Source code</h3>
 <p>Let&rsquo;s cover source code line by line.</p>
 <p>To understand what the first line does, we need to take a detour. We will come back to it a bit later. Let&rsquo;s move further.</p>
@@ -174,14 +174,14 @@ c3
 <h3 id="header-files">Header files</h3>
 <p>Now let&rsquo;s go back to the first line. To put it very simply, it tells our compiler that <code>printf</code> is a function that accepts a string along with an arbitrary number of additional arguments and returns nothing. Look at this line: <code>#include &lt;stdio.h&gt;</code>. To understand what it means, let&rsquo;s consider a couple more examples. Let&rsquo;s say that you have a file like this called <code>main.c</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">foo</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">foo</span>();
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>If you try to compile something like that, you will likely get an error. This error may look somewhat like this:</p>
 <pre tabindex="0"><code>unresolved external symbol foo referenced in function main
 </code></pre><p>What is happening here? Well, let&rsquo;s try to think about it. We are trying to call some function called <code>foo</code>. But if you look around, this function is nowhere to be found. Compiler (more specifically, linker) complains that it does not understand what <code>foo</code> means. Now let&rsquo;s say that we have another file called <code>foo.c</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">foo</span>() {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;foo</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;foo</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>You can now in theory make this program work if you compile both of those files and link them together. I am going to cover compiler mechanics in just a minute. Let&rsquo;s pretend that you know how to do it. If you try to do it&hellip; it does indeed compile. But there is a certain subtlety to it.</p>
 <p>When you compile <code>main.c</code> without linking, you&rsquo;ll see a warning like this:</p>
@@ -203,7 +203,7 @@ new C programs. If the function takes arguments, declare them; if it takes no ar
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">foo</span>(<span style="color:#66d9ef">void</span>);
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">foo</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">foo</span>();
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Notice the first line. It tells to compiler that function <code>foo</code> does not accept any arguments, neither does it return any value. If you compile this file without linking now, all errors go away.</p>
 <p>As you can see, we use declarations to specify <em>interfaces</em> - to specify compiler types of variables and functions. Often one file may contain hundreds of functions you may want to use. Typing a hundred function declarations line by line when you want to use functions from your file in your program is not a great idea.</p>
@@ -224,40 +224,83 @@ new C programs. If the function takes arguments, declare them; if it takes no ar
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">foo</span>(<span style="color:#66d9ef">void</span>);
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">bar</span>(<span style="color:#66d9ef">int</span>, <span style="color:#66d9ef">int</span>);
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">float</span> <span style="color:#a6e22e">baz</span>(<span style="color:#66d9ef">float</span>);
+</span></span><span style="display:flex;"><span>...
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">foo</span>(<span style="color:#66d9ef">void</span>)
 </span></span><span style="display:flex;"><span>...
 </span></span></code></pre></div><p>This code won&rsquo;t compile because functions <code>bar</code> and <code>baz</code> are not defined. But I am just showing it here to make a point.</p>
 <h3 id="how-to-compile">How to compile</h3>
 <p>Maybe it&rsquo;s weird that I&rsquo;ve put the most important part at the end, but I wanted to pay attention to the source code before compiling it. Unfortunately, obtaining a C compiler is trickier compared to something like Python or Go which you can just download and it works.</p>
-<p>Your compiler generally depends on your operating system. If you are using UNIX-like systems (like Linux or MacOS), you&rsquo;ll need <code>gcc</code> - GNU Compiler Collection or another UNIX-like compiler. On Windows, your best choice is probably <code>MSVC</code> - Microsoft Visual C compiler.</p>
+<p>Your compiler generally depends on your operating system.</p>
+<h3 id="unix-notes">UNIX notes</h3>
+<p>If you are using UNIX-like systems (like Linux or MacOS), you&rsquo;ll need <code>gcc</code> - GNU Compiler Collection or any other UNIX compiler.</p>
 <p>Most UNIX-like systems have package managers. On Debian-like systems, for example, you can install a compiler like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt install gcc
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>apt install gcc
 </span></span></code></pre></div><p>Although, it&rsquo;s probably best to install all useful tools for building like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt install build-essential
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>apt install build-essential
 </span></span></code></pre></div><p>It&rsquo;s fairly similar on Mac:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>brew install gcc
 </span></span></code></pre></div><p>Compiling on UNIX-like systems is easy:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>gcc hello.c
-</span></span></code></pre></div><p>Some systems have an alias for compiler called <code>cc</code> which stands for <code>C Compiler</code>. This alias is from UNIX systems, where it was the name of the compiler program. It may or may not be available on your system, but I intend to use it hereafter for the sake of brevity.</p>
-<p>You can see that your directory now contains a file called <code>a.out</code>. This is the default executable name that we have for historical reasons. It probably means &ldquo;assembly output&rdquo;. If you want to change the name of your executable, specify it with the <code>-o</code> flag like this:</p>
+</span></span></code></pre></div><p>Some systems have an alias for compiler called <code>cc</code> which stands for <code>C Compiler</code>. This alias is from the original UNIX systems, where it was the name of the compiler program. It may or may not be available on your system, but I intend to use it hereafter for the sake of brevity.</p>
+<p>You can see that your directory now contains a file called <code>a.out</code>. This is the default executable name that we have for historical reasons. It means &ldquo;assembly output&rdquo;. If you want to change the name of your executable, specify it with the <code>-o</code> flag like this:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cc -o hello hello.c
 </span></span></code></pre></div><p>Now you can execute your program like this:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./hello
+</span></span><span style="display:flex;"><span>hello, world
 </span></span></code></pre></div><p>A dot with a slash in the beginning tells your shell that you intend to execute the file from your current directory (<code>.</code>) instead of searching for it in the default path. Many shells do not include the current directory in the executable search path by default.</p>
-<p>If everything is okay, your program should print this and exit:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hello, world
-</span></span></code></pre></div><p>If you want to check the status of your program (whether it was completed without issues or failed), type this:</p>
+<p>If you want to check the status of your program (whether it was completed without issues or failed), type this:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo $?
 </span></span></code></pre></div><p>If everything is okay, it should print <code>0</code>.</p>
+<p>You can also check the <a href="https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/">GCC manual</a> for additional information.</p>
 <h3 id="windows-notes">Windows notes</h3>
-<p>For Windows, you can download Visual Studio <a href="https://visualstudio.microsoft.com/downloads/">here</a>. You can use Visual Studio IDE if you like, but I prefer to use Visual Studio Build Tools. It is a standalone package that contains all tools for building. You can then use any text editor of your choice, be it <code>neovim</code> or <code>Visual Studio Code</code>. If your editor does not contain a debugger, you may use <code>WinDbg</code> - Windows Debugger.</p>
+<p>On Windows systems, the best choice for the compiler is probably <code>MSVC</code> which is a part of <code>Visual Studio</code>. You can download Visual Studio <a href="https://visualstudio.microsoft.com/downloads/">here</a>. You can use Visual Studio IDE if you like, but I prefer to use Visual Studio Build Tools. It is a standalone package that contains all tools for building. You can then use any text editor of your choice, be it <code>neovim</code>, <code>Visual Studio Code</code>, or something else. If your editor does not contain a debugger, you may use <code>WinDbg</code> - Windows Debugger.</p>
 <p>To be able to use the compiler, you have to start <code>developer powershell</code> or <code>developer command line</code>. This program performs the necessary configuration of the environment before starting the shell. You shouldn&rsquo;t use the MSVC compiler outside of it.</p>
 <p>Here is how compilation on Windows looks like:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-pwsh" data-lang="pwsh"><span style="display:flex;"><span>cl hello.c
 </span></span></code></pre></div><p>You can execute your program like this:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-pwsh" data-lang="pwsh"><span style="display:flex;"><span>./hello
-</span></span></code></pre></div><ul class="pa0">
+</span></span><span style="display:flex;"><span>hello, world
+</span></span></code></pre></div><p>You can also check out the <a href="https://learn.microsoft.com/en-us/cpp/build/reference/compiling-a-c-cpp-program?view=msvc-170">MSVC compiler reference</a> for additional information.</p>
+<h3 id="cmake">CMake</h3>
+<p>As we discussed already, the compiler depends on your platform. I haven&rsquo;t heard about the cross-platform C compiler yet. However, even if that&rsquo;s the case, <em>building</em> projects can be cross-platform.</p>
+<p>In our example, we use just one command to build our executable. However, it&rsquo;s not always this simple. Often you need to type many different commands to do that. To avoid typing all of those commands over and over again, <em>building systems</em> were created. Generally, the most popular building option is a <code>makefile</code>. It can look like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-makefile" data-lang="makefile"><span style="display:flex;"><span><span style="color:#a6e22e">main</span><span style="color:#f92672">:</span> main.o
+</span></span><span style="display:flex;"><span> cc -o main main.o
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main.o</span><span style="color:#f92672">:</span> main.c
+</span></span><span style="display:flex;"><span> cc -c main.c
+</span></span></code></pre></div><p>You can use it just by typing <code>make</code>.</p>
+<p>This file is quite simple and you can probably read it without many problems. If you want to learn more, check out the <a href="https://www.gnu.org/software/make/manual/html_node/index.html">make utility manual</a>.</p>
+<p>However, makefiles are platform-dependent as well. On Windows, makefiles are built using the <code>nmake</code> utility with the <code>msvc</code> compiler and have a specific flavor. The example above could look like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-makefile" data-lang="makefile"><span style="display:flex;"><span><span style="color:#a6e22e">main</span><span style="color:#f92672">:</span> main.obj
+</span></span><span style="display:flex;"><span>    cl -Fe:main main.obj
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main.obj</span><span style="color:#f92672">:</span> main.c
+</span></span><span style="display:flex;"><span>    cl -Fo:main -c main.c
+</span></span></code></pre></div><p>If you want to learn more about this tool, check out the <a href="https://learn.microsoft.com/en-us/cpp/build/reference/nmake-reference?view=msvc-170">nmake reference</a>.</p>
+<p>This means that if you want to target both UNIX and Windows platforms, for example, you will need to provide makefiles in both flavors.</p>
+<p>There is a popular cross-platform building system that supports both platforms. This means that you can provide just one <code>makefile</code> and it can be used to build your source code on any platform (assuming that your source code can be compiled on any platform which is usually the case unless you use anything platform-specific). This building system is called <code>CMake</code>.</p>
+<p>If you want to use CMake, you will need to <a href="https://cmake.org">download</a> and install it. If you use Visual Studio, it is installed by default.</p>
+<p>To use CMake, create a new file called <code>CMakeLists.txt</code> in your directory:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>cmake_minimum_required(<span style="color:#e6db74">VERSION</span> <span style="color:#e6db74">3.10</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>project(<span style="color:#e6db74">hello</span> <span style="color:#e6db74">C</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>add_executable(<span style="color:#e6db74">hello</span> <span style="color:#e6db74">main.c</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>Now, configure your project:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cmake -B build -S .
+</span></span></code></pre></div><p>Here, the <code>-B</code> flag denotes a building directory (it is used to build your project), and <code>-S</code> denotes a source code directory. Note that at this point, the directory <code>build</code> does not exist yet. It will be automatically created after this command. Recall that <code>.</code> denotes the current directory. It is generally a good idea to specify a separate building directory since <code>CMake</code> generates a lot of files and you probably don&rsquo;t want to clutter your project with building files.</p>
+<p>Finally, let&rsquo;s build the project:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cmake --build build
+</span></span></code></pre></div><p>The project is usually built in a <em>debug</em> configuration. It is used to provide additional information necessary for debugging. If you want to build the project faster, you can specify <em>release</em> configuration:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cmake --build build --config release
+</span></span></code></pre></div><p>After you are done, you can execute the program like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>build/debug/hello
+</span></span><span style="display:flex;"><span>hello, world
+</span></span></code></pre></div><p>If you specified the <em>release</em> configuration, change <code>debug</code> directory to <code>release</code>.</p>
+<p>If you want to learn more about this tool, you can check out the <a href="https://cmake.org/cmake/help/latest/index.html">CMake documentation</a>. You can also try a <a href="https://cmake.org/cmake/help/latest/guide/tutorial/index.html">CMake tutorial</a> to learn how to use the CMake in practice.</p>
+<ul class="pa0">
   
 </ul>
 <div class="mt6 instapaper_ignoref">
