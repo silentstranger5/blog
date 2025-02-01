@@ -502,6 +502,4 @@ ctx.filename = (char *) filename;
 parse_materials(&ctx);
 ```
 
-Try to compile the program. It should now print materials data.
-
-You can also check out [source code](../obj3.c) as always.
+Here is a [material file](../solids.mtl) that you can use to test the program. You can check out [source code](../obj3.c) as always. Try to compile the program. It should now print materials data.
