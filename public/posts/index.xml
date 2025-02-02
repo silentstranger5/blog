@@ -6,8 +6,15 @@
     <description>Recent content in Posts on My Blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 29 Jan 2025 19:37:05 +0300</lastBuildDate>
+    <lastBuildDate>Mon, 03 Feb 2025 00:00:08 +0300</lastBuildDate>
     <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Json Parser</title>
+      <link>http://localhost:1313/posts/json/json-parser/</link>
+      <pubDate>Mon, 03 Feb 2025 00:00:08 +0300</pubDate>
+      <guid>http://localhost:1313/posts/json/json-parser/</guid>
+      <description>&lt;p&gt;I am fairly familiar with JSON file format. It is used extensively for data exchange. If you have some level of experience with development, you are probably familiar with it as well. Among the benefits of JSON format:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;It is easy to read and write&lt;/li&gt;&#xA;&lt;li&gt;It is easy to parse and construct&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;I often hear that JSON is a quite simple format, and parsing it is not hard. In a recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it&amp;rsquo;s possible to write a JSON parser from scratch.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Parsing Obj File Part 4</title>
       <link>http://localhost:1313/posts/obj/parsing-obj-file-part-4/</link>

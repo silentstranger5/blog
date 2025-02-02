@@ -50,7 +50,7 @@ Materials define various optical characteristics of the material that an object 
 Materials define various optical characteristics of the material that an object has. Materials are usually stored in a separate file. We need to define the keys of material files and corresponding values since the parsing algorithm will be pretty similar to that for .obj files. This list is a bit longer, but hopefully, it’s still sortable by hand. Let’s define keys and place values:">
   <meta itemprop="datePublished" content="2025-01-29T19:37:05+03:00">
   <meta itemprop="dateModified" content="2025-01-29T19:37:05+03:00">
-  <meta itemprop="wordCount" content="2329">
+  <meta itemprop="wordCount" content="2341">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Parsing Obj File Part 4">
   <meta name="twitter:description" content="In the previous post, we added face parsing to our parser. In this (hopefully) last part of the series, I’m going to add the last feature: parsing materials.
@@ -484,8 +484,7 @@ Kd ...  # diffuse for Material
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// add this to `parse_obj` function after `objctx_reset`
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">parse_materials</span>(<span style="color:#f92672">&amp;</span>ctx);
-</span></span></code></pre></div><p>Try to compile the program. It should now print materials data.</p>
-<p>You can also check out <a href="../obj3.c">source code</a> as always.</p>
+</span></span></code></pre></div><p>Here is a <a href="../solids.mtl">material file</a> that you can use to test the program. You can check out <a href="../obj3.c">source code</a> as always. Try to compile the program. It should now print materials data.</p>
 <ul class="pa0">
   
 </ul>
