@@ -11,7 +11,7 @@
 It is easy to read and write
 It is easy to parse and construct
 
-I often hear that JSON is a quite simple format, and parsing it is not hard. In a recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it&rsquo;s possible to write a JSON parser from scratch.">
+I often hear that JSON is a quite simple format, and parsing it is not hard. In the recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it&rsquo;s possible to write a JSON parser from scratch.">
     <meta name="generator" content="Hugo 0.141.0">
     
     
@@ -42,7 +42,7 @@ I often hear that JSON is a quite simple format, and parsing it is not hard. In 
   <meta property="og:site_name" content="My Blog">
   <meta property="og:title" content="Json Parser">
   <meta property="og:description" content="I am fairly familiar with JSON file format. It is used extensively for data exchange. If you have some level of experience with development, you are probably familiar with it as well. Among the benefits of JSON format:
-It is easy to read and write It is easy to parse and construct I often hear that JSON is a quite simple format, and parsing it is not hard. In a recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it’s possible to write a JSON parser from scratch.">
+It is easy to read and write It is easy to parse and construct I often hear that JSON is a quite simple format, and parsing it is not hard. In the recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it’s possible to write a JSON parser from scratch.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="article">
     <meta property="article:section" content="posts">
@@ -51,14 +51,14 @@ It is easy to read and write It is easy to parse and construct I often hear that
 
   <meta itemprop="name" content="Json Parser">
   <meta itemprop="description" content="I am fairly familiar with JSON file format. It is used extensively for data exchange. If you have some level of experience with development, you are probably familiar with it as well. Among the benefits of JSON format:
-It is easy to read and write It is easy to parse and construct I often hear that JSON is a quite simple format, and parsing it is not hard. In a recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it’s possible to write a JSON parser from scratch.">
+It is easy to read and write It is easy to parse and construct I often hear that JSON is a quite simple format, and parsing it is not hard. In the recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it’s possible to write a JSON parser from scratch.">
   <meta itemprop="datePublished" content="2025-02-03T00:00:08+03:00">
   <meta itemprop="dateModified" content="2025-02-03T00:00:08+03:00">
-  <meta itemprop="wordCount" content="2809">
+  <meta itemprop="wordCount" content="2845">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Json Parser">
   <meta name="twitter:description" content="I am fairly familiar with JSON file format. It is used extensively for data exchange. If you have some level of experience with development, you are probably familiar with it as well. Among the benefits of JSON format:
-It is easy to read and write It is easy to parse and construct I often hear that JSON is a quite simple format, and parsing it is not hard. In a recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it’s possible to write a JSON parser from scratch.">
+It is easy to read and write It is easy to parse and construct I often hear that JSON is a quite simple format, and parsing it is not hard. In the recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it’s possible to write a JSON parser from scratch.">
 
 	
   </head><body class="ma0 avenir bg-near-white development">
@@ -115,28 +115,28 @@ It is easy to read and write It is easy to parse and construct I often hear that
 <li>It is easy to read and write</li>
 <li>It is easy to parse and construct</li>
 </ul>
-<p>I often hear that JSON is a quite simple format, and parsing it is not hard. In a recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it&rsquo;s possible to write a JSON parser from scratch.</p>
-<p>Before I started to do it, I thought that it was quite a daunting task. I couldn&rsquo;t even think about where to start. You may ask me: &ldquo;What is so difficult about it? You already implemented a parser for another file format?&rdquo; The problem is that JSON syntax is much less rigorous compared to OBJ. All lines in OBJ file <strong>must</strong> have this format per specification:</p>
+<p>I often hear that JSON is a quite simple format, and parsing it is not hard. In the recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it&rsquo;s possible to write a JSON parser from scratch.</p>
+<p>Before I started to do it, I thought that it was quite a daunting task. I couldn&rsquo;t even think about where to start. You may ask me: &ldquo;What is so difficult about it? You already implemented a parser for another file format.&rdquo; The problem is that JSON syntax is much less rigorous compared to OBJ. All lines in OBJ file <strong>must</strong> have this format per specification:</p>
 <pre tabindex="0"><code>key value1 value2 ... valuen
 </code></pre><p>There is no space between the start of the line and the key. All values are delimited by exactly one space. More than that, many types of data have rigorous requirements as well (for example, vertex position must be a vector with <em>exactly</em> three coordinates).</p>
 <p>In contrast, JSON syntax specification is much less rigorous. Between two tokens, you can have one space, or two, or tab, or entire newline, or no spaces at all. This means that we can&rsquo;t just parse stuff in place, we now need a <em>scanner</em> - a piece of software that discards all whitespaces and leaves only <em>tokens</em> - keywords and symbols.</p>
-<p>Data that is stored in JSON have much less rigorous specifications as well: there are no pre-defined keys that would tell you a type of data. You have to infer a data type from the context, and it can be much more flexible as well. A value field can store:</p>
+<p>Data that is stored in JSON has much less rigorous specifications as well: there are no pre-defined keys that would tell you a type of data. You have to infer a data type from the context, and it can be much more flexible as well. A value field can store:</p>
 <ul>
 <li>Array</li>
 <li>Object</li>
 <li>Number</li>
 <li>String</li>
-<li>Logical constant</li>
+<li>True or False</li>
 <li>Null</li>
 </ul>
-<p>I think that you probably now have an idea about why parsing JSON seemed like a daunting task to me. Despite my being upset, I recalled that some time ago I read a wonderful book. It turned out to be of huge help.</p>
-<p>This book is <a href="https://craftinginterpreters.com">Crafting Interpreters</a> by Robert Nystrom. Former game developer at Electronic Arts, Robert now works on the <a href="https://dart.dev">Dart Language</a>, so I probably would take it as a sign that he knows what he&rsquo;s doing. This book is easy to read, it has a lot of good code with nice explanations, and most important of all, this book is free! Don&rsquo;t just trust my words, try to read them and follow along. The original interpreter is implemented in Java, but there are <a href="https://github.com/munificent/craftinginterpreters/wiki/Lox-implementations">many other implementations</a> as well, so you can follow along in any language. I would <em>recommend</em> that you do it unless are a huge fan of Java, of course; this will allow you to <em>think</em> about what you are doing instead of blindly typing the code. You can also gain some experience of reading a source code as well.</p>
+<p>I think that you probably now have an idea about why parsing JSON seemed like a daunting task to me. Despite me being upset, I recalled that some time ago I read a wonderful book. It turned out to be of huge help.</p>
+<p>This book is <a href="https://craftinginterpreters.com">Crafting Interpreters</a> by Robert Nystrom. Former game developer at Electronic Arts, Robert now works on the <a href="https://dart.dev">Dart Language</a>, so I probably would take it as a sign that he knows what he&rsquo;s doing. This book is easy to read, it has a lot of good code with nice explanations, and most important of all, this book is free! Don&rsquo;t just trust my words, try to read it and follow along. The original interpreter is implemented in Java, but there are <a href="https://github.com/munificent/craftinginterpreters/wiki/Lox-implementations">many other implementations</a> as well, so you can follow along in any language. I would <em>recommend</em> that you do it unless are a huge fan of Java, of course; this will allow you to <em>think</em> about what you are doing instead of blindly typing the code. You can also gain some experience of reading a source code as well.</p>
 <p>The book describes an implementation of the full-fledged programming language. However, it&rsquo;s much more useful than that. In fact, the entire scanner with the basic framework of the parser is borrowed from this book.</p>
 <p>Today we are going to implement a scanner. As I mentioned earlier, the scanner is responsible for breaking an input into <em>tokens</em> - keywords and special characters. Here is a simple example. Consider that we have a text like this:</p>
 <pre tabindex="0"><code>{ &#34;key&#34;: [ 3, 14, 15 ], &#34;object&#34;: { &#34;type&#34;: &#34;nested&#34; } }
 </code></pre><p>If we process this string with a scanner, here is what we get:</p>
-<pre tabindex="0"><code>[&#39;{&#39;, &#34;key&#34;, &#39;[&#39;, 3, &#39;,&#39;, 14, &#39;,&#39;, ... ]
-</code></pre><p>It does not matter how many spaces (if any) are between tokens. The scanner will discard all newline characters and only leave tokens.</p>
+<pre tabindex="0"><code>[&#39;{&#39;, &#34;key&#34;, &#39;:&#39;, &#39;[&#39;, 3, &#39;,&#39;, 14, &#39;,&#39;, ... ]
+</code></pre><p>It does not matter how many spaces (if any) are between tokens. The scanner will discard all whitespace characters and only leave tokens.</p>
 <p>As always, create a new directory and a new source file inside it. Include all necessary headers:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
@@ -168,9 +168,9 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    token <span style="color:#f92672">*</span>tokens;  <span style="color:#75715e">// tokens
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>} scanner;
 </span></span></code></pre></div><p>Here, <code>start</code> and <code>current</code> are the borders of the current token being processed. Here is an example:</p>
-<pre tabindex="0"><code>&#34;Hello&#34;, &#34;world&#34;
+<pre tabindex="0"><code>[&#34;Hello&#34;, &#34;world&#34;]
 </code></pre><p>In this example, the borders of the token <code>&quot;world&quot;</code> are <code>9</code> and <code>15</code>.</p>
-<p>Fields <code>capacity</code> and <code>size</code> are here because <code>tokens</code> are a dynamic array. This does waste a bit of memory and reallocation is also a costly operation. However, we will need to access tokens by indices a lot when we do the parsing, so this is an acceptable tradeoff.</p>
+<p>Fields <code>capacity</code> and <code>size</code> are here because the <code>tokens</code> field is a dynamic array. This does waste a bit of memory and reallocation is also a costly operation. However, we will need to access tokens by indices a lot when we do the parsing, so this is an acceptable tradeoff.</p>
 <p>Before we go further, define an array of keywords. We&rsquo;ll need it later:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>keywords[] <span style="color:#f92672">=</span> { <span style="color:#e6db74">&#34;false&#34;</span>, <span style="color:#e6db74">&#34;true&#34;</span>, <span style="color:#e6db74">&#34;null&#34;</span> };
 </span></span></code></pre></div><p>In our program, we will read a JSON file and scan it. Let&rsquo;s define functions to read a text from a file:</p>
@@ -197,9 +197,9 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> buffer;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>If you read my other posts, the function <code>file_read</code> is probably familiar to you. It calculates the size of the file using a combination of <code>fell</code> and <code>fseek</code>, first to set the internal pointer to the end of the file, and second to get the offset from the start. <code>rewind</code> sets the internal pointer back. Then we allocate enough space with <code>malloc</code>, read a file with <code>freed</code>, and close it with <code>close</code>. Notice one line above <code>return</code>. <code>strrchr</code> returns a pointer to the rightmost occurrence of the specified character. We use it to terminate all symbols after the last right brace since <code>ftell</code> returns a slightly larger number than needed on Windows (because <code>\r\n</code> is replaced with <code>\n</code> but <code>ftell</code> does not consider it).</p>
+</span></span></code></pre></div><p>If you read my other posts, the function <code>file_read</code> is probably familiar to you. It calculates the size of the file using a combination of <code>fseek</code> and <code>ftell</code>, first to set the internal pointer to the end of the file, and second to get the offset from the start. <code>rewind</code> sets the internal pointer back to the start. Then we allocate enough space with <code>malloc</code>, read a file with <code>fread</code>, and close it with <code>fclose</code>. Notice one line above <code>return</code>. <code>strrchr</code> returns a pointer to the rightmost occurrence of the specified character. We use it to terminate all symbols after the last right brace since <code>ftell</code> returns a slightly larger number than needed on Windows (because <code>\r\n</code> is replaced with <code>\n</code> but <code>ftell</code> does not consider it).</p>
 <p><code>file_content</code> is a thin wrapper that returns the contents of the file we read.</p>
-<p>Now let&rsquo;s consider five utility functions:</p>
+<p>Now let&rsquo;s consider some utility functions:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// go to the next character and return the current one
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> <span style="color:#a6e22e">scanner_advance</span>(scanner <span style="color:#f92672">*</span>scanner) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> scanner<span style="color:#f92672">-&gt;</span>source[scanner<span style="color:#f92672">-&gt;</span>current<span style="color:#f92672">++</span>];
@@ -233,8 +233,8 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Almost all of those functions are simple enough to read, so I don&rsquo;t think that any comments are necessary.</p>
-<p>There is one function, however, that deserves some attention. <code>substring</code> accepts three arguments: a string, a start position, and an end position. It returns a <em>copy</em> of <code>s[start:end]</code>. We will use <code>substring</code> primarily to write token lexemes. Since our tokens must be independent of the source string (we will use them later in the parser), we obtain copies of substrings that represent tokens. <code>size</code> can be calculated from the position arguments. We add one to the size since we need space to store the terminating null byte. We then use <code>strncpy</code> to copy <code>size</code> bytes from <code>s + start</code> and set the last byte of our string to zero to terminate it.</p>
-<p>Here are some more helper functions that will be needed later:</p>
+<p>There is one function, however, that deserves some attention. <code>substring</code> accepts three arguments: a string, a start position, and an end position. It returns a <em>copy</em> of <code>s[start:end]</code>. We will use <code>substring</code> primarily to write token lexemes. Since our tokens must be independent of the source string (we will use them later in the parser), we obtain copies of substrings that represent tokens. <code>size</code> can be calculated from the position arguments. We add one to the size since we need space to store the terminating null byte. Then we use <code>strncpy</code> to copy <code>size</code> bytes from <code>s + start</code> and set the last byte of our string to zero to terminate it.</p>
+<p>Here are some more utility functions that we&rsquo;ll need later:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// check if c is a digit
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">isdigit</span>(<span style="color:#66d9ef">char</span> c) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> c <span style="color:#f92672">&gt;=</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#f92672">&amp;&amp;</span> c <span style="color:#f92672">&lt;=</span> <span style="color:#e6db74">&#39;9&#39;</span>;
@@ -259,25 +259,31 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> scanner<span style="color:#f92672">-&gt;</span>source[scanner<span style="color:#f92672">-&gt;</span>current <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>];
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Again, most of those functions are simple enough to read. Their purpose and how they work is pretty obvious from the source code.</p>
+</span></span></code></pre></div><p>Again, most of those functions are simple enough to read. Their purpose and how they work is fairly obvious from the source code.</p>
 <p>Here comes the interesting part. Let&rsquo;s create a new function called <code>add_token</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add the current token from the source string into scanner tokens
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">add_token</span>(scanner <span style="color:#f92672">*</span>scanner, <span style="color:#66d9ef">int</span> token_type) {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>lexeme <span style="color:#f92672">=</span> <span style="color:#a6e22e">substring</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// copy the lexeme substring
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>lexeme <span style="color:#f92672">=</span> <span style="color:#a6e22e">substring</span>(
 </span></span><span style="display:flex;"><span>        scanner<span style="color:#f92672">-&gt;</span>source, scanner<span style="color:#f92672">-&gt;</span>start, scanner<span style="color:#f92672">-&gt;</span>current
 </span></span><span style="display:flex;"><span>    );
-</span></span><span style="display:flex;"><span>    token token <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// create a new token
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    token token <span style="color:#f92672">=</span> {
 </span></span><span style="display:flex;"><span>        .type <span style="color:#f92672">=</span> token_type,
 </span></span><span style="display:flex;"><span>        .lexeme <span style="color:#f92672">=</span> lexeme,
 </span></span><span style="display:flex;"><span>        .line <span style="color:#f92672">=</span> scanner<span style="color:#f92672">-&gt;</span>line,
 </span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (scanner<span style="color:#f92672">-&gt;</span>size <span style="color:#f92672">&gt;=</span> scanner<span style="color:#f92672">-&gt;</span>capacity) {
-</span></span><span style="display:flex;"><span>        scanner<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">*=</span> <span style="color:#ae81ff">2</span>;
-</span></span><span style="display:flex;"><span>        scanner<span style="color:#f92672">-&gt;</span>tokens <span style="color:#f92672">=</span> <span style="color:#a6e22e">realloc</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// if size exceeds capacity
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (scanner<span style="color:#f92672">-&gt;</span>size <span style="color:#f92672">&gt;=</span> scanner<span style="color:#f92672">-&gt;</span>capacity) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// double the capacity
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        scanner<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">*=</span> <span style="color:#ae81ff">2</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// reallocate the memory
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        scanner<span style="color:#f92672">-&gt;</span>tokens <span style="color:#f92672">=</span> <span style="color:#a6e22e">realloc</span>(
 </span></span><span style="display:flex;"><span>            scanner<span style="color:#f92672">-&gt;</span>tokens, scanner<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(token)
 </span></span><span style="display:flex;"><span>        );
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    scanner<span style="color:#f92672">-&gt;</span>tokens[scanner<span style="color:#f92672">-&gt;</span>size<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> token;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// append the token to the tokens array
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    scanner<span style="color:#f92672">-&gt;</span>tokens[scanner<span style="color:#f92672">-&gt;</span>size<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> token;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>The first line of the body of this function uses the <code>substring</code> function defined above. We use the <code>start</code> and <code>current</code> fields of the parser to denote the position of the current token being processed.</p>
 <p>Then we create a new token using the <code>lexeme</code> substring, the <code>token_type</code> argument, and the current line of the scanner.</p>
@@ -286,7 +292,7 @@ It is easy to read and write It is easy to parse and construct I often hear that
     Double the capacity of the array
     Reallocate the array with the new capacity
 </code></pre><p>Note the <code>realloc</code> function. It allocates a new block of memory with the provided size and then copies the contents of the provided memory block here.</p>
-<p>The last line copies the <code>token</code> in the last cell of the <code>tokens</code> array and increases the array size. This is a typical function that implements adding an element to a dynamic array.</p>
+<p>The last line copies the <code>token</code> in the last cell of the <code>tokens</code> array and increases the array size. This is a typical function that implements appending an element to a dynamic array.</p>
 <p>Create a new function called <code>scanner_string</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// scan a string token from the source string
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">scanner_string</span>(scanner <span style="color:#f92672">*</span>scanner) {
@@ -315,7 +321,7 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    scanner<span style="color:#f92672">-&gt;</span>start<span style="color:#f92672">--</span>;
 </span></span><span style="display:flex;"><span>    scanner<span style="color:#f92672">-&gt;</span>current<span style="color:#f92672">++</span>;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>We assume that the opening quote is already consumed. Try to walk through an example, like &ldquo;hello, world&rdquo;. Consider the edge case when the string is not terminated. Remember that <code>advance</code> increases the scanner starting position while <code>peek</code> only peeks at the next character.</p>
+</span></span></code></pre></div><p>We assume that the opening quote is already consumed. Try to walk through an example, like &ldquo;hello, world&rdquo;. Consider the edge case when the string is not terminated. Remember that <code>advance</code> increases the scanner starting position while <code>peek</code> only peeks at the current character.</p>
 <p>Now let&rsquo;s consider scanning numbers:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// scan a number token from the source string
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">scanner_number</span>(scanner <span style="color:#f92672">*</span>scanner) {
@@ -359,7 +365,7 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// keyword type is unknown
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Let&rsquo;s say that we have some keyword and we want to determine its type. This function is fairly simple. It compares the provided <code>key</code> with each possible keyword from the <code>keyword</code> global array we defined earlier. If there is a match, it returns the type of the keyword, and otherwise it returns <code>-1</code>. Note the <code>keyoffset</code> symbol. The first keyword defined in the <code>token_type</code> enum is <code>TOKEN_FALSE</code>, and all other keywords follow after that. Note that the order of tokens matches with order of defined <code>keywords</code>. This allows us to use <code>keyoffset</code> to calculate the keyword position in the array as the token type.</p>
+</span></span></code></pre></div><p>Let&rsquo;s say that we have some keyword and we want to determine its type. This function is fairly simple. It compares the provided <code>key</code> with each keyword from the <code>keyword</code> global array we defined earlier. If there is a match, it returns the type of the keyword, and otherwise it returns <code>-1</code>. Note the <code>keyoffset</code> symbol. The first keyword defined in the <code>token_type</code> enum is <code>TOKEN_FALSE</code>, and all other keywords follow after that. Note that the order of tokens matches with order of defined <code>keywords</code>. This allows us to use <code>keyoffset</code> to calculate the keyword position in the array as the token type.</p>
 <p>Now let&rsquo;s consider identifiers. Perhaps, this is more appropriate to call them keywords since we don&rsquo;t support variables and other symbols:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// scan identifier
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">identifier</span>(scanner <span style="color:#f92672">*</span>scanner) {
