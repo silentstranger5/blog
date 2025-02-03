@@ -9,9 +9,9 @@ I am fairly familiar with JSON file format. It is used extensively for data exch
 - It is easy to read and write
 - It is easy to parse and construct
 
-I often hear that JSON is a quite simple format, and parsing it is not hard. In a recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it's possible to write a JSON parser from scratch.
+I often hear that JSON is a quite simple format, and parsing it is not hard. In the recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it's possible to write a JSON parser from scratch.
 
-Before I started to do it, I thought that it was quite a daunting task. I couldn't even think about where to start. You may ask me: "What is so difficult about it? You already implemented a parser for another file format?" The problem is that JSON syntax is much less rigorous compared to OBJ. All lines in OBJ file **must** have this format per specification:
+Before I started to do it, I thought that it was quite a daunting task. I couldn't even think about where to start. You may ask me: "What is so difficult about it? You already implemented a parser for another file format." The problem is that JSON syntax is much less rigorous compared to OBJ. All lines in OBJ file **must** have this format per specification:
 
 ```
 key value1 value2 ... valuen
@@ -21,18 +21,18 @@ There is no space between the start of the line and the key. All values are deli
 
 In contrast, JSON syntax specification is much less rigorous. Between two tokens, you can have one space, or two, or tab, or entire newline, or no spaces at all. This means that we can't just parse stuff in place, we now need a *scanner* - a piece of software that discards all whitespaces and leaves only *tokens* - keywords and symbols.
 
-Data that is stored in JSON have much less rigorous specifications as well: there are no pre-defined keys that would tell you a type of data. You have to infer a data type from the context, and it can be much more flexible as well. A value field can store:
+Data that is stored in JSON has much less rigorous specifications as well: there are no pre-defined keys that would tell you a type of data. You have to infer a data type from the context, and it can be much more flexible as well. A value field can store:
 
 - Array
 - Object
 - Number
 - String
-- Logical constant
+- True or False
 - Null
 
-I think that you probably now have an idea about why parsing JSON seemed like a daunting task to me. Despite my being upset, I recalled that some time ago I read a wonderful book. It turned out to be of huge help.
+I think that you probably now have an idea about why parsing JSON seemed like a daunting task to me. Despite me being upset, I recalled that some time ago I read a wonderful book. It turned out to be of huge help.
 
-This book is [Crafting Interpreters](https://craftinginterpreters.com) by Robert Nystrom. Former game developer at Electronic Arts, Robert now works on the [Dart Language](https://dart.dev), so I probably would take it as a sign that he knows what he's doing. This book is easy to read, it has a lot of good code with nice explanations, and most important of all, this book is free! Don't just trust my words, try to read them and follow along. The original interpreter is implemented in Java, but there are [many other implementations](https://github.com/munificent/craftinginterpreters/wiki/Lox-implementations) as well, so you can follow along in any language. I would *recommend* that you do it unless are a huge fan of Java, of course; this will allow you to *think* about what you are doing instead of blindly typing the code. You can also gain some experience of reading a source code as well.
+This book is [Crafting Interpreters](https://craftinginterpreters.com) by Robert Nystrom. Former game developer at Electronic Arts, Robert now works on the [Dart Language](https://dart.dev), so I probably would take it as a sign that he knows what he's doing. This book is easy to read, it has a lot of good code with nice explanations, and most important of all, this book is free! Don't just trust my words, try to read it and follow along. The original interpreter is implemented in Java, but there are [many other implementations](https://github.com/munificent/craftinginterpreters/wiki/Lox-implementations) as well, so you can follow along in any language. I would *recommend* that you do it unless are a huge fan of Java, of course; this will allow you to *think* about what you are doing instead of blindly typing the code. You can also gain some experience of reading a source code as well.
 
 The book describes an implementation of the full-fledged programming language. However, it's much more useful than that. In fact, the entire scanner with the basic framework of the parser is borrowed from this book.
 
@@ -45,10 +45,10 @@ Today we are going to implement a scanner. As I mentioned earlier, the scanner i
 If we process this string with a scanner, here is what we get:
 
 ```
-['{', "key", '[', 3, ',', 14, ',', ... ]
+['{', "key", ':', '[', 3, ',', 14, ',', ... ]
 ```
 
-It does not matter how many spaces (if any) are between tokens. The scanner will discard all newline characters and only leave tokens.
+It does not matter how many spaces (if any) are between tokens. The scanner will discard all whitespace characters and only leave tokens.
 
 As always, create a new directory and a new source file inside it. Include all necessary headers:
 
@@ -98,13 +98,14 @@ typedef struct {
 ```
 
 Here, `start` and `current` are the borders of the current token being processed. Here is an example:
+
 ```
-"Hello", "world"
+["Hello", "world"]
 ```
 
 In this example, the borders of the token `"world"` are `9` and `15`.
 
-Fields `capacity` and `size` are here because `tokens` are a dynamic array. This does waste a bit of memory and reallocation is also a costly operation. However, we will need to access tokens by indices a lot when we do the parsing, so this is an acceptable tradeoff.
+Fields `capacity` and `size` are here because the `tokens` field is a dynamic array. This does waste a bit of memory and reallocation is also a costly operation. However, we will need to access tokens by indices a lot when we do the parsing, so this is an acceptable tradeoff.
 
 Before we go further, define an array of keywords. We'll need it later:
 
@@ -140,11 +141,11 @@ char *file_content(const char *filename) {
 }
 ```
 
-If you read my other posts, the function `file_read` is probably familiar to you. It calculates the size of the file using a combination of `fell` and `fseek`, first to set the internal pointer to the end of the file, and second to get the offset from the start. `rewind` sets the internal pointer back. Then we allocate enough space with `malloc`, read a file with `freed`, and close it with `close`. Notice one line above `return`. `strrchr` returns a pointer to the rightmost occurrence of the specified character. We use it to terminate all symbols after the last right brace since `ftell` returns a slightly larger number than needed on Windows (because `\r\n` is replaced with `\n` but `ftell` does not consider it).
+If you read my other posts, the function `file_read` is probably familiar to you. It calculates the size of the file using a combination of `fseek` and `ftell`, first to set the internal pointer to the end of the file, and second to get the offset from the start. `rewind` sets the internal pointer back to the start. Then we allocate enough space with `malloc`, read a file with `fread`, and close it with `fclose`. Notice one line above `return`. `strrchr` returns a pointer to the rightmost occurrence of the specified character. We use it to terminate all symbols after the last right brace since `ftell` returns a slightly larger number than needed on Windows (because `\r\n` is replaced with `\n` but `ftell` does not consider it).
 
 `file_content` is a thin wrapper that returns the contents of the file we read.
 
-Now let's consider five utility functions:
+Now let's consider some utility functions:
 
 ```c
 // go to the next character and return the current one
@@ -183,9 +184,9 @@ void scanner_error(int line, char *msg) {
 
 Almost all of those functions are simple enough to read, so I don't think that any comments are necessary.
 
-There is one function, however, that deserves some attention. `substring` accepts three arguments: a string, a start position, and an end position. It returns a *copy* of `s[start:end]`. We will use `substring` primarily to write token lexemes. Since our tokens must be independent of the source string (we will use them later in the parser), we obtain copies of substrings that represent tokens. `size` can be calculated from the position arguments. We add one to the size since we need space to store the terminating null byte. We then use `strncpy` to copy `size` bytes from `s + start` and set the last byte of our string to zero to terminate it.
+There is one function, however, that deserves some attention. `substring` accepts three arguments: a string, a start position, and an end position. It returns a *copy* of `s[start:end]`. We will use `substring` primarily to write token lexemes. Since our tokens must be independent of the source string (we will use them later in the parser), we obtain copies of substrings that represent tokens. `size` can be calculated from the position arguments. We add one to the size since we need space to store the terminating null byte. Then we use `strncpy` to copy `size` bytes from `s + start` and set the last byte of our string to zero to terminate it.
 
-Here are some more helper functions that will be needed later:
+Here are some more utility functions that we'll need later:
 
 ```c
 // check if c is a digit
@@ -214,27 +215,33 @@ char scanner_peeknext(scanner *scanner) {
 }
 ```
 
-Again, most of those functions are simple enough to read. Their purpose and how they work is pretty obvious from the source code.
+Again, most of those functions are simple enough to read. Their purpose and how they work is fairly obvious from the source code.
 
 Here comes the interesting part. Let's create a new function called `add_token`:
 
 ```c
 // add the current token from the source string into scanner tokens
 void add_token(scanner *scanner, int token_type) {
+    // copy the lexeme substring
     char *lexeme = substring(
         scanner->source, scanner->start, scanner->current
     );
+    // create a new token
     token token = {
         .type = token_type,
         .lexeme = lexeme,
         .line = scanner->line,
     };
+    // if size exceeds capacity
     if (scanner->size >= scanner->capacity) {
+        // double the capacity
         scanner->capacity *= 2;
+        // reallocate the memory
         scanner->tokens = realloc(
             scanner->tokens, scanner->capacity * sizeof(token)
         );
     }
+    // append the token to the tokens array
     scanner->tokens[scanner->size++] = token;
 }
 ```
@@ -253,7 +260,7 @@ If the current array size >= the array capacity:
 
 Note the `realloc` function. It allocates a new block of memory with the provided size and then copies the contents of the provided memory block here. 
 
-The last line copies the `token` in the last cell of the `tokens` array and increases the array size. This is a typical function that implements adding an element to a dynamic array.
+The last line copies the `token` in the last cell of the `tokens` array and increases the array size. This is a typical function that implements appending an element to a dynamic array.
 
 Create a new function called `scanner_string`:
 
@@ -287,7 +294,7 @@ void scanner_string(scanner *scanner) {
 }
 ```
 
-We assume that the opening quote is already consumed. Try to walk through an example, like "hello, world". Consider the edge case when the string is not terminated. Remember that `advance` increases the scanner starting position while `peek` only peeks at the next character.
+We assume that the opening quote is already consumed. Try to walk through an example, like "hello, world". Consider the edge case when the string is not terminated. Remember that `advance` increases the scanner starting position while `peek` only peeks at the current character.
 
 Now let's consider scanning numbers:
 
@@ -341,7 +348,7 @@ int get_keytype(char *key) {
 }
 ```
 
-Let's say that we have some keyword and we want to determine its type. This function is fairly simple. It compares the provided `key` with each possible keyword from the `keyword` global array we defined earlier. If there is a match, it returns the type of the keyword, and otherwise it returns `-1`. Note the `keyoffset` symbol. The first keyword defined in the `token_type` enum is `TOKEN_FALSE`, and all other keywords follow after that. Note that the order of tokens matches with order of defined `keywords`. This allows us to use `keyoffset` to calculate the keyword position in the array as the token type.
+Let's say that we have some keyword and we want to determine its type. This function is fairly simple. It compares the provided `key` with each keyword from the `keyword` global array we defined earlier. If there is a match, it returns the type of the keyword, and otherwise it returns `-1`. Note the `keyoffset` symbol. The first keyword defined in the `token_type` enum is `TOKEN_FALSE`, and all other keywords follow after that. Note that the order of tokens matches with order of defined `keywords`. This allows us to use `keyoffset` to calculate the keyword position in the array as the token type.
 
 Now let's consider identifiers. Perhaps, this is more appropriate to call them keywords since we don't support variables and other symbols:
 
