@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Hello World Triangle | My Blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Before using OpenGL, we need to arrange a couple of things. Firstly, OpenGL only specifies graphics API. However, to use OpenGL you need something called context - a state machine with an OpenGL state in memory. Usually, this context is bound to a window. OpenGL does not specify the creation of windows and contexts associated with them. This means that it&rsquo;s different depending on the user platform! This is the last thing you need in a cross-platform application.">
+    <meta name="generator" content="Hugo 0.141.0">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+    
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/opengl/hello-world-triangle/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/opengl/hello-world-triangle/">
+  <meta property="og:site_name" content="My Blog">
+  <meta property="og:title" content="Hello World Triangle">
+  <meta property="og:description" content="Before using OpenGL, we need to arrange a couple of things. Firstly, OpenGL only specifies graphics API. However, to use OpenGL you need something called context - a state machine with an OpenGL state in memory. Usually, this context is bound to a window. OpenGL does not specify the creation of windows and contexts associated with them. This means that it’s different depending on the user platform! This is the last thing you need in a cross-platform application.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-02-04T23:30:00+03:00">
+    <meta property="article:modified_time" content="2025-02-04T23:30:00+03:00">
+
+  <meta itemprop="name" content="Hello World Triangle">
+  <meta itemprop="description" content="Before using OpenGL, we need to arrange a couple of things. Firstly, OpenGL only specifies graphics API. However, to use OpenGL you need something called context - a state machine with an OpenGL state in memory. Usually, this context is bound to a window. OpenGL does not specify the creation of windows and contexts associated with them. This means that it’s different depending on the user platform! This is the last thing you need in a cross-platform application.">
+  <meta itemprop="datePublished" content="2025-02-04T23:30:00+03:00">
+  <meta itemprop="dateModified" content="2025-02-04T23:30:00+03:00">
+  <meta itemprop="wordCount" content="1730">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Hello World Triangle">
+  <meta name="twitter:description" content="Before using OpenGL, we need to arrange a couple of things. Firstly, OpenGL only specifies graphics API. However, to use OpenGL you need something called context - a state machine with an OpenGL state in memory. Usually, this context is bound to a window. OpenGL does not specify the creation of windows and contexts associated with them. This means that it’s different depending on the user platform! This is the last thing you need in a cross-platform application.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        My Blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Hello World Triangle</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2025-02-04T23:30:00+03:00">February 4, 2025</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><p>Before using OpenGL, we need to arrange a couple of things. Firstly, OpenGL only specifies graphics API. However, to use OpenGL you need something called <em>context</em> - a state machine with an OpenGL state in memory. Usually, this context is bound to a window. OpenGL does not specify the creation of windows and contexts associated with them. This means that it&rsquo;s different depending on the user platform! This is the last thing you need in a cross-platform application.</p>
+<p>Fortunately, there are several <em>binding libraries</em> that manage the creation of a window and an associated context. I will be using <a href="https://glfw.org">GLFW</a> since it is simple to use and tailored specifically for OpenGL.</p>
+<p>After we created a new context, we now need some way to obtain OpenGL <em>methods</em> - functions that allow us to interact with the library. Unfortunately, most platforms support only old OpenGL versions by default (around 1.1 - 1.2). This means that if you want to load functions from newer versions of OpenGL you have to load function pointers from a driver software at a runtime. Again, OpenGL does not specify anything about it, so each platform uses a specific API to do that.</p>
+<p>As in the previous case, there are libraries that can help us with this. They are called <em>loader libraries</em>. The most common one is <a href="https://glew.sourceforge.net">GLEW</a>.</p>
+<p>To make dependency management easier, I use a package manager called <a href="https://vcpkg.io">vcpkg</a> with the CMake building system. Assuming that vcpkg is already installed on your system and environment variables are configured, it&rsquo;s easy to configure our project:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir triangle
+</span></span><span style="display:flex;"><span>cd triangle
+</span></span><span style="display:flex;"><span>vcpkg new --application
+</span></span><span style="display:flex;"><span>vcpkg add port glfw3 glew
+</span></span></code></pre></div><p>CMakeLists.txt:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-txt" data-lang="txt"><span style="display:flex;"><span>cmake_minimum_required(VERSION 3.5.0)
+</span></span><span style="display:flex;"><span>project(triangle VERSION 0.1.0 LANGUAGES C)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>find_package(glfw3 CONFIG REQUIRED)
+</span></span><span style="display:flex;"><span>find_package(GLEW REQUIRED)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>add_executable(triangle main.c)
+</span></span><span style="display:flex;"><span>target_link_libraries(triangle PRIVATE glfw GLEW::GLEW)
+</span></span></code></pre></div><p>CMakePresets.json:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;version&#34;</span>: <span style="color:#ae81ff">8</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;configurePresets&#34;</span>: [
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;vcpkg&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;displayName&#34;</span>: <span style="color:#e6db74">&#34;Configure preset using toolchain file&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;Sets Ninja generator, build and install directory&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;generator&#34;</span>: <span style="color:#e6db74">&#34;Ninja&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;binaryDir&#34;</span>: <span style="color:#e6db74">&#34;${sourceDir}/out/build/${presetName}&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;cacheVariables&#34;</span>: {
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;CMAKE_BUILD_TYPE&#34;</span>: <span style="color:#e6db74">&#34;Debug&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;CMAKE_TOOLCHAIN_FILE&#34;</span>: <span style="color:#e6db74">&#34;$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;CMAKE_INSTALL_PREFIX&#34;</span>: <span style="color:#e6db74">&#34;${sourceDir}/out/install/${presetName}&#34;</span>
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>main.c:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;hello, world</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Finally, you can build your project:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cmake --preset<span style="color:#f92672">=</span>vcpkg
+</span></span><span style="display:flex;"><span>cmake --build out/build/vcpkg
+</span></span></code></pre></div><p>This project is generated automatically. Feel free to modify anything you like.</p>
+<p>Right now the program just prints out &ldquo;hello, world&rdquo;, but if there are no errors, this is a good starting point. We can finally start getting into the actual programming.</p>
+<p>Remove everything from the source file. Include the headers:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;GL/glew.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;GLFW/glfw3.h&gt;</span><span style="color:#75715e">
+</span></span></span></code></pre></div><p>As always, define the <code>fileread</code> function to read the contents of a file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// read file
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">fileread</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>filename, <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>buffer) {
+</span></span><span style="display:flex;"><span>    FILE <span style="color:#f92672">*</span>f <span style="color:#f92672">=</span> <span style="color:#a6e22e">fopen</span>(filename, <span style="color:#e6db74">&#34;r&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>f) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fseek</span>(f, <span style="color:#ae81ff">0</span>, SEEK_END);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> size <span style="color:#f92672">=</span> <span style="color:#a6e22e">ftell</span>(f);
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">*</span>buffer <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(size <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">rewind</span>(f);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">fread</span>(<span style="color:#f92672">*</span>buffer, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span>), size, f);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fclose</span>(f);
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">*</span>(<span style="color:#a6e22e">strrchr</span>(<span style="color:#f92672">*</span>buffer, <span style="color:#e6db74">&#39;}&#39;</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> ret;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now, let&rsquo;s initialize a new window:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// initialize a new window
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">init_window</span>(GLFWwindow <span style="color:#f92672">**</span>window) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// initialize glfw
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">glfwInit</span>()) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(<span style="color:#e6db74">&#34;failed to init glfw&#34;</span>, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// create a new window
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">*</span>window <span style="color:#f92672">=</span> <span style="color:#a6e22e">glfwCreateWindow</span>(<span style="color:#ae81ff">640</span>, <span style="color:#ae81ff">480</span>, <span style="color:#e6db74">&#34;Hello, World&#34;</span>, NULL, NULL);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>window) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(<span style="color:#e6db74">&#34;failed to create window&#34;</span>, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// make context of the window current
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">glfwMakeContextCurrent</span>(<span style="color:#f92672">*</span>window);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// initialize glew
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    glewExperimental <span style="color:#f92672">=</span> GL_TRUE;
+</span></span><span style="display:flex;"><span>    GLenum err <span style="color:#f92672">=</span> <span style="color:#a6e22e">glewInit</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (err <span style="color:#f92672">!=</span> GLEW_OK) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fprintf</span>(stderr, <span style="color:#e6db74">&#34;failed to init glew: %s&#34;</span>, <span style="color:#a6e22e">glewGetErrorString</span>(err));
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Create the <code>main</code> function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>argv) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// window object
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    GLFWwindow <span style="color:#f92672">*</span>window;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">init_window</span>(<span style="color:#f92672">&amp;</span>window)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(<span style="color:#e6db74">&#34;failed to init glfw&#34;</span>, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// render loop
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">glfwWindowShouldClose</span>(window)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glClear</span>(GL_COLOR_BUFFER_BIT);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glfwSwapBuffers</span>(window);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glfwPollEvents</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// terminate glfw
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">glfwTerminate</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>You should see an empty black window now. This is how you can create a new window with OpenGL.</p>
+<p>Now that we have a window, we can finally use OpenGL to draw something.</p>
+<p>There are a lot of important technical details that I&rsquo;m not going to cover here. Other people write about this better than I would. Check <a href="https://open.gl">this resource</a> for more details.</p>
+<p>To be brief, the <em>graphics pipeline</em> covers all the steps needed to draw something.</p>
+<p>Input vertex data about the thing that we want to draw are transformed by vertex shader so that the coordinates of the object are transformed into device coordinates. After that, vertices are assembled into shapes (most often into triangles). Geometry shader modifies those shapes according to a specified program. The result is then split into pixel-sized fragments. Finally, the fragment shader assigns a color to each fragment which is then shown on our screen.</p>
+<p>To draw polygons, we need four things:</p>
+<ul>
+<li>Vertex buffer stores vertex data like coordinates and color</li>
+<li>Vertex array stores layout for vertex buffer</li>
+<li>Vertex shader is a program that performs transformations on vertices</li>
+<li>Fragment shader is a program that assigns a color to each fragment</li>
+</ul>
+<p>I will bundle all data required to represent information about vertices together. Let&rsquo;s create a new structure:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this after headers
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span>   <span style="color:#f92672">*</span>vertices;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span>     <span style="color:#f92672">*</span>elements;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> vao, vbo, ebo;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> vertices_size;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> elements_size;
+</span></span><span style="display:flex;"><span>} vertices;
+</span></span></code></pre></div><p>Here, <code>vertices</code> will store vertex data, and <code>elements</code> is an optional field that will store the order in which vertices should be processed.</p>
+<p>Let&rsquo;s create a new function to handle vertex input. We assume that <code>vertices</code> (and optionally <code>elements</code>) are already set.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// handle vertex input
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">vertex_input</span>(vertices <span style="color:#f92672">*</span>vertices) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// create vertex array
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">glGenVertexArrays</span>(<span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>vertices<span style="color:#f92672">-&gt;</span>vao);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glBindVertexArray</span>(vertices<span style="color:#f92672">-&gt;</span>vao);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// create vertex buffer
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">glGenBuffers</span>(<span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>vertices<span style="color:#f92672">-&gt;</span>vbo);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glBindBuffer</span>(GL_ARRAY_BUFFER, vertices<span style="color:#f92672">-&gt;</span>vbo);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glBufferData</span>(GL_ARRAY_BUFFER, vertices<span style="color:#f92672">-&gt;</span>vertices_size, vertices<span style="color:#f92672">-&gt;</span>vertices, GL_STATIC_DRAW);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (vertices<span style="color:#f92672">-&gt;</span>elements) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glGenBuffers</span>(<span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>vertices<span style="color:#f92672">-&gt;</span>ebo);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glBindBuffer</span>(GL_ELEMENT_ARRAY_BUFFER, vertices<span style="color:#f92672">-&gt;</span>ebo);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glBufferData</span>(GL_ELEMENT_ARRAY_BUFFER,
+</span></span><span style="display:flex;"><span>                        vertices<span style="color:#f92672">-&gt;</span>elements_size, vertices<span style="color:#f92672">-&gt;</span>elements, GL_STATIC_DRAW);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>OpenGL uses numbers to refer to vertex arrays and vertex buffers instead of pointers. We use <code>glGenVertexArrays</code> and <code>glGenBuffers</code> to create new arrays or buffers. Numbers that represent them are then written into provided pointers. Those numbers are stored in fields <code>vao</code>, <code>vbo</code>, and <code>ebo</code> of our <code>vertices</code> structure. We use <code>glBindVertexArray</code> and <code>glBindBuffer</code> to set a certain vertex array or vertex buffer as active. Most functions related to vertex arrays or buffers interact with the active array or buffer. Function <code>glBufferData</code> copies data from the specified pointer into a buffer.</p>
+<p>I already mentioned <em>shaders</em> - programs that tell graphics cards what to do. Let&rsquo;s create vertex and fragment shaders. They are the simplest versions of such shaders:</p>
+<p>vertex.glsl:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-glsl" data-lang="glsl"><span style="display:flex;"><span><span style="color:#75715e">#version 460 core   // use version 4.60</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">in</span> <span style="color:#66d9ef">vec2</span> position;   <span style="color:#75715e">// first input is a vertex position</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">in</span> <span style="color:#66d9ef">vec3</span> color;      <span style="color:#75715e">// second input is a vertex color</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">out</span> <span style="color:#66d9ef">vec3</span> v_color;   <span style="color:#75715e">// we output vertex color</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> main() {
+</span></span><span style="display:flex;"><span>    v_color <span style="color:#f92672">=</span> color;
+</span></span><span style="display:flex;"><span>    gl_Position <span style="color:#f92672">=</span> <span style="color:#66d9ef">vec4</span>(position, <span style="color:#ae81ff">0.0</span>, <span style="color:#ae81ff">1.0</span>);     <span style="color:#75715e">// gl_Position is position of displayed vertex</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>fragment.glsl:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-glsl" data-lang="glsl"><span style="display:flex;"><span><span style="color:#75715e">#version 460 core</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">in</span>  <span style="color:#66d9ef">vec3</span> v_color;   <span style="color:#75715e">// we accept a color</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">out</span> <span style="color:#66d9ef">vec4</span> color;     <span style="color:#75715e">// and then display it</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> main() {
+</span></span><span style="display:flex;"><span>    color <span style="color:#f92672">=</span> <span style="color:#66d9ef">vec4</span>(v_color, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The first line in shaders specifies the OpenGL version that we&rsquo;ll be using. As with any program, shaders have <em>input</em> and <em>output</em> data which are specified with keywords <code>in</code> and <code>out</code> respectively. The entry point of shaders is in the <code>main</code> function. <code>gl_Position</code> is a special variable that stores the position of the displayed vertex. The fragment shader must produce an output value (here, <code>color</code>), which is then used to assign a color to a fragment.</p>
+<p>Now that we have shader source code, we need to load shaders, compile them, and link them into a shader program. Here is a function that does that:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// link shader program
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">link_shader_program</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>vertex_filename, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>fragment_filename) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// create vertex shader
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>vertex_source <span style="color:#f92672">=</span> NULL, <span style="color:#f92672">*</span>fragment_source <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> size <span style="color:#f92672">=</span> <span style="color:#a6e22e">fileread</span>(<span style="color:#e6db74">&#34;vertex.glsl&#34;</span>, <span style="color:#f92672">&amp;</span>vertex_source);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>size) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(<span style="color:#e6db74">&#34;failed to read vertex source file</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    GLuint vertex_shader <span style="color:#f92672">=</span> <span style="color:#a6e22e">glCreateShader</span>(GL_VERTEX_SHADER);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// load shader source
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">glShaderSource</span>(vertex_shader, <span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>vertex_source, NULL);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// compile vertex shader
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">glCompileShader</span>(vertex_shader);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// check compilation status
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    GLuint status;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glGetShaderiv</span>(vertex_shader, GL_COMPILE_STATUS, <span style="color:#f92672">&amp;</span>status);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// if compilation failed, display the log and return 0
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>status) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">char</span> buffer[<span style="color:#ae81ff">512</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glGetShaderInfoLog</span>(vertex_shader, <span style="color:#ae81ff">512</span>, NULL, buffer);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(<span style="color:#e6db74">&#34;failed to compile vertex shader&#34;</span>, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(buffer, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// create fragment shader
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    size <span style="color:#f92672">=</span> <span style="color:#a6e22e">fileread</span>(<span style="color:#e6db74">&#34;fragment.glsl&#34;</span>, <span style="color:#f92672">&amp;</span>fragment_source);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>size) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(<span style="color:#e6db74">&#34;failed to read fragment source file&#34;</span>, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    GLuint fragment_shader <span style="color:#f92672">=</span> <span style="color:#a6e22e">glCreateShader</span>(GL_FRAGMENT_SHADER);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glShaderSource</span>(fragment_shader, <span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>fragment_source, NULL);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glCompileShader</span>(fragment_shader);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glGetShaderiv</span>(fragment_shader, GL_COMPILE_STATUS, <span style="color:#f92672">&amp;</span>status);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>status) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">char</span> buffer[<span style="color:#ae81ff">512</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glGetShaderInfoLog</span>(fragment_shader, <span style="color:#ae81ff">512</span>, NULL, buffer);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(<span style="color:#e6db74">&#34;failed to compile fragment shader&#34;</span>, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(buffer, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// link shaders into program
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    GLuint shader_program <span style="color:#f92672">=</span> <span style="color:#a6e22e">glCreateProgram</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glAttachShader</span>(shader_program, vertex_shader);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glAttachShader</span>(shader_program, fragment_shader);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glLinkProgram</span>(shader_program);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glUseProgram</span>(shader_program);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// delete shaders
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">glDeleteShader</span>(vertex_shader);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glDeleteShader</span>(fragment_shader);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> shader_program;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now that we have a shader program, we can set <em>layout</em> for the vertex array. Remember input values from our vertex shader? Vertex data is stored in one interleaved buffer, so OpenGL needs a way to distinguish input values from this buffer. Layout specifies a way for our program to do that:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// set layout for vertex array
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">vertex_layout</span>(<span style="color:#66d9ef">int</span> shader_program) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// set position input to be 2 component float vector with stride of 5 floats starting from position 0
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    GLuint pos_attrib <span style="color:#f92672">=</span> <span style="color:#a6e22e">glGetAttribLocation</span>(shader_program, <span style="color:#e6db74">&#34;position&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glEnableVertexAttribArray</span>(pos_attrib);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glVertexAttribPointer</span>(pos_attrib, <span style="color:#ae81ff">2</span>, GL_FLOAT, GL_FALSE, <span style="color:#ae81ff">5</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>), <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// set color input to be 3 component float vector with stride of 5 floats starting from position of 2*float
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    GLuint col_attrib <span style="color:#f92672">=</span> <span style="color:#a6e22e">glGetAttribLocation</span>(shader_program, <span style="color:#e6db74">&#34;color&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glEnableVertexAttribArray</span>(col_attrib);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glVertexAttribPointer</span>(col_attrib, <span style="color:#ae81ff">3</span>, GL_FLOAT, GL_FALSE,
+</span></span><span style="display:flex;"><span>                            <span style="color:#ae81ff">5</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>), (<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)(<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>))
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Don&rsquo;t forget to delete all vertex arrays and buffers:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// delete vertex data
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">vertex_delete</span>(vertices <span style="color:#f92672">*</span>vertices) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glDeleteBuffers</span>(<span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>vertices<span style="color:#f92672">-&gt;</span>vbo);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">glDeleteVertexArrays</span>(<span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>vertices<span style="color:#f92672">-&gt;</span>vao);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (vertices<span style="color:#f92672">-&gt;</span>ebo) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glDeleteBuffers</span>(<span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>vertices<span style="color:#f92672">-&gt;</span>ebo);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Finally, write the <code>main</code> function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>argv) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// window object
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    GLFWwindow <span style="color:#f92672">*</span>window;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">init_window</span>(<span style="color:#f92672">&amp;</span>window)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(<span style="color:#e6db74">&#34;failed to init glfw&#34;</span>, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// vertex data; first two numbers are coordinates and
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// three numbers after that are color
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    GLfloat vertices_array[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0.0f</span>,  <span style="color:#ae81ff">0.5f</span>, <span style="color:#ae81ff">1.0f</span>, <span style="color:#ae81ff">0.0f</span>, <span style="color:#ae81ff">0.0f</span>,  <span style="color:#75715e">// Vertex 1: Red
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0.5f</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">0.5f</span>, <span style="color:#ae81ff">0.0f</span>, <span style="color:#ae81ff">1.0f</span>, <span style="color:#ae81ff">0.0f</span>,  <span style="color:#75715e">// Vertex 2: Green
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#f92672">-</span><span style="color:#ae81ff">0.5f</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">0.5f</span>, <span style="color:#ae81ff">0.0f</span>, <span style="color:#ae81ff">0.0f</span>, <span style="color:#ae81ff">1.0f</span>  <span style="color:#75715e">// Vertex 3: Blue
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// pack all vertex data together
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    vertices vertices <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        .vertices <span style="color:#f92672">=</span> vertices_array,
+</span></span><span style="display:flex;"><span>        .vertices_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(vertices_array),
+</span></span><span style="display:flex;"><span>    };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// handle vertex input
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">vertex_input</span>(<span style="color:#f92672">&amp;</span>vertices);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// link shader program
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    GLuint shader_program <span style="color:#f92672">=</span> <span style="color:#a6e22e">link_shader_program</span>(
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;vertex.glsl&#34;</span>, <span style="color:#e6db74">&#34;fragment.glsl&#34;</span>
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>shader_program) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fputs</span>(<span style="color:#e6db74">&#34;failed to link shader program&#34;</span>, stderr);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// set vertex layout
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">vertex_layout</span>(shader_program);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// render loop
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">glfwWindowShouldClose</span>(window)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glClear</span>(GL_COLOR_BUFFER_BIT);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glDrawArrays</span>(GL_TRIANGLES, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">3</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glfwSwapBuffers</span>(window);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">glfwPollEvents</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// delete program and buffers
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">glDeleteProgram</span>(shader_program);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">vertex_delete</span>(<span style="color:#f92672">&amp;</span>vertices);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// terminate glfw
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">glfwTerminate</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Try to compile the program. You should see a window with a three-colored triangle. Check out the <a href="../triangle.c">source code</a>.</p>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://localhost:1313/" >
+    &copy;  My Blog 2025 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

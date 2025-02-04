@@ -60,7 +60,7 @@ Firstly, let’s define enum with possible types of our values:
 // add this after token_type enum enum value_type { OBJECT, ARRAY, VALUE_STRING, VALUE_NUMBER, VALUE_TRUE, VALUE_FALSE, VALUE_NULL }; Similar to our scanner structure that represents a state machine while scanning the source string, let’s define a new structure called parser. It’s going to be really simple:">
   <meta itemprop="datePublished" content="2025-02-03T20:17:37+03:00">
   <meta itemprop="dateModified" content="2025-02-03T20:17:37+03:00">
-  <meta itemprop="wordCount" content="2807">
+  <meta itemprop="wordCount" content="2820">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Json Parser Part 2">
   <meta name="twitter:description" content="In the previous post, we wrote a scanner for our JSON parser. In this post, we will finally parse our tokens - produce actual data from them that we can use.
@@ -534,7 +534,8 @@ elements
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">free_string</span>(string <span style="color:#f92672">*</span>string) {
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">free</span>(string<span style="color:#f92672">-&gt;</span>string);
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// function declaration
+</span></span></code></pre></div><p>Now let&rsquo;s handle the conversion to string from the value and compound types:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// function declaration
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">value_string</span>(value <span style="color:#f92672">*</span>value, string <span style="color:#f92672">*</span>string, <span style="color:#66d9ef">int</span> ind);
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// convert an array to a string and append it to the string

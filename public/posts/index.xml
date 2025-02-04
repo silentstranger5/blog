@@ -6,8 +6,15 @@
     <description>Recent content in Posts on My Blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 03 Feb 2025 20:17:37 +0300</lastBuildDate>
+    <lastBuildDate>Tue, 04 Feb 2025 23:30:00 +0300</lastBuildDate>
     <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hello World Triangle</title>
+      <link>http://localhost:1313/posts/opengl/hello-world-triangle/</link>
+      <pubDate>Tue, 04 Feb 2025 23:30:00 +0300</pubDate>
+      <guid>http://localhost:1313/posts/opengl/hello-world-triangle/</guid>
+      <description>&lt;p&gt;Before using OpenGL, we need to arrange a couple of things. Firstly, OpenGL only specifies graphics API. However, to use OpenGL you need something called &lt;em&gt;context&lt;/em&gt; - a state machine with an OpenGL state in memory. Usually, this context is bound to a window. OpenGL does not specify the creation of windows and contexts associated with them. This means that it&amp;rsquo;s different depending on the user platform! This is the last thing you need in a cross-platform application.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Json Parser Part 2</title>
       <link>http://localhost:1313/posts/json/json-parser-part-2/</link>
