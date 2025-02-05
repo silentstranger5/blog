@@ -116,34 +116,28 @@ const char *keywords[] = { "false", "true", "null" };
 In our program, we will read a JSON file and scan it. Let's define functions to read a text from a file:
 
 ```c
-int file_read(const char *filename, char **buffer) {
+// read file
+int file_read(const char *filename, char **buf) {
+    int ret = 0;
     FILE *f = fopen(filename, "r");
     if (!f) {
-        return 0;
+        return ret;
     }
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
-    *buffer = malloc(size * sizeof(char));
-    rewind(f);
-    int ret = fread(*buffer, sizeof(char), size, f);
-    fclose(f);
-    *(strrchr(*buffer, '}') + 1) = 0;
-    return ret;
-}
-
-char *file_content(const char *filename) {
-    char *buffer = NULL;
-    int size = file_read(filename, &buffer);
-    if (!size) {
-        return NULL;
+    *buf = malloc((size + 1) * sizeof(char));
+    if (!*buf) {
+        return ret;
     }
-    return buffer;
+    rewind(f);
+    ret = fread(*buf, sizeof(char), size, f);
+    fclose(f);
+    (*buf)[size] = 0;
+    return ret;
 }
 ```
 
 If you read my other posts, the function `file_read` is probably familiar to you. It calculates the size of the file using a combination of `fseek` and `ftell`, first to set the internal pointer to the end of the file, and second to get the offset from the start. `rewind` sets the internal pointer back to the start. Then we allocate enough space with `malloc`, read a file with `fread`, and close it with `fclose`. Notice one line above `return`. `strrchr` returns a pointer to the rightmost occurrence of the specified character. We use it to terminate all symbols after the last right brace since `ftell` returns a slightly larger number than needed on Windows (because `\r\n` is replaced with `\n` but `ftell` does not consider it).
-
-`file_content` is a thin wrapper that returns the contents of the file we read.
 
 Now let's consider some utility functions:
 
@@ -221,14 +215,14 @@ Here comes the interesting part. Let's create a new function called `add_token`:
 
 ```c
 // add the current token from the source string into scanner tokens
-void add_token(scanner *scanner, int token_type) {
+void add_token(scanner *scanner, int type) {
     // copy the lexeme substring
     char *lexeme = substring(
         scanner->source, scanner->start, scanner->current
     );
     // create a new token
     token token = {
-        .type = token_type,
+        .type = type,
         .lexeme = lexeme,
         .line = scanner->line,
     };
@@ -332,7 +326,7 @@ Let's define a new function. It will accept a string, and will return the keywor
 #define keyoffset TOKEN_FALSE
 
 // return the type of the keyword
-int get_keytype(char *key) {
+int key_type(char *key) {
     // number of elements in keywords array
     int nkeys = sizeof(keywords) / sizeof(char *);
     // compare the key against each known keyword
@@ -365,7 +359,7 @@ void identifier(scanner *scanner) {
         scanner->source, scanner->start, scanner->current
     );
     // determine its type
-    int type = get_keytype(text);
+    int type = key_type(text);
     // if it is -1, we couldnt determine the type of the identifier
     if (type == -1) {
         // report a formatted error
@@ -375,12 +369,15 @@ void identifier(scanner *scanner) {
     }
     // add the current token into the scanner
     add_token(scanner, type);
+    // free text
+    free(text);
 }
 ```
 
 Now for the skeleton of our scanner:
 
 ```c
+// scan token
 void scan_token(scanner *scanner) {
     // consider the next character in the source string
     char c = scanner_advance(scanner);
@@ -452,6 +449,7 @@ Since most of the job is done inside of the functions, the parsing function is r
 Here is a wrapper of the function above that scans tokens in a loop:
 
 ```c
+// scan tokens
 void scan_tokens(scanner *scanner) {
     // while we are not done
     while (!scanner_is_at_end(scanner)) {
@@ -470,6 +468,7 @@ void scan_tokens(scanner *scanner) {
 Let's define a function that will print all of the scanner's tokens:
 
 ```c
+// print tokens
 void print_tokens(scanner *scanner) {
     for (int i = 0; i < scanner->size; i++) {
         token token = scanner->tokens[i];
@@ -480,18 +479,32 @@ void print_tokens(scanner *scanner) {
 }
 ```
 
+Don't forget to clean up the scanner:
+
+```c
+// free scanner data
+void free_scanner(scanner *scanner) {
+    for (int i = 0; i < scanner->size; i++) {
+        free(scanner->tokens[i].lexeme);
+    }
+    free(scanner->tokens);
+}
+```
+
 Now let's define a function that will parse the JSON string:
 
 ```c
+// parse json string
 void parse_json(const char *source) {
     scanner scanner = {
         .line = 1,
         .source = source,
-        .capacity = 8,
-        .tokens = malloc(8 * sizeof(token))
+        .capacity = 4,
+        .tokens = malloc(4 * sizeof(token))
     };
     scan_tokens(&scanner);
     print_tokens(&scanner);
+    free_scanner(&scanner);
 }
 ```
 
@@ -505,8 +518,9 @@ int main(int argc, char **argv) {
         return 1;
     }
     // get the contents of the provided file
-    char *source = file_content(argv[1]);
-    if (!source) {
+    char *source = NULL;
+    int fsize = file_read(argv[1], &source);
+    if (!fsize) {
         fprintf(stderr, "failed to read file %s\n", argv[1]);
         return 1;
     }

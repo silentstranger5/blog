@@ -28,112 +28,7 @@ typedef struct {
 } parser;
 ```
 
-Before we go further I'd like to tell you a curious detail about data structures. If you visit [JSON page](https://json.org), you easily find syntactical specifications of JSON format. The curious detail that I've noticed is the fact that some data type definitions are circular. For example:
-
-```
-1. Array is a collection of values
-2. Value can have one of several types, including arrays
-```
-
-Therefore, `array` would refer to the `value`, which in turn would refer to `array`. It is a chicken and an egg problem of sorts. So when I was trying to define the data types I was confused: how can I define a data structure definition that is circular? It turns out that in C you can declare not only variables but data types as well. Take a look at this:
-
-```c
-struct Person {
-    char *name;
-    int age;
-    struct Person *friends;
-}
-```
-
-This recursive definition should be familiar to you, especially if you implemented linked lists before. Note that the last field is a *pointer* to a struct. You can't define it as a value, since then the compiler won't be able to evaluate the data structure:
-
-```
-struct Person which consists of three fields, one of which is a
-struct Person which consists of three fields, one of which is a
-...
-```
-
-You can see that this loop just won't terminate, since the compiler has to evaluate all of the value fields inside of the structure. Compare that to
-
-```
-struct Person which consists of three fields, one of which is a
-pointer to struct Person.
-```
-
-Note that pointers are only evaluated when the value is dereferenced, therefore compiler does not have to evaluate the pointer field when the structure is defined.
-
-This is nice and all, but how does that relate to our problem? Let's say that we have this:
-
-```c
-struct Person {
-    char *name;
-    int age;
-    struct People *friends;
-};
-
-struct People {
-    int capacity;
-    int size;
-    struct Person *people;
-};
-```
-
-Notice the circular definition: `Person -> People -> Person -> ...`. This is quite a similar situation. This also works since we use pointers that can be evaluated at dereferencing. What if we use `typedef`s?
-
-```c
-typedef struct Person {
-    char *name;
-    int age;
-    struct People *friends;
-} Person;
-
-typedef struct People {
-    int capacity;
-    int size;
-    struct Person *people;
-} People;
-```
-
-That still works. But what if we use unnamed structures?
-
-```c
-typedef struct {
-    char *name;
-    int age
-    People *friends;
-} Person;
-
-typedef struct {
-    int capacity;
-    int size;
-    Person *people;
-} People;
-```
-
-I use anonymous structure definitions quite often since they save me from excessive typing. However, since `People` is not yet defined at the point where the `friends` field of `Person` is defined, the compiler will give you an error. How can we fix it? Well, we can just *declare* type definitions to a yet-undefined structure like this:
-
-```c
-typedef struct Person Person;
-typedef struct People People;
-
-struct Person {
-    char *name;
-    int age;
-    People *friends;
-};
-
-struct People {
-    int capacity;
-    int size;
-    Person *people;
-};
-```
-
-Surprisingly, it works! Yes, you can just *declare* a symbol `Person` to be defined as a `struct Person`, whatever it is, even if it's not defined yet.
-
-This took a bit more time to explain than I expected. It is not very important to what we'll be doing today, but I still thought that it might be an interesting corner of syntax.
-
-With syntax out of the way, let's think about how we'll define our data. JSON specification from the website above will come in handy for this:
+Let's think about how we'll define our data. JSON specification from the website above will come in handy for this:
 
 ```
 JSON
@@ -218,7 +113,7 @@ Now let's define utility functions for our parser:
 ```c
 // add all code below after the print_tokens function
 
-// check the current token without advancing further
+// peek at the current token
 token parser_peek(parser *parser) {
     return parser->tokens[parser->current];
 }
@@ -228,7 +123,7 @@ int parser_is_at_end(parser *parser) {
     return parser_peek(parser).type == TOKEN_EOF;
 }
 
-// check if the type of the current token is equal to the type
+// check if the current token has appropriate type
 int check(parser *parser, int type) {
     if (parser_is_at_end(parser)) {
         return 0;
@@ -236,12 +131,12 @@ int check(parser *parser, int type) {
     return parser_peek(parser).type == type;
 }
 
-// return the previous token
+// get previous token
 token previous(parser *parser) {
     return parser->tokens[parser->current - 1];
 }
 
-// advance the parser to the next token
+// go to the next token
 token parser_advance(parser *parser) {
     if (!parser_is_at_end(parser)) {
         parser->current++;
@@ -249,18 +144,19 @@ token parser_advance(parser *parser) {
     return previous(parser);
 }
 
-// consume the current token if matches the type and report an error otherwise 
+// report a parser error
+void parser_error(token token, char *msg) {
+    fprintf(stderr, "[line %d] at '%s': %s\n", token.line, token.lexeme, msg);
+    exit(1);
+}
+
+// consume the current token
 token consume(parser *parser, int type, char *msg) {
     if (check(parser, type)) {
         return parser_advance(parser);
     }
     parser_error(parser_peek(parser), msg);
-}
-
-// report the parser error
-void parser_error(token token, char *msg) {
-    fprintf(stderr, "[line %d] at '%s': %s\n", token.line, token.lexeme, msg);
-    exit(1);
+    return (token){0};
 }
 ```
 
@@ -277,7 +173,7 @@ void array_add_value(array *array, value *value) {
         array->capacity *= 2;
         // reallocate the memory
         array->elements = realloc(
-            array->elements, array->capacity * sizeof(value)
+            array->elements, array->capacity * sizeof(*value)
         );
     }
     // append the value to the array
@@ -289,7 +185,7 @@ void object_add_member(object *object, member *member) {
     if (object->size >= object->capacity) {
         object->capacity *= 2;
         object->members = realloc(
-        object->members, object->capacity * sizeof(member)
+        object->members, object->capacity * sizeof(*member)
     );
     }
     object->members[object->size++] = *member;
@@ -309,9 +205,6 @@ void parse_elements(parser *parser, array *array) {
     if (parser_peek(parser).type == RIGHT_BRACKET) {
         return;
     }
-    // preallocate array storage
-    array->capacity = 4;
-    array->elements = malloc(4 * sizeof(value));
     // parse the new value
     value value = {0};
     parse_value(parser, &value);
@@ -344,9 +237,8 @@ elements
 The array consists of brackets with optional elements inside. Elements can be either a single value or a list of values delimited by commas. Here is how we parse it:
 
 1. Check whether there are any elements to parse. If not, we are done
-2. Preallocate some space for the array
-3. Parse the value and append it to the array
-4. While the current token is a comma:
+2. Parse the value and append it to the array
+3. While the current token is a comma:
     - Advance the parser
     - Parse the new value
     - Append it to the array
@@ -356,23 +248,22 @@ This pattern is typical for parsing the comma-delimited values. Now let's handle
 ```c
 // parse member
 void parse_member(parser *parser, member *member) {
-    // create the new member and allocate memory for the value field
-    member->value = malloc(sizeof(value));
     // consume the member key string and report an error if it's not present
     token string = consume(parser, TOKEN_STRING, "expected string");
     // copy the string token lexeme
     member->string = strdup(string.lexeme);
     // consume the colon token
     consume(parser, COLON, "expected colon");
+    // allocate memory for member's value
+    member->value = calloc(1, sizeof(value));
     // parse the value
-    value value = {0};
     parse_value(parser, &value);
-    // copy the value into the value field
-    memcpy(member->value, &value, sizeof(value));
 }
 ```
 
-Again, this is very similar to this syntactical clause of JSON:
+Note that we allocate memory for member's value field. In the beginning of this post, we resolved circular data type definition by forward declaration of the `value` type. Because of that, we have to use a pointer for the `value` field in the `member` structure and allocate it on the heap. This is unfortunate, but still better that the other way around. Had we declared `array` and `object` structures, amount of heap allocations would grow significantly. The bottom line here is simple: allocate on the stack everything that you can (unless you need more storage).
+
+This code is very similar to this syntactical clause of JSON:
 
 ```
 member
@@ -382,12 +273,11 @@ member
 Finally, let's wrap it inside a new function that will parse a list of comma-delimited members:
 
 ```c
+// parse members
 void parse_members(parser *parser, object *object) {
     if (parser_peek(parser).type == RIGHT_BRACE) {
         return;
     }
-    object->capacity = 4;
-    object->members = malloc(4 * sizeof(member));
     member member = {0};
     parse_member(parser, &member);
     object_add_member(object, &member);
@@ -408,30 +298,29 @@ Now that we can parse an optional comma-delimited list of members and elements, 
 void parse_object(parser *parser, value *value) {
     // set the value type to OBJECT
     value->type = OBJECT;
-    // init object on the stack to zero
-    object object = {0};
+    // allocate members on object
+    value->object.capacity = 4;
+    value->object.members = malloc(4 * sizeof(member));
     // consume the left brace
     consume(parser, LEFT_BRACE, "expected left brace");
-    // parse the member's list
-    parse_members(parser, &object);
+    // parse the members list
+    parse_members(parser, &value->object);
     // consume the right brace
     consume(parser, RIGHT_BRACE, "expected right brace");
-    // set object field of value to objects
-    value->object = object;
 }
 ```
 
-This code is not very complicated. We initialize the `object` on the stack, pass it into the `parse_members` function, and set the `value->object` field to `object`.
+This code is not very complicated. We allocate some memory for object members on value, pass it into the `parse_members` function, and set the `value->object` field to `object`.
 
 ```c
 // parse array
 void parse_array(parser *parser, value *value) {
     value->type = ARRAY;
-    array array = {0};
+    value->array.capacity = 4;
+    value->array.elements = malloc(4 * sizeof(*value));
     consume(parser, LEFT_BRACKET, "expected left bracket");
-    parse_elements(parser, &array);
+    parse_elements(parser, &value->array);
     consume(parser, RIGHT_BRACKET, "expected right bracket");
-    value->array = array;
 }
 ```
 
@@ -440,6 +329,7 @@ This function is very similar to `parse_objects`.
 Let's get to the interesting part. Here is how to parse the value:
 
 ```c
+// parse value
 void parse_value(parser *parser, value *value) {
     token token = parser_peek(parser);
     enum token_type type = token.type;
@@ -484,15 +374,17 @@ At this point, we are done with parsing, so let's free the parser data:
 
 ```c
 // free parser data
-void parser_free(parser *parser) {
+void free_parser(parser *parser) {
     // free lexeme string of each token
-    for (int i = 0; i < parser->current; i++) {
+    for (int i = 0; i < parser->current + 1; i++) {
         free(parser->tokens[i].lexeme);
     }
     // free the tokens array
     free(parser->tokens);
 }
 ```
+
+Note that we add 1 to the `current` field since we also need to free the final `EOF` token.
 
 Ironically enough, we are going to print the JSON value as a JSON string. This will allow you to convert the value back to the JSON string. We are going to use yet another dynamic array to represent strings:
 
@@ -508,7 +400,7 @@ typedef struct {
 Here are functions related to our string:
 
 ```c
-// append the message to the string
+// concatenate to the string
 void string_cat(string *string, char *msg) {
     int size = strlen(msg);
     // reallocate the string
@@ -544,7 +436,7 @@ Now let's handle the conversion to string from the value and compound types:
 // function declaration
 void value_string(value *value, string *string, int ind);
 
-// convert an array to a string and append it to the string
+// concatenate array to the string
 void array_string(array *array, string *string, int ind) {
     string_cat(string, "[ ");
     for (int i = 0; i < array->size; i++) {
@@ -557,7 +449,7 @@ void array_string(array *array, string *string, int ind) {
     string_cat(string, " ]");
 }
 
-// convert an object to a string and append it to the string
+// concatenate object to the string
 void object_string(object *object, string *string, int ind) {
     char keystr[64] = {0};
     string_cat(string, "{ ");
@@ -566,7 +458,7 @@ void object_string(object *object, string *string, int ind) {
     }
     for (int i = 0; i < object->size; i++) {
         member member = object->members[i];
-        for (int i = 0; i < ind + 1; i++) {
+        for (int j = 0; j < ind + 1; j++) {
             string_cat(string, "    ");
         }
         sprintf(keystr, "%s: ", member.string);
@@ -583,7 +475,7 @@ void object_string(object *object, string *string, int ind) {
     string_cat(string, "}");
 }
 
-// convert a value to a string and append it to the string
+// concatenate value to the string
 void value_string(value *value, string *string, int ind) {
     char valstr[64] = {0};
     switch (value->type) {
@@ -635,6 +527,7 @@ void free_value(value *value) {
         for (int i = 0; i < value->object.size; i++) {
             free(value->object.members[i].string);
             free_value(value->object.members[i].value);
+            free(value->object.members[i].value);
         }
         // free the member's array
         free(value->object.members);
@@ -657,7 +550,7 @@ print_tokens(&scanner);
 // add this to parse_json after scan_tokens
 parser parser = {.tokens = scanner.tokens};
 parse_value(&parser, value);
-parser_free(&parser);
+free_parser(&parser);
 ```
 
 Finally, let's update the `main` function:

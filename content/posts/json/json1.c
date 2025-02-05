@@ -32,32 +32,26 @@ typedef struct {
 const char *keywords[] = { "false", "true", "null" };
 
 // read file
-int file_read(const char *filename, char **buffer) {
+int file_read(const char *filename, char **buf) {
+    int ret = 0;
     FILE *f = fopen(filename, "r");
     if (!f) {
-        return 0;
+        return ret;
     }
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
-    *buffer = malloc(size * sizeof(char));
+    *buf = malloc((size + 1) * sizeof(char));
+    if (!*buf) {
+        return ret;
+    }
     rewind(f);
-    int ret = fread(*buffer, sizeof(char), size, f);
+    ret = fread(*buf, sizeof(char), size, f);
     fclose(f);
-    *(strrchr(*buffer, '}') + 1) = 0;
+    (*buf)[size] = 0;
     return ret;
 }
 
-// return file contents
-char *file_content(const char *filename) {
-    char *buffer = NULL;
-    int size = file_read(filename, &buffer);
-    if (!size) {
-        return NULL;
-    }
-    return buffer;
-}
-
-// go to the next token and return the current one
+// go to the next character and return the current one
 char scanner_advance(scanner *scanner) {
     return scanner->source[scanner->current++];
 }
@@ -67,7 +61,7 @@ int scanner_is_at_end(scanner *scanner) {
     return scanner->current >= strlen(scanner->source);
 }
 
-// peek at the current token without advancing further
+// peek at the current character without advancing further
 char scanner_peek(scanner *scanner) {
     if (scanner_is_at_end(scanner)) {
         return '\0';
@@ -107,7 +101,7 @@ int isalnum(char c) {
     return isdigit(c) || isalpha(c);
 }
 
-// peek at one token after the next one
+// peek at one character after the next one
 char scanner_peeknext(scanner *scanner) {
     if (scanner->current + 1 >= strlen(scanner->source)) {
         return '\0';
@@ -116,12 +110,12 @@ char scanner_peeknext(scanner *scanner) {
 }
 
 // add the current token from the source string into scanner tokens
-void add_token(scanner *scanner, int token_type) {
+void add_token(scanner *scanner, int type) {
     char *text = substring(
         scanner->source, scanner->start, scanner->current
     );
     token token = {
-        .type = token_type,
+        .type = type,
         .lexeme = text,
         .line = scanner->line,
     };
@@ -164,14 +158,11 @@ void scanner_number(scanner *scanner) {
             scanner_advance(scanner);
         }
     }
-    char *numstr = substring(
-        scanner->source, scanner->start, scanner->current
-    );
     add_token(scanner, TOKEN_NUMBER);
 }
 
 // return the type of the keyword
-int get_keytype(char *key) {
+int key_type(char *key) {
     int nkeys = sizeof(keywords) / sizeof(char *);
     for (int i = 0; i < nkeys; i++) {
         if (!strcmp(key, keywords[i])) {
@@ -189,15 +180,17 @@ void identifier(scanner *scanner) {
     char *text = substring(
         scanner->source, scanner->start, scanner->current
     );
-    int type = get_keytype(text);
+    int type = key_type(text);
     if (type == -1) {
         char line[128];
         sprintf(line, "unexpected identifier: %s", text);
         scanner_error(scanner->line, line);
     }
     add_token(scanner, type);
+    free(text);
 }
 
+// scan token
 void scan_token(scanner *scanner) {
     char c = scanner_advance(scanner);
     switch(c) {
@@ -242,13 +235,14 @@ void scan_token(scanner *scanner) {
             identifier(scanner);
         } else {
             char msg[128];
-            sprintf(msg, "unexpected character %c", c);
+            sprintf(msg, "unexpected character: %c", c);
             scanner_error(scanner->line, msg);
         }
         break;
     }
 }
 
+// scan tokens
 void scan_tokens(scanner *scanner) {
     while (!scanner_is_at_end(scanner)) {
         scanner->start = scanner->current;
@@ -258,6 +252,7 @@ void scan_tokens(scanner *scanner) {
     add_token(scanner, TOKEN_EOF);
 }
 
+// print tokens
 void print_tokens(scanner *scanner) {
     for (int i = 0; i < scanner->size; i++) {
         token token = scanner->tokens[i];
@@ -267,15 +262,25 @@ void print_tokens(scanner *scanner) {
     }
 }
 
+// free scanner data
+void free_scanner(scanner *scanner) {
+    for (int i = 0; i < scanner->size; i++) {
+        free(scanner->tokens[i].lexeme);
+    }
+    free(scanner->tokens);
+}
+
+// parse json string
 void parse_json(const char *source) {
     scanner scanner = {
         .line = 1,
         .source = source,
-        .capacity = 8,
-        .tokens = malloc(8 * sizeof(token))
+        .capacity = 4,
+        .tokens = malloc(4 * sizeof(token))
     };
     scan_tokens(&scanner);
     print_tokens(&scanner);
+    free_scanner(&scanner);
 }
 
 int main(int argc, char **argv) {
@@ -283,8 +288,9 @@ int main(int argc, char **argv) {
         printf("usage: %s [file.json]\n", argv[0]);
         return 1;
     }
-    char *source = file_content(argv[1]);
-    if (!source) {
+    char *source = NULL;
+    int fsize = file_read(argv[1], &source);
+    if (!fsize) {
         fprintf(stderr, "failed to read file %s\n", argv[1]);
         return 1;
     }

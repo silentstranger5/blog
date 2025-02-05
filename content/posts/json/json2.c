@@ -78,38 +78,37 @@ typedef struct {
 
 const char *keywords[] = { "false", "true", "null" };
 
-int file_read(const char *filename, char **buffer) {
+// read file
+int file_read(const char *filename, char **buf) {
+    int ret = 0;
     FILE *f = fopen(filename, "r");
     if (!f) {
-        return 0;
+        return ret;
     }
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
-    *buffer = malloc(size * sizeof(char));
+    *buf = malloc((size + 1) * sizeof(char));
+    if (!*buf) {
+        return ret;
+    }
     rewind(f);
-    int ret = fread(*buffer, sizeof(char), size, f);
+    ret = fread(*buf, sizeof(char), size, f);
     fclose(f);
-    *(strrchr(*buffer, '}') + 1) = 0;
+    (*buf)[size] = 0;
     return ret;
 }
 
-char *file_content(const char *filename) {
-    char *buffer = NULL;
-    int size = file_read(filename, &buffer);
-    if (!size) {
-        return NULL;
-    }
-    return buffer;
-}
-
+// go to the next character and return the current one
 char scanner_advance(scanner *scanner) {
     return scanner->source[scanner->current++];
 }
 
+// check if we are done parsing the source
 int scanner_is_at_end(scanner *scanner) {
     return scanner->current >= strlen(scanner->source);
 }
 
+// peek at the current character without advancing further
 char scanner_peek(scanner *scanner) {
     if (scanner_is_at_end(scanner)) {
         return '\0';
@@ -117,6 +116,7 @@ char scanner_peek(scanner *scanner) {
     return scanner->source[scanner->current];
 }
 
+// return a copy of s[start:end]
 char *substring(char *s, int start, int end) {
     int size = end - start;
     char *t = malloc(size + 1);
@@ -125,17 +125,44 @@ char *substring(char *s, int start, int end) {
     return t;
 }
 
+// report a scanner error
 void scanner_error(int line, char *msg) {
     fprintf(stderr, "[line %d]: %s\n", line, msg);
     exit(1);
 }
 
-void add_token(scanner *scanner, int token_type) {
+// check if c is a digit
+int isdigit(char c) {
+    return c >= '0' && c <= '9';
+}
+
+// check if c is a letter or an underscore
+int isalpha(char c) {
+    return  (c >= 'a' && c <= 'z') ||
+            (c >= 'A' && c <= 'Z') ||
+            (c == '_');
+}
+
+// check if c is a digit or a letter
+int isalnum(char c) {
+    return isdigit(c) || isalpha(c);
+}
+
+// peek at one character after the next one
+char scanner_peeknext(scanner *scanner) {
+    if (scanner->current + 1 >= strlen(scanner->source)) {
+        return '\0';
+    }
+    return scanner->source[scanner->current + 1];
+}
+
+// add the current token from the source string into scanner tokens
+void add_token(scanner *scanner, int type) {
     char *text = substring(
         scanner->source, scanner->start, scanner->current
     );
     token token = {
-        .type = token_type,
+        .type = type,
         .lexeme = text,
         .line = scanner->line,
     };
@@ -148,6 +175,7 @@ void add_token(scanner *scanner, int token_type) {
     scanner->tokens[scanner->size++] = token;
 }
 
+// scan a string token from the source string
 void scanner_string(scanner *scanner) {
     while (scanner_peek(scanner) != '"' && !scanner_is_at_end(scanner)) {
         if (scanner_peek(scanner) == '\n') {
@@ -166,28 +194,8 @@ void scanner_string(scanner *scanner) {
     scanner->current++;
 }
 
-int isdigit(char c) {
-    return c >= '0' && c <= '9';
-}
-
-int isalpha(char c) {
-    return  (c >= 'a' && c <= 'z') ||
-            (c >= 'A' && c <= 'Z') ||
-            (c == '_');
-}
-
-int isalphanum(char c) {
-    return isdigit(c) || isalpha(c);
-}
-
-char scanner_peeknext(scanner *scanner) {
-    if (scanner->current + 1 >= strlen(scanner->source)) {
-        return '\0';
-    }
-    return scanner->source[scanner->current + 1];
-}
-
-void number(scanner *scanner) {
+// scan a number token from the source string
+void scanner_number(scanner *scanner) {
     while (isdigit(scanner_peek(scanner))) {
         scanner_advance(scanner);
     }
@@ -197,13 +205,11 @@ void number(scanner *scanner) {
             scanner_advance(scanner);
         }
     }
-    char *numstr = substring(
-        scanner->source, scanner->start, scanner->current
-    );
     add_token(scanner, TOKEN_NUMBER);
 }
 
-int get_keytype(char *key) {
+// return the type of the keyword
+int key_type(char *key) {
     int nkeys = sizeof(keywords) / sizeof(char *);
     for (int i = 0; i < nkeys; i++) {
         if (!strcmp(key, keywords[i])) {
@@ -213,22 +219,25 @@ int get_keytype(char *key) {
     return -1;
 }
 
+// scan identifier
 void identifier(scanner *scanner) {
-    while (isalphanum(scanner_peek(scanner))) {
+    while (isalnum(scanner_peek(scanner))) {
         scanner_advance(scanner);
     }
     char *text = substring(
         scanner->source, scanner->start, scanner->current
     );
-    int type = get_keytype(text);
+    int type = key_type(text);
     if (type == -1) {
         char line[128];
         sprintf(line, "unexpected identifier: %s", text);
         scanner_error(scanner->line, line);
     }
     add_token(scanner, type);
+    free(text);
 }
 
+// scan token
 void scan_token(scanner *scanner) {
     char c = scanner_advance(scanner);
     switch(c) {
@@ -260,20 +269,27 @@ void scan_token(scanner *scanner) {
     case '"':
         scanner_string(scanner);
         break;
+    case '-':
+    case '+':
+        if (isdigit(scanner_peeknext(scanner))) {
+            scanner_advance(scanner);
+            scanner_number(scanner);
+        }
     default:
         if (isdigit(c)) {
-            number(scanner);
+            scanner_number(scanner);
         } else if (isalpha(c)) {
             identifier(scanner);
         } else {
             char msg[128];
-            sprintf(msg, "unexpected character %c", c);
+            sprintf(msg, "unexpected character: %c", c);
             scanner_error(scanner->line, msg);
         }
         break;
     }
 }
 
+// scan tokens
 void scan_tokens(scanner *scanner) {
     while (!scanner_is_at_end(scanner)) {
         scanner->start = scanner->current;
@@ -283,6 +299,7 @@ void scan_tokens(scanner *scanner) {
     add_token(scanner, TOKEN_EOF);
 }
 
+// print tokens
 void print_tokens(scanner *scanner) {
     for (int i = 0; i < scanner->size; i++) {
         token token = scanner->tokens[i];
@@ -292,14 +309,17 @@ void print_tokens(scanner *scanner) {
     }
 }
 
+// peek at the current token
 token parser_peek(parser *parser) {
     return parser->tokens[parser->current];
 }
 
+// check if we are done
 int parser_is_at_end(parser *parser) {
     return parser_peek(parser).type == TOKEN_EOF;
 }
 
+// check if the current token has appropriate type
 int check(parser *parser, int type) {
     if (parser_is_at_end(parser)) {
         return 0;
@@ -307,10 +327,12 @@ int check(parser *parser, int type) {
     return parser_peek(parser).type == type;
 }
 
+// get previous token
 token previous(parser *parser) {
     return parser->tokens[parser->current - 1];
 }
 
+// go to the next token
 token parser_advance(parser *parser) {
     if (!parser_is_at_end(parser)) {
         parser->current++;
@@ -318,11 +340,13 @@ token parser_advance(parser *parser) {
     return previous(parser);
 }
 
+// report a parser error
 void parser_error(token token, char *msg) {
     fprintf(stderr, "[line %d] at '%s': %s\n", token.line, token.lexeme, msg);
     exit(1);
 }
 
+// consume the current token
 token consume(parser *parser, int type, char *msg) {
     if (check(parser, type)) {
         return parser_advance(parser);
@@ -331,21 +355,23 @@ token consume(parser *parser, int type, char *msg) {
     return (token){0};
 }
 
+// add a value to an array
 void array_add_value(array *array, value *value) {
     if (array->size >= array->capacity) {
         array->capacity *= 2;
         array->elements = realloc(
-            array->elements, array->capacity * sizeof(value)
+            array->elements, array->capacity * sizeof(*value)
         );
     }
     array->elements[array->size++] = *value;
 }
 
+// add a member to an object
 void object_add_member(object *object, member *member) {
     if (object->size >= object->capacity) {
         object->capacity *= 2;
         object->members = realloc(
-            object->members, object->capacity * sizeof(member)
+            object->members, object->capacity * sizeof(*member)
         );
     }
     object->members[object->size++] = *member;
@@ -353,12 +379,11 @@ void object_add_member(object *object, member *member) {
 
 void parse_value(parser *, value *);
 
+// parse elements
 void parse_elements(parser *parser, array *array) {
     if (parser_peek(parser).type == RIGHT_BRACKET) {
         return;
     }
-    array->capacity = 4;
-    array->elements = malloc(4 * sizeof(value));
     value value = {0};
     parse_value(parser, &value);
     array_add_value(array, &value);
@@ -369,22 +394,20 @@ void parse_elements(parser *parser, array *array) {
     }
 }
 
+// parse member
 void parse_member(parser *parser, member *member) {
-    member->value = malloc(sizeof(value));
     token string = consume(parser, TOKEN_STRING, "expected string");
     member->string = strdup(string.lexeme);
     consume(parser, COLON, "expected colon");
-    value value = {0};
-    parse_value(parser, &value);
-    memcpy(member->value, &value, sizeof(value));
+    member->value = calloc(1, sizeof(value));
+    parse_value(parser, member->value);
 }
 
+// parse members
 void parse_members(parser *parser, object *object) {
     if (parser_peek(parser).type == RIGHT_BRACE) {
         return;
     }
-    object->capacity = 4;
-    object->members = malloc(4 * sizeof(member));
     member member = {0};
     parse_member(parser, &member);
     object_add_member(object, &member);
@@ -395,24 +418,27 @@ void parse_members(parser *parser, object *object) {
     }
 }
 
+// parse object
 void parse_object(parser *parser, value *value) {
     value->type = OBJECT;
-    object object = {0};
+    value->object.capacity = 4;
+    value->object.members = malloc(4 * sizeof(member));
     consume(parser, LEFT_BRACE, "expected left brace");
-    parse_members(parser, &object);
+    parse_members(parser, &value->object);
     consume(parser, RIGHT_BRACE, "expected right brace");
-    value->object = object;
 }
 
+// parse array
 void parse_array(parser *parser, value *value) {
     value->type = ARRAY;
-    array array = {0};
+    value->array.capacity = 4;
+    value->array.elements = malloc(4 * sizeof(*value));
     consume(parser, LEFT_BRACKET, "expected left bracket");
-    parse_elements(parser, &array);
+    parse_elements(parser, &value->array);
     consume(parser, RIGHT_BRACKET, "expected right bracket");
-    value->array = array;
 }
 
+// parse value
 void parse_value(parser *parser, value *value) {
     token token = parser_peek(parser);
     enum token_type type = token.type;
@@ -450,13 +476,15 @@ void parse_value(parser *parser, value *value) {
     }
 }
 
-void parser_free(parser *parser) {
-    for (int i = 0; i < parser->current; i++) {
+// free parser data
+void free_parser(parser *parser) {
+    for (int i = 0; i < parser->current + 1; i++) {
         free(parser->tokens[i].lexeme);
     }
     free(parser->tokens);
 }
 
+// concatenate to the string
 void string_cat(string *string, char *msg) {
     int size = strlen(msg);
     if (string->size + size >= string->capacity) {
@@ -471,16 +499,19 @@ void string_cat(string *string, char *msg) {
     strcat(string->string, msg);
 }
 
+// print string to the standard output
 void string_print(string *string) {
     puts(string->string);
 }
 
+// free data from string
 void free_string(string *string) {
     free(string->string);
 }
 
 void value_string(value *value, string *string, int ind);
 
+// concatenate array to the string
 void array_string(array *array, string *string, int ind) {
     string_cat(string, "[ ");
     for (int i = 0; i < array->size; i++) {
@@ -493,6 +524,7 @@ void array_string(array *array, string *string, int ind) {
     string_cat(string, " ]");
 }
 
+// concatenate object to the string
 void object_string(object *object, string *string, int ind) {
     char keystr[64] = {0};
     string_cat(string, "{ ");
@@ -501,7 +533,7 @@ void object_string(object *object, string *string, int ind) {
     }
     for (int i = 0; i < object->size; i++) {
         member member = object->members[i];
-        for (int i = 0; i < ind + 1; i++) {
+        for (int j = 0; j < ind + 1; j++) {
             string_cat(string, "    ");
         }
         sprintf(keystr, "%s: ", member.string);
@@ -518,6 +550,7 @@ void object_string(object *object, string *string, int ind) {
     string_cat(string, "}");
 }
 
+// concatenate value to the string
 void value_string(value *value, string *string, int ind) {
     char valstr[64] = {0};
     switch (value->type) {
@@ -547,6 +580,7 @@ void value_string(value *value, string *string, int ind) {
     }
 }
 
+// free data from value
 void free_value(value *value) {
     switch(value->type) {
     case ARRAY:
@@ -559,6 +593,7 @@ void free_value(value *value) {
         for (int i = 0; i < value->object.size; i++) {
             free(value->object.members[i].string);
             free_value(value->object.members[i].value);
+            free(value->object.members[i].value);
         }
         free(value->object.members);
         break;
@@ -568,17 +603,18 @@ void free_value(value *value) {
     }
 }
 
+// parse json string
 void parse_json(const char *buffer, value *value) {
     scanner scanner = {
         .line = 1,
         .source = (char *) buffer,
-        .capacity = 1,
-        .tokens = malloc(sizeof(token))
+        .capacity = 4,
+        .tokens = malloc(4 * sizeof(token))
     };
     scan_tokens(&scanner);
     parser parser = {.tokens = scanner.tokens};
     parse_value(&parser, value);
-    parser_free(&parser);
+    free_parser(&parser);
 }
 
 int main(int argc, char **argv) {
@@ -586,8 +622,9 @@ int main(int argc, char **argv) {
         printf("usage: %s [file.json]\n", argv[0]);
         return 1;
     }
-    char *source = file_content(argv[1]);
-    if (!source) {
+    char *source = NULL;
+    int fsize = file_read(argv[1], &source);
+    if (!fsize) {
         fprintf(stderr, "failed to read file %s\n", argv[1]);
         return 1;
     }
