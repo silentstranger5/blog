@@ -263,6 +263,7 @@ void objctx_free(objctx *ctx) {
     free(ctx->texcoords);
     free(ctx->faces);
     free(ctx->buffer);
+    free(ctx->meshoffsets);
 }
 
 void parse_obj(const char *filename) {
