@@ -300,6 +300,7 @@ void parse_object(parser *parser, value *value) {
     value->type = OBJECT;
     // allocate members on object
     value->object.capacity = 4;
+    value->object.size = 0;
     value->object.members = malloc(4 * sizeof(member));
     // consume the left brace
     consume(parser, LEFT_BRACE, "expected left brace");
@@ -317,6 +318,7 @@ This code is not very complicated. We allocate some memory for object members on
 void parse_array(parser *parser, value *value) {
     value->type = ARRAY;
     value->array.capacity = 4;
+    value->array.size = 0;
     value->array.elements = malloc(4 * sizeof(*value));
     consume(parser, LEFT_BRACKET, "expected left bracket");
     parse_elements(parser, &value->array);
@@ -359,6 +361,7 @@ void parse_value(parser *parser, value *value) {
         value->type = VALUE_FALSE;
         break;
     case TOKEN_NULL:
+        parser_advance(parser);
         value->type = VALUE_NULL;
         break;
     default:
@@ -440,10 +443,19 @@ void value_string(value *value, string *string, int ind);
 void array_string(array *array, string *string, int ind) {
     string_cat(string, "[ ");
     for (int i = 0; i < array->size; i++) {
-        value value = array->elements[i];
-        value_string(&value, string, ind);
+        value val = array->elements[i];
+        value_string(&val, string, ind);
         if (i < array->size - 1) {
-            string_cat(string, ", ");
+            string_cat(string, ",");
+            value next = array->elements[i + 1];
+            if (next.type == OBJECT) {
+                string_cat(string, "\n");
+                for (int i = 0; i < ind; i++) {
+                    string_cat(string, "    ");
+                }
+            } else {
+                string_cat(string, " ");
+            }
         }
     }
     string_cat(string, " ]");
@@ -477,7 +489,7 @@ void object_string(object *object, string *string, int ind) {
 
 // concatenate value to the string
 void value_string(value *value, string *string, int ind) {
-    char valstr[64] = {0};
+    char *valstr = NULL;
     switch (value->type) {
     case ARRAY:
         array_string(&value->array, string, ind);
@@ -486,12 +498,18 @@ void value_string(value *value, string *string, int ind) {
         object_string(&value->object, string, ind);
         break;
     case VALUE_NUMBER:
+        valstr = calloc(64, sizeof(char));
         sprintf(valstr, "%f", value->number);
         string_cat(string, valstr);
+        free(valstr);
         break;
     case VALUE_STRING:
+        int size = strlen(value->string)+4;
+        valstr = malloc(size);
+        valstr[size-1] = 0;
         sprintf(valstr, "\"%s\"", value->string);
         string_cat(string, valstr);
+        free(valstr);
         break;
     case VALUE_FALSE:
         string_cat(string, "false");
@@ -503,8 +521,7 @@ void value_string(value *value, string *string, int ind) {
         string_cat(string, "null");
         break;
     }
-}
-```
+}```
 
 There is a lot of code related to pretty printing. You can read it if you'd like. I'm not going to comment on this code much.
 

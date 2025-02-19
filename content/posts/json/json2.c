@@ -79,23 +79,28 @@ typedef struct {
 const char *keywords[] = { "false", "true", "null" };
 
 // read file
-int file_read(const char *filename, char **buf) {
-    int ret = 0;
-    FILE *f = fopen(filename, "r");
+char *file_read(const char *filename) {
+    FILE *f = fopen(filename, "rb");
     if (!f) {
-        return ret;
+        perror("failed to open file");
+        return NULL;
     }
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
-    *buf = malloc((size + 1) * sizeof(char));
-    if (!*buf) {
-        return ret;
+    char *buffer = malloc(size + 1);
+    if (!buffer) {
+        perror("failed to allocate memory");
+        return NULL;
     }
     rewind(f);
-    ret = fread(*buf, sizeof(char), size, f);
+    size = fread(buffer, sizeof(char), size, f);
+    if (!size) {
+        perror("failed to read file");
+        return NULL;
+    }
+    buffer[size] = 0;
     fclose(f);
-    (*buf)[size] = 0;
-    return ret;
+    return buffer;
 }
 
 // go to the next character and return the current one
@@ -422,6 +427,7 @@ void parse_members(parser *parser, object *object) {
 void parse_object(parser *parser, value *value) {
     value->type = OBJECT;
     value->object.capacity = 4;
+    value->object.size = 0;
     value->object.members = malloc(4 * sizeof(member));
     consume(parser, LEFT_BRACE, "expected left brace");
     parse_members(parser, &value->object);
@@ -432,6 +438,7 @@ void parse_object(parser *parser, value *value) {
 void parse_array(parser *parser, value *value) {
     value->type = ARRAY;
     value->array.capacity = 4;
+    value->array.size = 0;
     value->array.elements = malloc(4 * sizeof(*value));
     consume(parser, LEFT_BRACKET, "expected left bracket");
     parse_elements(parser, &value->array);
@@ -468,6 +475,7 @@ void parse_value(parser *parser, value *value) {
         value->type = VALUE_FALSE;
         break;
     case TOKEN_NULL:
+        parser_advance(parser);
         value->type = VALUE_NULL;
         break;
     default:
@@ -515,10 +523,19 @@ void value_string(value *value, string *string, int ind);
 void array_string(array *array, string *string, int ind) {
     string_cat(string, "[ ");
     for (int i = 0; i < array->size; i++) {
-        value value = array->elements[i];
-        value_string(&value, string, ind);
+        value val = array->elements[i];
+        value_string(&val, string, ind);
         if (i < array->size - 1) {
-            string_cat(string, ", ");
+            string_cat(string, ",");
+            value next = array->elements[i + 1];
+            if (next.type == OBJECT) {
+                string_cat(string, "\n");
+                for (int i = 0; i < ind; i++) {
+                    string_cat(string, "    ");
+                }
+            } else {
+                string_cat(string, " ");
+            }
         }
     }
     string_cat(string, " ]");
@@ -552,7 +569,7 @@ void object_string(object *object, string *string, int ind) {
 
 // concatenate value to the string
 void value_string(value *value, string *string, int ind) {
-    char valstr[64] = {0};
+    char *valstr = NULL;
     switch (value->type) {
     case ARRAY:
         array_string(&value->array, string, ind);
@@ -561,12 +578,18 @@ void value_string(value *value, string *string, int ind) {
         object_string(&value->object, string, ind);
         break;
     case VALUE_NUMBER:
+        valstr = calloc(64, sizeof(char));
         sprintf(valstr, "%f", value->number);
         string_cat(string, valstr);
+        free(valstr);
         break;
     case VALUE_STRING:
+        int size = strlen(value->string)+4;
+        valstr = malloc(size);
+        valstr[size-1] = 0;
         sprintf(valstr, "\"%s\"", value->string);
         string_cat(string, valstr);
+        free(valstr);
         break;
     case VALUE_FALSE:
         string_cat(string, "false");
@@ -622,10 +645,8 @@ int main(int argc, char **argv) {
         printf("usage: %s [file.json]\n", argv[0]);
         return 1;
     }
-    char *source = NULL;
-    int fsize = file_read(argv[1], &source);
-    if (!fsize) {
-        fprintf(stderr, "failed to read file %s\n", argv[1]);
+    char *source = file_read(argv[1]);
+    if (!source) {
         return 1;
     }
     value value = {0};

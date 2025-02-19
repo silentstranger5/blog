@@ -32,23 +32,28 @@ typedef struct {
 const char *keywords[] = { "false", "true", "null" };
 
 // read file
-int file_read(const char *filename, char **buf) {
-    int ret = 0;
-    FILE *f = fopen(filename, "r");
+char *file_read(const char *filename) {
+    FILE *f = fopen(filename, "rb");
     if (!f) {
-        return ret;
+        perror("failed to open file");
+        return NULL;
     }
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
-    *buf = malloc((size + 1) * sizeof(char));
-    if (!*buf) {
-        return ret;
+    char *buffer = malloc(size + 1);
+    if (!buffer) {
+        perror("failed to allocate memory");
+        return NULL;
     }
     rewind(f);
-    ret = fread(*buf, sizeof(char), size, f);
+    size = fread(buffer, sizeof(char), size, f);
+    if (!size) {
+        perror("failed to read file");
+        return NULL;
+    }
+    buffer[size] = 0;
     fclose(f);
-    (*buf)[size] = 0;
-    return ret;
+    return buffer;
 }
 
 // go to the next character and return the current one
@@ -288,10 +293,8 @@ int main(int argc, char **argv) {
         printf("usage: %s [file.json]\n", argv[0]);
         return 1;
     }
-    char *source = NULL;
-    int fsize = file_read(argv[1], &source);
-    if (!fsize) {
-        fprintf(stderr, "failed to read file %s\n", argv[1]);
+    char *source = file_read(argv[1]);
+    if (!source) {
         return 1;
     }
     parse_json(source);
