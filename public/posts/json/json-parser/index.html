@@ -12,7 +12,7 @@ It is easy to read and write
 It is easy to parse and construct
 
 I often hear that JSON is a quite simple format, and parsing it is not hard. In the recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it&rsquo;s possible to write a JSON parser from scratch.">
-    <meta name="generator" content="Hugo 0.141.0">
+    <meta name="generator" content="Hugo 0.144.1">
     
     
     
@@ -54,7 +54,7 @@ It is easy to read and write It is easy to parse and construct I often hear that
 It is easy to read and write It is easy to parse and construct I often hear that JSON is a quite simple format, and parsing it is not hard. In the recent series of posts, I already tackled parsing OBJ files. So, I became genuinely curious whether it’s possible to write a JSON parser from scratch.">
   <meta itemprop="datePublished" content="2025-02-03T00:00:08+03:00">
   <meta itemprop="dateModified" content="2025-02-03T00:00:08+03:00">
-  <meta itemprop="wordCount" content="2845">
+  <meta itemprop="wordCount" content="2856">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Json Parser">
   <meta name="twitter:description" content="I am fairly familiar with JSON file format. It is used extensively for data exchange. If you have some level of experience with development, you are probably familiar with it as well. Among the benefits of JSON format:
@@ -174,31 +174,30 @@ It is easy to read and write It is easy to parse and construct I often hear that
 <p>Before we go further, define an array of keywords. We&rsquo;ll need it later:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>keywords[] <span style="color:#f92672">=</span> { <span style="color:#e6db74">&#34;false&#34;</span>, <span style="color:#e6db74">&#34;true&#34;</span>, <span style="color:#e6db74">&#34;null&#34;</span> };
 </span></span></code></pre></div><p>In our program, we will read a JSON file and scan it. Let&rsquo;s define functions to read a text from a file:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">file_read</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>filename, <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>buffer) {
-</span></span><span style="display:flex;"><span>    FILE <span style="color:#f92672">*</span>f <span style="color:#f92672">=</span> <span style="color:#a6e22e">fopen</span>(filename, <span style="color:#e6db74">&#34;r&#34;</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">file_read</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>filename) {
+</span></span><span style="display:flex;"><span>    FILE <span style="color:#f92672">*</span>f <span style="color:#f92672">=</span> <span style="color:#a6e22e">fopen</span>(filename, <span style="color:#e6db74">&#34;rb&#34;</span>);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>f) {
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;failed to open file&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> NULL;
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fseek</span>(f, <span style="color:#ae81ff">0</span>, SEEK_END);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> size <span style="color:#f92672">=</span> <span style="color:#a6e22e">ftell</span>(f);
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">*</span>buffer <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(size <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span>));
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">rewind</span>(f);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">fread</span>(<span style="color:#f92672">*</span>buffer, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span>), size, f);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fclose</span>(f);
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">*</span>(<span style="color:#a6e22e">strrchr</span>(<span style="color:#f92672">*</span>buffer, <span style="color:#e6db74">&#39;}&#39;</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> ret;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">file_content</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>filename) {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buffer <span style="color:#f92672">=</span> NULL;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> size <span style="color:#f92672">=</span> <span style="color:#a6e22e">file_read</span>(filename, <span style="color:#f92672">&amp;</span>buffer);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>size) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buffer <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(size <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>buffer) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;failed to allocate memory&#34;</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> NULL;
 </span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">rewind</span>(f);
+</span></span><span style="display:flex;"><span>    size <span style="color:#f92672">=</span> <span style="color:#a6e22e">fread</span>(buffer, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span>), size, f);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>size) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;failed to read file&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> NULL;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    buffer[size] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fclose</span>(f);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> buffer;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>If you read my other posts, the function <code>file_read</code> is probably familiar to you. It calculates the size of the file using a combination of <code>fseek</code> and <code>ftell</code>, first to set the internal pointer to the end of the file, and second to get the offset from the start. <code>rewind</code> sets the internal pointer back to the start. Then we allocate enough space with <code>malloc</code>, read a file with <code>fread</code>, and close it with <code>fclose</code>. Notice one line above <code>return</code>. <code>strrchr</code> returns a pointer to the rightmost occurrence of the specified character. We use it to terminate all symbols after the last right brace since <code>ftell</code> returns a slightly larger number than needed on Windows (because <code>\r\n</code> is replaced with <code>\n</code> but <code>ftell</code> does not consider it).</p>
-<p><code>file_content</code> is a thin wrapper that returns the contents of the file we read.</p>
 <p>Now let&rsquo;s consider some utility functions:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// go to the next character and return the current one
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> <span style="color:#a6e22e">scanner_advance</span>(scanner <span style="color:#f92672">*</span>scanner) {
@@ -262,14 +261,14 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span></code></pre></div><p>Again, most of those functions are simple enough to read. Their purpose and how they work is fairly obvious from the source code.</p>
 <p>Here comes the interesting part. Let&rsquo;s create a new function called <code>add_token</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add the current token from the source string into scanner tokens
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">add_token</span>(scanner <span style="color:#f92672">*</span>scanner, <span style="color:#66d9ef">int</span> token_type) {
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">add_token</span>(scanner <span style="color:#f92672">*</span>scanner, <span style="color:#66d9ef">int</span> type) {
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// copy the lexeme substring
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>lexeme <span style="color:#f92672">=</span> <span style="color:#a6e22e">substring</span>(
 </span></span><span style="display:flex;"><span>        scanner<span style="color:#f92672">-&gt;</span>source, scanner<span style="color:#f92672">-&gt;</span>start, scanner<span style="color:#f92672">-&gt;</span>current
 </span></span><span style="display:flex;"><span>    );
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// create a new token
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    token token <span style="color:#f92672">=</span> {
-</span></span><span style="display:flex;"><span>        .type <span style="color:#f92672">=</span> token_type,
+</span></span><span style="display:flex;"><span>        .type <span style="color:#f92672">=</span> type,
 </span></span><span style="display:flex;"><span>        .lexeme <span style="color:#f92672">=</span> lexeme,
 </span></span><span style="display:flex;"><span>        .line <span style="color:#f92672">=</span> scanner<span style="color:#f92672">-&gt;</span>line,
 </span></span><span style="display:flex;"><span>    };
@@ -351,7 +350,7 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#define keyoffset TOKEN_FALSE
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// return the type of the keyword
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">get_keytype</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>key) {
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">key_type</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>key) {
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// number of elements in keywords array
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> nkeys <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(keywords) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>);
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// compare the key against each known keyword
@@ -379,7 +378,7 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span><span style="display:flex;"><span>        scanner<span style="color:#f92672">-&gt;</span>source, scanner<span style="color:#f92672">-&gt;</span>start, scanner<span style="color:#f92672">-&gt;</span>current
 </span></span><span style="display:flex;"><span>    );
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// determine its type
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> type <span style="color:#f92672">=</span> <span style="color:#a6e22e">get_keytype</span>(text);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> type <span style="color:#f92672">=</span> <span style="color:#a6e22e">key_type</span>(text);
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// if it is -1, we couldnt determine the type of the identifier
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (type <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) {
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">// report a formatted error
@@ -389,9 +388,12 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// add the current token into the scanner
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">add_token</span>(scanner, type);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// free text
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">free</span>(text);
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Now for the skeleton of our scanner:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">scan_token</span>(scanner <span style="color:#f92672">*</span>scanner) {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// scan token
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">scan_token</span>(scanner <span style="color:#f92672">*</span>scanner) {
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// consider the next character in the source string
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">char</span> c <span style="color:#f92672">=</span> <span style="color:#a6e22e">scanner_advance</span>(scanner);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span>(c) {
@@ -457,7 +459,8 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Since most of the job is done inside of the functions, the parsing function is relatively simple.</p>
 <p>Here is a wrapper of the function above that scans tokens in a loop:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">scan_tokens</span>(scanner <span style="color:#f92672">*</span>scanner) {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// scan tokens
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">scan_tokens</span>(scanner <span style="color:#f92672">*</span>scanner) {
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// while we are not done
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">scanner_is_at_end</span>(scanner)) {
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">// set starting position to the current position
@@ -471,7 +474,8 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">add_token</span>(scanner, TOKEN_EOF);
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Let&rsquo;s define a function that will print all of the scanner&rsquo;s tokens:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">print_tokens</span>(scanner <span style="color:#f92672">*</span>scanner) {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// print tokens
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">print_tokens</span>(scanner <span style="color:#f92672">*</span>scanner) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> scanner<span style="color:#f92672">-&gt;</span>size; i<span style="color:#f92672">++</span>) {
 </span></span><span style="display:flex;"><span>        token token <span style="color:#f92672">=</span> scanner<span style="color:#f92672">-&gt;</span>tokens[i];
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;type: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, token.type);
@@ -479,16 +483,26 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;line: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, token.line);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Don&rsquo;t forget to clean up the scanner:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// free scanner data
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">free_scanner</span>(scanner <span style="color:#f92672">*</span>scanner) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> scanner<span style="color:#f92672">-&gt;</span>size; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">free</span>(scanner<span style="color:#f92672">-&gt;</span>tokens[i].lexeme);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">free</span>(scanner<span style="color:#f92672">-&gt;</span>tokens);
+</span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Now let&rsquo;s define a function that will parse the JSON string:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_json</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>source) {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// parse json string
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_json</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>source) {
 </span></span><span style="display:flex;"><span>    scanner scanner <span style="color:#f92672">=</span> {
 </span></span><span style="display:flex;"><span>        .line <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>,
 </span></span><span style="display:flex;"><span>        .source <span style="color:#f92672">=</span> source,
-</span></span><span style="display:flex;"><span>        .capacity <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>,
-</span></span><span style="display:flex;"><span>        .tokens <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">8</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(token))
+</span></span><span style="display:flex;"><span>        .capacity <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>,
+</span></span><span style="display:flex;"><span>        .tokens <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">4</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(token))
 </span></span><span style="display:flex;"><span>    };
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">scan_tokens</span>(<span style="color:#f92672">&amp;</span>scanner);
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">print_tokens</span>(<span style="color:#f92672">&amp;</span>scanner);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">free_scanner</span>(<span style="color:#f92672">&amp;</span>scanner);
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Finally, write the <code>main</code> function:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>argv) {
@@ -498,9 +512,8 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// get the contents of the provided file
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>source <span style="color:#f92672">=</span> <span style="color:#a6e22e">file_content</span>(argv[<span style="color:#ae81ff">1</span>]);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>source <span style="color:#f92672">=</span> <span style="color:#a6e22e">file_read</span>(argv[<span style="color:#ae81ff">1</span>]);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>source) {
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fprintf</span>(stderr, <span style="color:#e6db74">&#34;failed to read file %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, argv[<span style="color:#ae81ff">1</span>]);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// parse json string
@@ -509,7 +522,7 @@ It is easy to read and write It is easy to parse and construct I often hear that
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">free</span>(source);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Phew, that was a lot of work. Check out the <a href="../json1.c">source code</a>. Try to parse a <a href="../sample.json">sample file</a>. You should see a list of tokens.</p>
+</span></span></code></pre></div><p>Phew, that was a lot of work. Check out the <a href="https://github.com/silentstranger5/jsonparser">source code with samples</a></p>
 <ul class="pa0">
   
 </ul>

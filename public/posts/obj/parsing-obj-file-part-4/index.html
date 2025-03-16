@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width,minimum-scale=1">
     <meta name="description" content="In the previous post, we added face parsing to our parser. In this (hopefully) last part of the series, I&rsquo;m going to add the last feature: parsing materials.
 Materials define various optical characteristics of the material that an object has. Materials are usually stored in a separate file. We need to define the keys of material files and corresponding values since the parsing algorithm will be pretty similar to that for .obj files. This list is a bit longer, but hopefully, it&rsquo;s still sortable by hand. Let&rsquo;s define keys and place values:">
-    <meta name="generator" content="Hugo 0.141.0">
+    <meta name="generator" content="Hugo 0.144.1">
     
     
     
@@ -50,7 +50,7 @@ Materials define various optical characteristics of the material that an object 
 Materials define various optical characteristics of the material that an object has. Materials are usually stored in a separate file. We need to define the keys of material files and corresponding values since the parsing algorithm will be pretty similar to that for .obj files. This list is a bit longer, but hopefully, it’s still sortable by hand. Let’s define keys and place values:">
   <meta itemprop="datePublished" content="2025-01-29T19:37:05+03:00">
   <meta itemprop="dateModified" content="2025-01-29T19:37:05+03:00">
-  <meta itemprop="wordCount" content="2341">
+  <meta itemprop="wordCount" content="2344">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Parsing Obj File Part 4">
   <meta name="twitter:description" content="In the previous post, we added face parsing to our parser. In this (hopefully) last part of the series, I’m going to add the last feature: parsing materials.
@@ -144,7 +144,7 @@ Materials define various optical characteristics of the material that an object 
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span>  <span style="color:#f92672">*</span>map_highlight;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span>  <span style="color:#f92672">*</span>map_alpha;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span>  <span style="color:#f92672">*</span>map_bump;
-</span></span><span style="display:flex;"><span>} mat;
+</span></span><span style="display:flex;"><span>} mtl;
 </span></span></code></pre></div><p>We also need to somehow store additional context related to materials. Let&rsquo;s define a new structure for that:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this after `mat` structure
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
@@ -152,13 +152,13 @@ Materials define various optical characteristics of the material that an object 
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span>  nmaterials;
 </span></span><span style="display:flex;"><span>    mat  <span style="color:#f92672">*</span>materials;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>filename;
-</span></span><span style="display:flex;"><span>} matctx;
+</span></span><span style="display:flex;"><span>} mtlctx;
 </span></span></code></pre></div><p>We are going to store material data inside the object context. Let&rsquo;s embed materials context along with some other fields inside the <code>objctx</code> structure:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to objctx
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>matindices;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>mtlindices;
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span>  <span style="color:#f92672">*</span>filename;
-</span></span><span style="display:flex;"><span>matctx materials;
-</span></span></code></pre></div><p>We will take care of the <code>matindices</code> field later. Everything else should be fairly simple to understand.</p>
+</span></span><span style="display:flex;"><span>mtlctx materials;
+</span></span></code></pre></div><p>We will take care of the <code>mtlindices</code> field later. Everything else should be fairly simple to understand.</p>
 <p>Before we can process a material file, we need to obtain a path to the file. Our program is based on the assumption that the <code>.obj</code> and <code>.mtl</code> files reside in the same directory. We now have two cases to consider:</p>
 <ol>
 <li>The <code>.obj</code> file path is in the same directory and specified without slashes (like <code>file.obj</code>)</li>
@@ -250,8 +250,8 @@ Materials define various optical characteristics of the material that an object 
 </span></span></code></pre></div><p>Notice that we set <code>s</code> to be one character after a null byte (which is now in place of the former space character, which is after the key). This way, we obtain a string that contains a <code>.mtl</code> filename. We also set a newline character to zero. After that, we call <code>count_materials</code> function.</p>
 <p>Now that we are done with counting, we can allocate the memory:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to `objctx_malloc` function
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>ctx<span style="color:#f92672">-&gt;</span>matindices <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(ctx<span style="color:#f92672">-&gt;</span>nmeshes <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
-</span></span><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>materials.materials <span style="color:#f92672">=</span> <span style="color:#a6e22e">calloc</span>(ctx<span style="color:#f92672">-&gt;</span>materials.nmaterials, <span style="color:#66d9ef">sizeof</span>(mat));
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>ctx<span style="color:#f92672">-&gt;</span>mtlindices <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(ctx<span style="color:#f92672">-&gt;</span>nmeshes <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>ctx<span style="color:#f92672">-&gt;</span>materials.materials <span style="color:#f92672">=</span> <span style="color:#a6e22e">calloc</span>(ctx<span style="color:#f92672">-&gt;</span>materials.nmaterials, <span style="color:#66d9ef">sizeof</span>(mtl));
 </span></span></code></pre></div><p>Note that all materials are initialized to zero.</p>
 <p>Let&rsquo;s reset a new counter in the <code>objctx_reset</code> function:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to `objctx_reset` function
@@ -272,77 +272,77 @@ Materials define various optical characteristics of the material that an object 
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_mtlline</span>(objctx <span style="color:#f92672">*</span>ctx, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>mapstr <span style="color:#f92672">=</span> NULL;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> key <span style="color:#f92672">=</span> <span style="color:#a6e22e">find_mtlkey</span>(s);
-</span></span><span style="display:flex;"><span>    mat <span style="color:#f92672">*</span>mat <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>materials.materials <span style="color:#f92672">+</span> ctx<span style="color:#f92672">-&gt;</span>materials.nmaterials <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    mtl <span style="color:#f92672">*</span>mtl <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>materials.materials <span style="color:#f92672">+</span> ctx<span style="color:#f92672">-&gt;</span>materials.nmaterials <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span> (key) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> KA:
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; i<span style="color:#f92672">++</span>) {
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>astr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>            mat<span style="color:#f92672">-&gt;</span>ambient[i] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(astr);
+</span></span><span style="display:flex;"><span>            mtl<span style="color:#f92672">-&gt;</span>ambient[i] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(astr);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> KD:
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; i<span style="color:#f92672">++</span>) {
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>dstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>            mat<span style="color:#f92672">-&gt;</span>diffuse[i] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(dstr);
+</span></span><span style="display:flex;"><span>            mtl<span style="color:#f92672">-&gt;</span>diffuse[i] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(dstr);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> KE:
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; i<span style="color:#f92672">++</span>) {
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>estr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>            mat<span style="color:#f92672">-&gt;</span>emissive[i] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(estr);
+</span></span><span style="display:flex;"><span>            mtl<span style="color:#f92672">-&gt;</span>emissive[i] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(estr);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> KS:
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; i<span style="color:#f92672">++</span>) {
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>sstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>            mat<span style="color:#f92672">-&gt;</span>specular[i] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(sstr);
+</span></span><span style="display:flex;"><span>            mtl<span style="color:#f92672">-&gt;</span>specular[i] <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(sstr);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> NI:
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>rstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>refraction <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(rstr);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>refraction <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(rstr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> NS:
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>sstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>shininess <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(sstr);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>shininess <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(sstr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> D:
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>tstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>transparency <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(tstr);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>transparency <span style="color:#f92672">=</span> <span style="color:#a6e22e">atof</span>(tstr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> ILLUM:
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>istr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>illum <span style="color:#f92672">=</span> <span style="color:#a6e22e">atoi</span>(istr);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>illum <span style="color:#f92672">=</span> <span style="color:#a6e22e">atoi</span>(istr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> MAP_KA:
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>mapstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>map_ambient <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>map_ambient <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> MAP_KD:
 </span></span><span style="display:flex;"><span>        mapstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>map_diffuse <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>map_diffuse <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> MAP_KS:
 </span></span><span style="display:flex;"><span>        mapstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>map_specular <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>map_specular <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> MAP_NS:
 </span></span><span style="display:flex;"><span>        mapstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>map_highlight <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>map_highlight <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> MAP_BUMP:
 </span></span><span style="display:flex;"><span>        mapstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>map_bump <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>map_bump <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> MAP_D:
 </span></span><span style="display:flex;"><span>        mapstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>map_alpha <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>map_alpha <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(mapstr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> NEWMTL:
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">++</span>;
 </span></span><span style="display:flex;"><span>        ctx<span style="color:#f92672">-&gt;</span>materials.nmaterials<span style="color:#f92672">++</span>;
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>name <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">*</span><span style="color:#a6e22e">strchr</span>(name, <span style="color:#e6db74">&#39;\n&#39;</span>) <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>        mat<span style="color:#f92672">-&gt;</span>name <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(name);
+</span></span><span style="display:flex;"><span>        mtl<span style="color:#f92672">-&gt;</span>name <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(name);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
@@ -354,7 +354,7 @@ Materials define various optical characteristics of the material that an object 
 <li>If the key denotes a number, parse it once</li>
 <li>If the key denotes a map string, copy it into the context</li>
 </ul>
-<p>Most functions here should be familiar to you, and the code is pretty simple. Note that most cases use <code>mat</code>, which in turn is a pointer to the current material whose index is denoted by <code>ctx-&gt;materials.nmaterials - 1</code>. We subtract one since materials have the following form:</p>
+<p>Most functions here should be familiar to you, and the code is pretty simple. Note that most cases use <code>mtl</code>, which in turn is a pointer to the current material whose index is denoted by <code>ctx-&gt;materials.nmaterials - 1</code>. We subtract one since materials have the following form:</p>
 <pre tabindex="0"><code>newmtl Material
 Ka ...  # ambient for Material
 Kd ...  # diffuse for Material
@@ -378,62 +378,62 @@ Kd ...  # diffuse for Material
 </code></pre><p>Where <code>mesh(i)_matidx</code> is an index from an array <code>materials.materials</code> of a material associated with mesh from <code>meshoffsets</code> array with an index <code>i</code>. This means, for example, that <code>mesh</code> from <code>meshoffsets</code> with an index <code>0</code> has a material from <code>materials.materials</code> with an index <code>mesh0_matidx</code>. In other words, the material of the first mesh is <code>materials.materials[mesh0_matidx]</code> or <code>materials.materials[matindices[0]]</code> which is equivalent.</p>
 <p>To construct the <code>matindices</code> array we are going to use the <code>USEMTL</code> case of the <code>parse_objline</code> function in the following manner:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">case</span> USEMTL:
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>matname <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);                              <span style="color:#75715e">// obtain a material name
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">*</span><span style="color:#a6e22e">strchr</span>(matname, <span style="color:#e6db74">&#39;\n&#39;</span>) <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;                                     <span style="color:#75715e">// terminate newline with nul byte
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>mtlname <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; &#34;</span>);                              <span style="color:#75715e">// obtain a material name
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#f92672">*</span><span style="color:#a6e22e">strchr</span>(mtlname, <span style="color:#e6db74">&#39;\n&#39;</span>) <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;                                     <span style="color:#75715e">// terminate newline with nul byte
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>materials.nmaterials; i<span style="color:#f92672">++</span>) {           <span style="color:#75715e">// iterate through all materials
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">strcmp</span>(matname, ctx<span style="color:#f92672">-&gt;</span>materials.materials[i].name)) {   <span style="color:#75715e">// if materials.materials[i].name == matname
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">strcmp</span>(mtlname, ctx<span style="color:#f92672">-&gt;</span>materials.materials[i].name)) {   <span style="color:#75715e">// if materials.materials[i].name == mtlname
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            ctx<span style="color:#f92672">-&gt;</span>matindices[ctx<span style="color:#f92672">-&gt;</span>nmeshes <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> i;                  <span style="color:#75715e">// set material index for the current mesh to be i
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        }
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">break</span>;
 </span></span></code></pre></div><p>Now that we have data about materials, let&rsquo;s print all that data. Let&rsquo;s create a new function called <code>mat_print</code> that will print each material from the context of the material:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// create new function before `objctx_print`
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mat_print</span>(objctx <span style="color:#f92672">*</span>ctx) {
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mtl_print</span>(objctx <span style="color:#f92672">*</span>ctx) {
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;materials:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>materials.nmaterials; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>        mat <span style="color:#f92672">*</span>mat <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>materials.materials <span style="color:#f92672">+</span> i;
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;name:</span><span style="color:#ae81ff">\t\t</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>name);
+</span></span><span style="display:flex;"><span>        mtl <span style="color:#f92672">*</span>mtl <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>materials.materials <span style="color:#f92672">+</span> i;
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;name:</span><span style="color:#ae81ff">\t\t</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>name);
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;ambient:</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">[ &#34;</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; j<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, mat<span style="color:#f92672">-&gt;</span>ambient[j]);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, mtl<span style="color:#f92672">-&gt;</span>ambient[j]);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;diffuse:</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">[ &#34;</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; j<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, mat<span style="color:#f92672">-&gt;</span>diffuse[j]);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, mtl<span style="color:#f92672">-&gt;</span>diffuse[j]);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;specular:</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">[ &#34;</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; j<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, mat<span style="color:#f92672">-&gt;</span>specular[j]);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, mtl<span style="color:#f92672">-&gt;</span>specular[j]);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;emissive:</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">[ &#34;</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; j<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, mat<span style="color:#f92672">-&gt;</span>emissive[j]);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%8.4f &#34;</span>, mtl<span style="color:#f92672">-&gt;</span>emissive[j]);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;shininess:</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">%10.4f</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>shininess);
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;refraction:</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">%10.4f</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>refraction);
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;transparency:</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">%10.4f</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>transparency);
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;illum:</span><span style="color:#ae81ff">\t\t</span><span style="color:#e6db74">%5d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>illum);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_ambient) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;ambient map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>map_ambient);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;shininess:</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">%10.4f</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>shininess);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;refraction:</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">%10.4f</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>refraction);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;transparency:</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">%10.4f</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>transparency);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;illum:</span><span style="color:#ae81ff">\t\t</span><span style="color:#e6db74">%5d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>illum);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_ambient) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;ambient map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>map_ambient);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_diffuse) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;diffuse map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>map_diffuse);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_diffuse) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;diffuse map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>map_diffuse);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_specular) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;specular map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>map_specular);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_specular) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;specular map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>map_specular);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_highlight) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;highlight map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>map_highlight);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_highlight) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;highlight map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>map_highlight);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_alpha) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;alpha map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>map_alpha);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_alpha) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;alpha map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>map_alpha);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_bump) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;bump map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mat<span style="color:#f92672">-&gt;</span>map_bump);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_bump) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;bump map: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mtl<span style="color:#f92672">-&gt;</span>map_bump);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
@@ -444,40 +444,43 @@ Kd ...  # diffuse for Material
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> (i <span style="color:#f92672">%</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)) {
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">putchar</span>(<span style="color:#e6db74">&#39;\n&#39;</span>);
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%4d &#34;</span>, ctx<span style="color:#f92672">-&gt;</span>matindices[i]);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%4d &#34;</span>, ctx<span style="color:#f92672">-&gt;</span>mtlindices[i]);
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">putchar</span>(<span style="color:#e6db74">&#39;\n&#39;</span>);
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mat_print</span>(ctx);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mtl_print</span>(ctx);
 </span></span></code></pre></div><p>At this point, we are done with our data. Let&rsquo;s free all data from materials with a new function called <code>matctx_free</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// create this function before `objctx_free` function
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">matctx_free</span>(matctx <span style="color:#f92672">*</span>ctx) {
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mtlctx_free</span>(mtlctx <span style="color:#f92672">*</span>ctx) {
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">free</span>(ctx<span style="color:#f92672">-&gt;</span>filename);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ctx<span style="color:#f92672">-&gt;</span>nmaterials; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>        mat <span style="color:#f92672">*</span>mat <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>materials <span style="color:#f92672">+</span> i;
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_ambient) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mat<span style="color:#f92672">-&gt;</span>map_ambient);
+</span></span><span style="display:flex;"><span>        mtl <span style="color:#f92672">*</span>mtl <span style="color:#f92672">=</span> ctx<span style="color:#f92672">-&gt;</span>materials <span style="color:#f92672">+</span> i;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_ambient) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mtl<span style="color:#f92672">-&gt;</span>map_ambient);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_diffuse) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mat<span style="color:#f92672">-&gt;</span>map_diffuse);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_diffuse) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mtl<span style="color:#f92672">-&gt;</span>map_diffuse);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_specular) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mat<span style="color:#f92672">-&gt;</span>map_specular);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_specular) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mtl<span style="color:#f92672">-&gt;</span>map_specular);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_highlight) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mat<span style="color:#f92672">-&gt;</span>map_highlight);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_highlight) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mtl<span style="color:#f92672">-&gt;</span>map_highlight);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_alpha) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mat<span style="color:#f92672">-&gt;</span>map_alpha);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_alpha) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mtl<span style="color:#f92672">-&gt;</span>map_alpha);
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mat<span style="color:#f92672">-&gt;</span>map_bump) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mat<span style="color:#f92672">-&gt;</span>map_bump);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mtl<span style="color:#f92672">-&gt;</span>map_bump) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(mtl<span style="color:#f92672">-&gt;</span>map_bump);
 </span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">free</span>(mtl<span style="color:#f92672">-&gt;</span>name);
 </span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">free</span>(ctx<span style="color:#f92672">-&gt;</span>materials);
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Note that we only free map strings if they are not <code>NULL</code> (by default all of them are initialized to <code>NULL</code>).</p>
 <p>Update the <code>objctx_free</code> function to handle materials as well:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to `objctx_free` function
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">matctx_free</span>(<span style="color:#f92672">&amp;</span>ctx<span style="color:#f92672">-&gt;</span>materials);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">free</span>(ctx<span style="color:#f92672">-&gt;</span>mtlindices);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mtlctx_free</span>(<span style="color:#f92672">&amp;</span>ctx<span style="color:#f92672">-&gt;</span>materials);
 </span></span></code></pre></div><p>Finally, update the <code>parse_obj</code> function:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this to `parse_obj` function after `ctx` initialization
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>ctx.filename <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>) filename;

@@ -16,7 +16,7 @@ enum value_type {
     VALUE_NULL
 };
 Similar to our scanner structure that represents a state machine while scanning the source string, let&rsquo;s define a new structure called parser. It&rsquo;s going to be really simple:">
-    <meta name="generator" content="Hugo 0.141.0">
+    <meta name="generator" content="Hugo 0.144.1">
     
     
     
@@ -60,7 +60,7 @@ Firstly, let’s define enum with possible types of our values:
 // add this after token_type enum enum value_type { OBJECT, ARRAY, VALUE_STRING, VALUE_NUMBER, VALUE_TRUE, VALUE_FALSE, VALUE_NULL }; Similar to our scanner structure that represents a state machine while scanning the source string, let’s define a new structure called parser. It’s going to be really simple:">
   <meta itemprop="datePublished" content="2025-02-03T20:17:37+03:00">
   <meta itemprop="dateModified" content="2025-02-03T20:17:37+03:00">
-  <meta itemprop="wordCount" content="2820">
+  <meta itemprop="wordCount" content="2337">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Json Parser Part 2">
   <meta name="twitter:description" content="In the previous post, we wrote a scanner for our JSON parser. In this post, we will finally parse our tokens - produce actual data from them that we can use.
@@ -132,77 +132,7 @@ Firstly, let’s define enum with possible types of our values:
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> current;    <span style="color:#75715e">// index of the current token
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    token <span style="color:#f92672">*</span>tokens;  <span style="color:#75715e">// tokens
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>} parser;
-</span></span></code></pre></div><p>Before we go further I&rsquo;d like to tell you a curious detail about data structures. If you visit <a href="https://json.org">JSON page</a>, you easily find syntactical specifications of JSON format. The curious detail that I&rsquo;ve noticed is the fact that some data type definitions are circular. For example:</p>
-<pre tabindex="0"><code>1. Array is a collection of values
-2. Value can have one of several types, including arrays
-</code></pre><p>Therefore, <code>array</code> would refer to the <code>value</code>, which in turn would refer to <code>array</code>. It is a chicken and an egg problem of sorts. So when I was trying to define the data types I was confused: how can I define a data structure definition that is circular? It turns out that in C you can declare not only variables but data types as well. Take a look at this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> Person {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>name;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> age;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> Person <span style="color:#f92672">*</span>friends;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>This recursive definition should be familiar to you, especially if you implemented linked lists before. Note that the last field is a <em>pointer</em> to a struct. You can&rsquo;t define it as a value, since then the compiler won&rsquo;t be able to evaluate the data structure:</p>
-<pre tabindex="0"><code>struct Person which consists of three fields, one of which is a
-struct Person which consists of three fields, one of which is a
-...
-</code></pre><p>You can see that this loop just won&rsquo;t terminate, since the compiler has to evaluate all of the value fields inside of the structure. Compare that to</p>
-<pre tabindex="0"><code>struct Person which consists of three fields, one of which is a
-pointer to struct Person.
-</code></pre><p>Note that pointers are only evaluated when the value is dereferenced, therefore compiler does not have to evaluate the pointer field when the structure is defined.</p>
-<p>This is nice and all, but how does that relate to our problem? Let&rsquo;s say that we have this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> Person {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>name;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> age;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> People <span style="color:#f92672">*</span>friends;
-</span></span><span style="display:flex;"><span>};
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> People {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> capacity;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> size;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> Person <span style="color:#f92672">*</span>people;
-</span></span><span style="display:flex;"><span>};
-</span></span></code></pre></div><p>Notice the circular definition: <code>Person -&gt; People -&gt; Person -&gt; ...</code>. This is quite a similar situation. This also works since we use pointers that can be evaluated at dereferencing. What if we use <code>typedef</code>s?</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> Person {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>name;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> age;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> People <span style="color:#f92672">*</span>friends;
-</span></span><span style="display:flex;"><span>} Person;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> People {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> capacity;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> size;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> Person <span style="color:#f92672">*</span>people;
-</span></span><span style="display:flex;"><span>} People;
-</span></span></code></pre></div><p>That still works. But what if we use unnamed structures?</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>name;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> age
-</span></span><span style="display:flex;"><span>    People <span style="color:#f92672">*</span>friends;
-</span></span><span style="display:flex;"><span>} Person;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> capacity;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> size;
-</span></span><span style="display:flex;"><span>    Person <span style="color:#f92672">*</span>people;
-</span></span><span style="display:flex;"><span>} People;
-</span></span></code></pre></div><p>I use anonymous structure definitions quite often since they save me from excessive typing. However, since <code>People</code> is not yet defined at the point where the <code>friends</code> field of <code>Person</code> is defined, the compiler will give you an error. How can we fix it? Well, we can just <em>declare</em> type definitions to a yet-undefined structure like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> Person Person;
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> People People;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> Person {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>name;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> age;
-</span></span><span style="display:flex;"><span>    People <span style="color:#f92672">*</span>friends;
-</span></span><span style="display:flex;"><span>};
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> People {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> capacity;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> size;
-</span></span><span style="display:flex;"><span>    Person <span style="color:#f92672">*</span>people;
-</span></span><span style="display:flex;"><span>};
-</span></span></code></pre></div><p>Surprisingly, it works! Yes, you can just <em>declare</em> a symbol <code>Person</code> to be defined as a <code>struct Person</code>, whatever it is, even if it&rsquo;s not defined yet.</p>
-<p>This took a bit more time to explain than I expected. It is not very important to what we&rsquo;ll be doing today, but I still thought that it might be an interesting corner of syntax.</p>
-<p>With syntax out of the way, let&rsquo;s think about how we&rsquo;ll define our data. JSON specification from the website above will come in handy for this:</p>
+</span></span></code></pre></div><p>Let&rsquo;s think about how we&rsquo;ll define our data. JSON specification from the website above will come in handy for this:</p>
 <pre tabindex="0"><code>JSON
     element
 
@@ -266,7 +196,7 @@ elements
 <p>Now let&rsquo;s define utility functions for our parser:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add all code below after the print_tokens function
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// check the current token without advancing further
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// peek at the current token
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>token <span style="color:#a6e22e">parser_peek</span>(parser <span style="color:#f92672">*</span>parser) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> parser<span style="color:#f92672">-&gt;</span>tokens[parser<span style="color:#f92672">-&gt;</span>current];
 </span></span><span style="display:flex;"><span>}
@@ -276,7 +206,7 @@ elements
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">parser_peek</span>(parser).type <span style="color:#f92672">==</span> TOKEN_EOF;
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// check if the type of the current token is equal to the type
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// check if the current token has appropriate type
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">check</span>(parser <span style="color:#f92672">*</span>parser, <span style="color:#66d9ef">int</span> type) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">parser_is_at_end</span>(parser)) {
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
@@ -284,12 +214,12 @@ elements
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">parser_peek</span>(parser).type <span style="color:#f92672">==</span> type;
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// return the previous token
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// get previous token
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>token <span style="color:#a6e22e">previous</span>(parser <span style="color:#f92672">*</span>parser) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> parser<span style="color:#f92672">-&gt;</span>tokens[parser<span style="color:#f92672">-&gt;</span>current <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>];
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// advance the parser to the next token
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// go to the next token
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>token <span style="color:#a6e22e">parser_advance</span>(parser <span style="color:#f92672">*</span>parser) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">parser_is_at_end</span>(parser)) {
 </span></span><span style="display:flex;"><span>        parser<span style="color:#f92672">-&gt;</span>current<span style="color:#f92672">++</span>;
@@ -297,18 +227,19 @@ elements
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">previous</span>(parser);
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// consume the current token if matches the type and report an error otherwise 
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// report a parser error
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parser_error</span>(token token, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>msg) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fprintf</span>(stderr, <span style="color:#e6db74">&#34;[line %d] at &#39;%s&#39;: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, token.line, token.lexeme, msg);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// consume the current token
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>token <span style="color:#a6e22e">consume</span>(parser <span style="color:#f92672">*</span>parser, <span style="color:#66d9ef">int</span> type, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>msg) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">check</span>(parser, type)) {
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">parser_advance</span>(parser);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">parser_error</span>(<span style="color:#a6e22e">parser_peek</span>(parser), msg);
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// report the parser error
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parser_error</span>(token token, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>msg) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fprintf</span>(stderr, <span style="color:#e6db74">&#34;[line %d] at &#39;%s&#39;: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, token.line, token.lexeme, msg);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> (token){<span style="color:#ae81ff">0</span>};
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Those functions should be simple to read and understand. I think that no more comments are necessary.</p>
 <p>Now that we&rsquo;re done with utility functions, let&rsquo;s handle adding new values to <code>array</code> and `object:</p>
@@ -320,7 +251,7 @@ elements
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        array<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">*=</span> <span style="color:#ae81ff">2</span>;
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">// reallocate the memory
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        array<span style="color:#f92672">-&gt;</span>elements <span style="color:#f92672">=</span> <span style="color:#a6e22e">realloc</span>(
-</span></span><span style="display:flex;"><span>            array<span style="color:#f92672">-&gt;</span>elements, array<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(value)
+</span></span><span style="display:flex;"><span>            array<span style="color:#f92672">-&gt;</span>elements, array<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#f92672">*</span>value)
 </span></span><span style="display:flex;"><span>        );
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// append the value to the array
@@ -332,7 +263,7 @@ elements
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (object<span style="color:#f92672">-&gt;</span>size <span style="color:#f92672">&gt;=</span> object<span style="color:#f92672">-&gt;</span>capacity) {
 </span></span><span style="display:flex;"><span>        object<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">*=</span> <span style="color:#ae81ff">2</span>;
 </span></span><span style="display:flex;"><span>        object<span style="color:#f92672">-&gt;</span>members <span style="color:#f92672">=</span> <span style="color:#a6e22e">realloc</span>(
-</span></span><span style="display:flex;"><span>        object<span style="color:#f92672">-&gt;</span>members, object<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(member)
+</span></span><span style="display:flex;"><span>        object<span style="color:#f92672">-&gt;</span>members, object<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#f92672">*</span>member)
 </span></span><span style="display:flex;"><span>    );
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    object<span style="color:#f92672">-&gt;</span>members[object<span style="color:#f92672">-&gt;</span>size<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>member;
@@ -347,9 +278,6 @@ elements
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">parser_peek</span>(parser).type <span style="color:#f92672">==</span> RIGHT_BRACKET) {
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span>;
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// preallocate array storage
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    array<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>;
-</span></span><span style="display:flex;"><span>    array<span style="color:#f92672">-&gt;</span>elements <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">4</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(value));
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// parse the new value
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    value value <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>};
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">parse_value</span>(parser, <span style="color:#f92672">&amp;</span>value);
@@ -376,7 +304,6 @@ elements
 </code></pre><p>The array consists of brackets with optional elements inside. Elements can be either a single value or a list of values delimited by commas. Here is how we parse it:</p>
 <ol>
 <li>Check whether there are any elements to parse. If not, we are done</li>
-<li>Preallocate some space for the array</li>
 <li>Parse the value and append it to the array</li>
 <li>While the current token is a comma:
 <ul>
@@ -389,30 +316,27 @@ elements
 <p>This pattern is typical for parsing the comma-delimited values. Now let&rsquo;s handle the parsing of a member (an entry of an object):</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// parse member
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_member</span>(parser <span style="color:#f92672">*</span>parser, member <span style="color:#f92672">*</span>member) {
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// create the new member and allocate memory for the value field
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    member<span style="color:#f92672">-&gt;</span>value <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#66d9ef">sizeof</span>(value));
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// consume the member key string and report an error if it&#39;s not present
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    token string <span style="color:#f92672">=</span> <span style="color:#a6e22e">consume</span>(parser, TOKEN_STRING, <span style="color:#e6db74">&#34;expected string&#34;</span>);
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// copy the string token lexeme
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    member<span style="color:#f92672">-&gt;</span>string <span style="color:#f92672">=</span> <span style="color:#a6e22e">strdup</span>(string.lexeme);
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// consume the colon token
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">consume</span>(parser, COLON, <span style="color:#e6db74">&#34;expected colon&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// allocate memory for member&#39;s value
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    member<span style="color:#f92672">-&gt;</span>value <span style="color:#f92672">=</span> <span style="color:#a6e22e">calloc</span>(<span style="color:#ae81ff">1</span>, <span style="color:#66d9ef">sizeof</span>(value));
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// parse the value
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    value value <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>};
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">parse_value</span>(parser, <span style="color:#f92672">&amp;</span>value);
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// copy the value into the value field
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">memcpy</span>(member<span style="color:#f92672">-&gt;</span>value, <span style="color:#f92672">&amp;</span>value, <span style="color:#66d9ef">sizeof</span>(value));
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">parse_value</span>(parser, <span style="color:#f92672">&amp;</span>value);
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Again, this is very similar to this syntactical clause of JSON:</p>
+</span></span></code></pre></div><p>Note that we allocate memory for member&rsquo;s value field. In the beginning of this post, we resolved circular data type definition by forward declaration of the <code>value</code> type. Because of that, we have to use a pointer for the <code>value</code> field in the <code>member</code> structure and allocate it on the heap. This is unfortunate, but still better that the other way around. Had we declared <code>array</code> and <code>object</code> structures, amount of heap allocations would grow significantly. The bottom line here is simple: allocate on the stack everything that you can (unless you need more storage).</p>
+<p>This code is very similar to this syntactical clause of JSON:</p>
 <pre tabindex="0"><code>member
     string &#39;:&#39; element
 </code></pre><p>Finally, let&rsquo;s wrap it inside a new function that will parse a list of comma-delimited members:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_members</span>(parser <span style="color:#f92672">*</span>parser, object <span style="color:#f92672">*</span>object) {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// parse members
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_members</span>(parser <span style="color:#f92672">*</span>parser, object <span style="color:#f92672">*</span>object) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">parser_peek</span>(parser).type <span style="color:#f92672">==</span> RIGHT_BRACE) {
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span>;
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    object<span style="color:#f92672">-&gt;</span>capacity <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>;
-</span></span><span style="display:flex;"><span>    object<span style="color:#f92672">-&gt;</span>members <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">4</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(member));
 </span></span><span style="display:flex;"><span>    member member <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>};
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">parse_member</span>(parser, <span style="color:#f92672">&amp;</span>member);
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">object_add_member</span>(object, <span style="color:#f92672">&amp;</span>member);
@@ -428,30 +352,32 @@ elements
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_object</span>(parser <span style="color:#f92672">*</span>parser, value <span style="color:#f92672">*</span>value) {
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// set the value type to OBJECT
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    value<span style="color:#f92672">-&gt;</span>type <span style="color:#f92672">=</span> OBJECT;
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// init object on the stack to zero
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    object object <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>};
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// allocate members on object
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    value<span style="color:#f92672">-&gt;</span>object.capacity <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>;
+</span></span><span style="display:flex;"><span>    value<span style="color:#f92672">-&gt;</span>object.size <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    value<span style="color:#f92672">-&gt;</span>object.members <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">4</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(member));
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// consume the left brace
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">consume</span>(parser, LEFT_BRACE, <span style="color:#e6db74">&#34;expected left brace&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// parse the member&#39;s list
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">parse_members</span>(parser, <span style="color:#f92672">&amp;</span>object);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// parse the members list
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">parse_members</span>(parser, <span style="color:#f92672">&amp;</span>value<span style="color:#f92672">-&gt;</span>object);
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// consume the right brace
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">consume</span>(parser, RIGHT_BRACE, <span style="color:#e6db74">&#34;expected right brace&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// set object field of value to objects
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    value<span style="color:#f92672">-&gt;</span>object <span style="color:#f92672">=</span> object;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>This code is not very complicated. We initialize the <code>object</code> on the stack, pass it into the <code>parse_members</code> function, and set the <code>value-&gt;object</code> field to <code>object</code>.</p>
+</span></span></code></pre></div><p>This code is not very complicated. We allocate some memory for object members on value, pass it into the <code>parse_members</code> function, and set the <code>value-&gt;object</code> field to <code>object</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// parse array
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_array</span>(parser <span style="color:#f92672">*</span>parser, value <span style="color:#f92672">*</span>value) {
 </span></span><span style="display:flex;"><span>    value<span style="color:#f92672">-&gt;</span>type <span style="color:#f92672">=</span> ARRAY;
-</span></span><span style="display:flex;"><span>    array array <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>};
+</span></span><span style="display:flex;"><span>    value<span style="color:#f92672">-&gt;</span>array.capacity <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>;
+</span></span><span style="display:flex;"><span>    value<span style="color:#f92672">-&gt;</span>array.size <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    value<span style="color:#f92672">-&gt;</span>array.elements <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(<span style="color:#ae81ff">4</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#f92672">*</span>value));
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">consume</span>(parser, LEFT_BRACKET, <span style="color:#e6db74">&#34;expected left bracket&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">parse_elements</span>(parser, <span style="color:#f92672">&amp;</span>array);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">parse_elements</span>(parser, <span style="color:#f92672">&amp;</span>value<span style="color:#f92672">-&gt;</span>array);
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">consume</span>(parser, RIGHT_BRACKET, <span style="color:#e6db74">&#34;expected right bracket&#34;</span>);
-</span></span><span style="display:flex;"><span>    value<span style="color:#f92672">-&gt;</span>array <span style="color:#f92672">=</span> array;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>This function is very similar to <code>parse_objects</code>.</p>
 <p>Let&rsquo;s get to the interesting part. Here is how to parse the value:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_value</span>(parser <span style="color:#f92672">*</span>parser, value <span style="color:#f92672">*</span>value) {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// parse value
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parse_value</span>(parser <span style="color:#f92672">*</span>parser, value <span style="color:#f92672">*</span>value) {
 </span></span><span style="display:flex;"><span>    token token <span style="color:#f92672">=</span> <span style="color:#a6e22e">parser_peek</span>(parser);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">enum</span> token_type type <span style="color:#f92672">=</span> token.type;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span> (type) {
@@ -480,6 +406,7 @@ elements
 </span></span><span style="display:flex;"><span>        value<span style="color:#f92672">-&gt;</span>type <span style="color:#f92672">=</span> VALUE_FALSE;
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> TOKEN_NULL:
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">parser_advance</span>(parser);
 </span></span><span style="display:flex;"><span>        value<span style="color:#f92672">-&gt;</span>type <span style="color:#f92672">=</span> VALUE_NULL;
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
@@ -490,15 +417,16 @@ elements
 </span></span></code></pre></div><p>This function is fairly simple. We peek at the current token. If it is the left brace, there is an object ahead and we call the <code>parse_object</code> function. If it is left bracket, we call the <code>parse_array</code> function. If it is a number, we use the <code>atof</code> function to convert the token&rsquo;s lexeme to a number and put it inside the <code>number</code> field. If it is a string, we just copy the token&rsquo;s lexeme into the <code>string</code> field of the value. Otherwise, we just set up the appropriate type value. It is sufficient to identify the value and no further information is needed.</p>
 <p>At this point, we are done with parsing, so let&rsquo;s free the parser data:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// free parser data
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">parser_free</span>(parser <span style="color:#f92672">*</span>parser) {
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">free_parser</span>(parser <span style="color:#f92672">*</span>parser) {
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// free lexeme string of each token
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> parser<span style="color:#f92672">-&gt;</span>current; i<span style="color:#f92672">++</span>) {
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> parser<span style="color:#f92672">-&gt;</span>current <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>; i<span style="color:#f92672">++</span>) {
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">free</span>(parser<span style="color:#f92672">-&gt;</span>tokens[i].lexeme);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// free the tokens array
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">free</span>(parser<span style="color:#f92672">-&gt;</span>tokens);
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Ironically enough, we are going to print the JSON value as a JSON string. This will allow you to convert the value back to the JSON string. We are going to use yet another dynamic array to represent strings:</p>
+</span></span></code></pre></div><p>Note that we add 1 to the <code>current</code> field since we also need to free the final <code>EOF</code> token.</p>
+<p>Ironically enough, we are going to print the JSON value as a JSON string. This will allow you to convert the value back to the JSON string. We are going to use yet another dynamic array to represent strings:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// add this after the value structure
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> capacity;
@@ -506,7 +434,7 @@ elements
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>string;
 </span></span><span style="display:flex;"><span>} string;
 </span></span></code></pre></div><p>Here are functions related to our string:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// append the message to the string
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// concatenate to the string
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">string_cat</span>(string <span style="color:#f92672">*</span>string, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>msg) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> size <span style="color:#f92672">=</span> <span style="color:#a6e22e">strlen</span>(msg);
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// reallocate the string
@@ -538,20 +466,29 @@ elements
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// function declaration
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">value_string</span>(value <span style="color:#f92672">*</span>value, string <span style="color:#f92672">*</span>string, <span style="color:#66d9ef">int</span> ind);
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// convert an array to a string and append it to the string
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// concatenate array to the string
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">array_string</span>(array <span style="color:#f92672">*</span>array, string <span style="color:#f92672">*</span>string, <span style="color:#66d9ef">int</span> ind) {
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34;[ &#34;</span>);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> array<span style="color:#f92672">-&gt;</span>size; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>        value value <span style="color:#f92672">=</span> array<span style="color:#f92672">-&gt;</span>elements[i];
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">value_string</span>(<span style="color:#f92672">&amp;</span>value, string, ind);
+</span></span><span style="display:flex;"><span>        value val <span style="color:#f92672">=</span> array<span style="color:#f92672">-&gt;</span>elements[i];
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">value_string</span>(<span style="color:#f92672">&amp;</span>val, string, ind);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&lt;</span> array<span style="color:#f92672">-&gt;</span>size <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) {
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34;, &#34;</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34;,&#34;</span>);
+</span></span><span style="display:flex;"><span>            value next <span style="color:#f92672">=</span> array<span style="color:#f92672">-&gt;</span>elements[i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>];
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (next.type <span style="color:#f92672">==</span> OBJECT) {
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ind; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34;    &#34;</span>);
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34; &#34;</span>);
+</span></span><span style="display:flex;"><span>            }
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34; ]&#34;</span>);
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// convert an object to a string and append it to the string
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// concatenate object to the string
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">object_string</span>(object <span style="color:#f92672">*</span>object, string <span style="color:#f92672">*</span>string, <span style="color:#66d9ef">int</span> ind) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> keystr[<span style="color:#ae81ff">64</span>] <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>};
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34;{ &#34;</span>);
@@ -560,7 +497,7 @@ elements
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> object<span style="color:#f92672">-&gt;</span>size; i<span style="color:#f92672">++</span>) {
 </span></span><span style="display:flex;"><span>        member member <span style="color:#f92672">=</span> object<span style="color:#f92672">-&gt;</span>members[i];
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> ind <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> ind <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>; j<span style="color:#f92672">++</span>) {
 </span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34;    &#34;</span>);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">sprintf</span>(keystr, <span style="color:#e6db74">&#34;%s: &#34;</span>, member.string);
@@ -577,9 +514,9 @@ elements
 </span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34;}&#34;</span>);
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">// convert a value to a string and append it to the string
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// concatenate value to the string
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">value_string</span>(value <span style="color:#f92672">*</span>value, string <span style="color:#f92672">*</span>string, <span style="color:#66d9ef">int</span> ind) {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> valstr[<span style="color:#ae81ff">64</span>] <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>};
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>valstr <span style="color:#f92672">=</span> NULL;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span> (value<span style="color:#f92672">-&gt;</span>type) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> ARRAY:
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">array_string</span>(<span style="color:#f92672">&amp;</span>value<span style="color:#f92672">-&gt;</span>array, string, ind);
@@ -588,12 +525,18 @@ elements
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">object_string</span>(<span style="color:#f92672">&amp;</span>value<span style="color:#f92672">-&gt;</span>object, string, ind);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> VALUE_NUMBER:
+</span></span><span style="display:flex;"><span>        valstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">calloc</span>(<span style="color:#ae81ff">64</span>, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">char</span>));
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">sprintf</span>(valstr, <span style="color:#e6db74">&#34;%f&#34;</span>, value<span style="color:#f92672">-&gt;</span>number);
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">string_cat</span>(string, valstr);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">free</span>(valstr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> VALUE_STRING:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> size <span style="color:#f92672">=</span> <span style="color:#a6e22e">strlen</span>(value<span style="color:#f92672">-&gt;</span>string)<span style="color:#f92672">+</span><span style="color:#ae81ff">4</span>;
+</span></span><span style="display:flex;"><span>        valstr <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(size);
+</span></span><span style="display:flex;"><span>        valstr[size<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">sprintf</span>(valstr, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">&#34;</span>, value<span style="color:#f92672">-&gt;</span>string);
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">string_cat</span>(string, valstr);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">free</span>(valstr);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> VALUE_FALSE:
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34;false&#34;</span>);
@@ -605,10 +548,14 @@ elements
 </span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">string_cat</span>(string, <span style="color:#e6db74">&#34;null&#34;</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>There is a lot of code related to pretty printing. You can read it if you&rsquo;d like. I&rsquo;m not going to comment on this code much.</p>
-<p>After we are done working with our value, don&rsquo;t forget to free all data related to it:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// free data from value
+</span></span><span style="display:flex;"><span>}<span style="color:#960050;background-color:#1e0010">```</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>There is a lot of code related to pretty printing. You can read it <span style="color:#66d9ef">if</span> you<span style="color:#960050;background-color:#1e0010">&#39;</span>d like. I<span style="color:#960050;background-color:#1e0010">&#39;</span>m not going to comment on this code much.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>After we are done working with our value, don<span style="color:#960050;background-color:#1e0010">&#39;</span>t forget to free all data related to it:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">```</span>c
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// free data from value
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">free_value</span>(value <span style="color:#f92672">*</span>value) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span>(value<span style="color:#f92672">-&gt;</span>type) {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> ARRAY:
@@ -624,6 +571,7 @@ elements
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> value<span style="color:#f92672">-&gt;</span>object.size; i<span style="color:#f92672">++</span>) {
 </span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(value<span style="color:#f92672">-&gt;</span>object.members[i].string);
 </span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free_value</span>(value<span style="color:#f92672">-&gt;</span>object.members[i].value);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(value<span style="color:#f92672">-&gt;</span>object.members[i].value);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">// free the member&#39;s array
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#a6e22e">free</span>(value<span style="color:#f92672">-&gt;</span>object.members);
@@ -642,7 +590,7 @@ elements
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// add this to parse_json after scan_tokens
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>parser parser <span style="color:#f92672">=</span> {.tokens <span style="color:#f92672">=</span> scanner.tokens};
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">parse_value</span>(<span style="color:#f92672">&amp;</span>parser, value);
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">parser_free</span>(<span style="color:#f92672">&amp;</span>parser);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">free_parser</span>(<span style="color:#f92672">&amp;</span>parser);
 </span></span></code></pre></div><p>Finally, let&rsquo;s update the <code>main</code> function:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// change parse_json line in main to this
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>value value <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>};

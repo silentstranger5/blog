@@ -13,7 +13,7 @@ Notice that we are only using one part of the library&rsquo;s vast functionality
 Maybe you want to learn how to implement this algorithm yourself. In this case, you can get more insight and experience from implementing it rather than using a ready library.
 
 Implementing the SHA256 algorithm from scratch sounds like quite a daunting task. It&rsquo;s difficult to think about where to even start. However, such an algorithm is probably widely used and implemented in a variety of languages and platforms. Surely, there has to be something about it somewhere.">
-    <meta name="generator" content="Hugo 0.141.0">
+    <meta name="generator" content="Hugo 0.144.1">
     
     
     
@@ -171,8 +171,7 @@ s1{256}(x) = ROTR 17(x) ⊕ ROTR 19(x) ⊕ SHR 10(x)    (4.7)
 <blockquote>
 <p>Throughout this specification, the “big-endian” convention is used when expressing
 both 32- and 64-bit words, so that within each word, the most significant bit is stored
-in the left-most bit position.</p>
-</blockquote>
+in the left-most bit position.</p></blockquote>
 <p>Most machines nowadays are little-endian. This means that we need to perform conversion for our algorithm to work properly. Those macros look a bit weird, but what they do is check machine endianness and swap bytes from one convention to another:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">//Check if the machine is big-endian
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#define ENDIAN (*(uint16_t *)&#34;\0\xff&#34; &lt; 0x100)

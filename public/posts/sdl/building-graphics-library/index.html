@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Building Graphics Library | My Blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="I&rsquo;m doing some graphical programming recently, and poking around some three-dimensional rendering.
+However, before I dive into that, I&rsquo;d like to tackle 2D rendering.
+To do that, I&rsquo;d like to work with a library that allows an easy and cross-platform access to low-level graphics.
+I want to be able to make a window and draw a line without much of a hassle.
+Probably the most widely used library for this purpose is called SDL.
+It is relatively easy to use and provides access to features like windowing, audio, keyboard, mouse, joystick, graphics, etc.
+It allows to use .bmp files directly, and also offers another library for working with images.
+It also contains only the most basic graphical primitives like points, lines, and rectangles.
+This poses a fun challenge for implementing everything else ourselves.">
+    <meta name="generator" content="Hugo 0.144.1">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+    
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/sdl/building-graphics-library/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/sdl/building-graphics-library/">
+  <meta property="og:site_name" content="My Blog">
+  <meta property="og:title" content="Building Graphics Library">
+  <meta property="og:description" content="I’m doing some graphical programming recently, and poking around some three-dimensional rendering. However, before I dive into that, I’d like to tackle 2D rendering. To do that, I’d like to work with a library that allows an easy and cross-platform access to low-level graphics. I want to be able to make a window and draw a line without much of a hassle.
+Probably the most widely used library for this purpose is called SDL. It is relatively easy to use and provides access to features like windowing, audio, keyboard, mouse, joystick, graphics, etc. It allows to use .bmp files directly, and also offers another library for working with images. It also contains only the most basic graphical primitives like points, lines, and rectangles. This poses a fun challenge for implementing everything else ourselves.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-03-15T21:19:41+03:00">
+    <meta property="article:modified_time" content="2025-03-15T21:19:41+03:00">
+
+  <meta itemprop="name" content="Building Graphics Library">
+  <meta itemprop="description" content="I’m doing some graphical programming recently, and poking around some three-dimensional rendering. However, before I dive into that, I’d like to tackle 2D rendering. To do that, I’d like to work with a library that allows an easy and cross-platform access to low-level graphics. I want to be able to make a window and draw a line without much of a hassle.
+Probably the most widely used library for this purpose is called SDL. It is relatively easy to use and provides access to features like windowing, audio, keyboard, mouse, joystick, graphics, etc. It allows to use .bmp files directly, and also offers another library for working with images. It also contains only the most basic graphical primitives like points, lines, and rectangles. This poses a fun challenge for implementing everything else ourselves.">
+  <meta itemprop="datePublished" content="2025-03-15T21:19:41+03:00">
+  <meta itemprop="dateModified" content="2025-03-15T21:19:41+03:00">
+  <meta itemprop="wordCount" content="2861">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Building Graphics Library">
+  <meta name="twitter:description" content="I’m doing some graphical programming recently, and poking around some three-dimensional rendering. However, before I dive into that, I’d like to tackle 2D rendering. To do that, I’d like to work with a library that allows an easy and cross-platform access to low-level graphics. I want to be able to make a window and draw a line without much of a hassle.
+Probably the most widely used library for this purpose is called SDL. It is relatively easy to use and provides access to features like windowing, audio, keyboard, mouse, joystick, graphics, etc. It allows to use .bmp files directly, and also offers another library for working with images. It also contains only the most basic graphical primitives like points, lines, and rectangles. This poses a fun challenge for implementing everything else ourselves.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        My Blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Building Graphics Library</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2025-03-15T21:19:41+03:00">March 15, 2025</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><p>I&rsquo;m doing some graphical programming recently, and poking around some three-dimensional rendering.
+However, before I dive into that, I&rsquo;d like to tackle 2D rendering.
+To do that, I&rsquo;d like to work with a library that allows an easy and cross-platform access to low-level graphics.
+I want to be able to make a window and draw a line without much of a hassle.</p>
+<p>Probably the most widely used library for this purpose is called <a href="https://libsdl.org">SDL</a>.
+It is relatively easy to use and provides access to features like windowing, audio, keyboard, mouse, joystick, graphics, etc.
+It allows to use .bmp files directly, and also offers another library for working with images.
+It also contains only the most basic graphical primitives like points, lines, and rectangles.
+This poses a fun challenge for implementing everything else ourselves.</p>
+<p>Note that SDL is also used as a core for some popular graphical/game-development platforms like <a href="https://pygame.org">pygame</a> and <a href="htps://love2d.org">Love2D</a>.</p>
+<p>As many low-level libraries written in C, this library provides good performance with fine-tune control.
+This often comes at the cost of boilerplate code.
+Although I&rsquo;d say that this library is still very much nice compared to some other platforms.</p>
+<p>Now that we established the necessity of the external library (trust me, you don&rsquo;t want to write this stuff yourself), we need to somehow get it.
+You can download, compile and link the library directly from the website, or use CMake to handle it, but I personally prefer to use package managers.
+My personal choice is <a href="https://vcpkg.io">vcpkg</a>, but you can use anything that you like.
+I won&rsquo;t explain the whole process here because I wrote about it in another post.
+You can also read the guide provided on the package manager website.</p>
+<p>Now that we have the SDL, let&rsquo;s write the boilerplate code to get things going.
+Before we write the actual code, I&rsquo;d like to write a wrapper around SDL.
+It&rsquo;s arguably pointless at this point since everything that it&rsquo;s doing is mapping the library names (like <code>SDL_RenderClear</code>) to more simple symbols (like <code>clear</code>).
+You can even argue that it&rsquo;s bad in a way that it declares some really simple and common names that you could use somewhere else yourself (like <code>point</code>, <code>line</code> and <code>rectangle</code>).
+You can avoid doing it if you don&rsquo;t like this, however, I&rsquo;m going to use those symbols hereafter, so you&rsquo;ll have to reverse them if you don&rsquo;t want to use them (hopefully it won&rsquo;t be very hard thing to do).</p>
+<p>With this out of the way, let&rsquo;s make a header file called <code>graphics.h</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#ifndef GRAPHICS
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define GRAPHICS
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;SDL3/SDL.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define clear     SDL_RenderClear
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define point     SDL_RenderPoint
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define line      SDL_RenderLine
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define rectangle SDL_RenderRect
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define update    SDL_RenderPresent
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define color     SDL_SetRenderDrawColor
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define render_t  SDL_Renderer
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#endif
+</span></span></span></code></pre></div><p>Now, let&rsquo;s write some code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;graphics.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">bool</span> <span style="color:#a6e22e">init</span>();
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">kill</span>();
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">bool</span> <span style="color:#a6e22e">loop</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>SDL_Window <span style="color:#f92672">*</span>window;         <span style="color:#75715e">// window
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>SDL_Renderer <span style="color:#f92672">*</span>renderer;     <span style="color:#75715e">// renderer
+</span></span></span></code></pre></div><p>We are going to declare two global variables called <code>window</code> (that name should be self-evident), and <code>renderer</code>, which is an abstraction provided by SDL to draw things.</p>
+<p>The main function looks like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>argv) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// quit when failed to initialize
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">init</span>()) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// call loop function with delay of 100ms
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">loop</span>()) <span style="color:#a6e22e">SDL_Delay</span>(<span style="color:#ae81ff">100</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// clean things up
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">kill</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This is how many of applications in SDL (and probably in some other libraries) look like:</p>
+<ol>
+<li>initialize stuff, quit when failed</li>
+<li>call some function in a loop with delay</li>
+<li>clean things up and exit</li>
+</ol>
+<p>The most important stuff is happening inside of a <code>loop()</code> call, so let&rsquo;s write it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">bool</span> <span style="color:#a6e22e">loop</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    SDL_Event e;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// set renderer color to black
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">color</span>(renderer, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// clear the screen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">clear</span>(renderer);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// poll events
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">SDL_PollEvent</span>(<span style="color:#f92672">&amp;</span>e) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">switch</span> (e.type) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// when it&#39;s time to quit
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">case</span> SDL_EVENT_QUIT:
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// return false
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#66d9ef">return</span> false;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// draw some stuff
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">draw</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// update renderer
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">update</span>(renderer);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> true;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Note how <code>loop</code> is used inside of the main:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">loop</span>()) <span style="color:#75715e">// do something
+</span></span></span></code></pre></div><p>As you may recall, <code>while</code> continues execution <em>while</em> the condition evaluates to true.
+Here, <code>loop</code> is a function that returns a boolean value.
+Therefore, our loop will continue to execute while the <code>loop</code> function returns <code>true</code>.
+We use event system to handle various events like key or mouse.
+Event <code>SDL_EVENT_QUIT</code> is fired when it&rsquo;s time to quit
+(for example, when user clicks on the X window button).
+When we return <code>false</code>, the loop is terminated.</p>
+<p>Now let&rsquo;s look at the <code>init</code> function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">bool</span> <span style="color:#a6e22e">init</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// SDL_Init initializes video subsystem;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// it returns a negative value upon failure
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">SDL_Init</span>(SDL_INIT_VIDEO) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;failed to initialize sdl: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">SDL_GetError</span>());
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> false;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// create a new window (&#34;Title&#34;, width, height, flags);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    window <span style="color:#f92672">=</span> <span style="color:#a6e22e">SDL_CreateWindow</span>(<span style="color:#e6db74">&#34;Window&#34;</span>, <span style="color:#ae81ff">256</span>, <span style="color:#ae81ff">256</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// check for failure
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>window) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;failed to create window: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">SDL_GetError</span>());
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> false;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// create renderer from the window
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    renderer <span style="color:#f92672">=</span> <span style="color:#a6e22e">SDL_CreateRenderer</span>(window, NULL);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// check for failure
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>renderer) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;failed to create renderer: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">SDL_GetError</span>());
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> false;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> true;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Finally, let&rsquo;s consider the <code>kill</code> function. I think that no comments are needed here.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">kill</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">SDL_DestroyRenderer</span>(renderer);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">SDL_DestroyWindow</span>(window);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">SDL_Quit</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now that we&rsquo;re done with the boilerplate, we can finally handle the drawing.
+Let&rsquo;s write the <code>draw()</code> function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">draw</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">color</span>(renderer, <span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">255</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">line</span>(renderer, <span style="color:#ae81ff">50</span>, <span style="color:#ae81ff">50</span>, <span style="color:#ae81ff">100</span>, <span style="color:#ae81ff">100</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">line</span>(renderer, <span style="color:#ae81ff">100</span>, <span style="color:#ae81ff">100</span>, <span style="color:#ae81ff">200</span>, <span style="color:#ae81ff">50</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">line</span>(renderer, <span style="color:#ae81ff">200</span>, <span style="color:#ae81ff">50</span>, <span style="color:#ae81ff">50</span>, <span style="color:#ae81ff">50</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Try to fire up the program. You should see a triangle.</p>
+<p>Now with the boilerplate out of the way, we can finally try to do something more interesting.
+SDL provides three primitives by default.
+Out of them, the most important is probably the dot rendering function.
+Given the dot function, you can easily render a line using a linear equation.</p>
+<p>Create a new function called <code>graphics.c</code>.
+Include the <code>graphics.h</code> header file here and link it with your <code>main.c</code> source file.
+Now you can add functions below into this file.
+You can use those functions in your <code>draw()</code> function.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-txt" data-lang="txt"><span style="display:flex;"><span>k = (y1 - y0) / (x1 - x0)
+</span></span><span style="display:flex;"><span>y = y0 + k(x - x0)
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">my_line</span>(<span style="color:#66d9ef">render_t</span> <span style="color:#f92672">*</span>r, <span style="color:#66d9ef">float</span> x0, <span style="color:#66d9ef">float</span> y0, <span style="color:#66d9ef">float</span> x1, <span style="color:#66d9ef">float</span> y1) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// computations assume that (x0, y0) is on the left from (x1, y1)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (x0 <span style="color:#f92672">&gt;</span> x1) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">swap</span>(<span style="color:#66d9ef">float</span>, x0, y0);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">swap</span>(<span style="color:#66d9ef">float</span>, x0, y0);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// k is the line slope
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">float</span> k <span style="color:#f92672">=</span> (y1 <span style="color:#f92672">-</span> y0) <span style="color:#f92672">/</span> (x1 <span style="color:#f92672">-</span> x0);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// iterate for x between two points
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">float</span> x <span style="color:#f92672">=</span> x0; x <span style="color:#f92672">&lt;</span> x1; x<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// compute y from the line equation
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">float</span> y <span style="color:#f92672">=</span> y0 <span style="color:#f92672">+</span> k <span style="color:#f92672">*</span> (x <span style="color:#f92672">-</span> x0);
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// render the point
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#a6e22e">point</span>(r, x, y);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Here is the swap macro if you are curious:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define swap(t, x, y) { t z = x; x = y; y = z; }
+</span></span></span></code></pre></div><p>Note that we use division in k which makes us to use floats to render lines.
+There is a famous optimization which enables us to use integers to draw lines.
+This algorithm is more involved (especially regarding octant generalization),
+but also more performant as well.
+It&rsquo;s called <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">Bresenham Line Algorithm</a>.</p>
+<p>Given lines, it&rsquo;s quite easy to implement rectangles.
+Before we proceed, let&rsquo;s add a new enum into <code>graphics.h</code>.
+We&rsquo;ll use it do denote <em>drawing mode</em>: outlined or filled.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> {LINE, FILL};
+</span></span></code></pre></div><p>Now onto the rectangle drawing function.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">my_rectangle</span>(<span style="color:#66d9ef">render_t</span> <span style="color:#f92672">*</span>r, <span style="color:#66d9ef">int</span> m, <span style="color:#66d9ef">float</span> x0, <span style="color:#66d9ef">float</span> y0, <span style="color:#66d9ef">float</span> w, <span style="color:#66d9ef">float</span> h) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span> (m) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// with outlined drawing mode
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">case</span> LINE:
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// render four lines around the rectangle perimeter
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#a6e22e">line</span>(r, x0, y0, x0 <span style="color:#f92672">+</span> w, y0);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">line</span>(r, x0 <span style="color:#f92672">+</span> w, y0, x0 <span style="color:#f92672">+</span> w, y0 <span style="color:#f92672">+</span> h);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">line</span>(r, x0 <span style="color:#f92672">+</span> w, y0 <span style="color:#f92672">+</span> h, x0, y0 <span style="color:#f92672">+</span> h);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">line</span>(r, x0, y0 <span style="color:#f92672">+</span> h, x0, y0);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// with filled drawing mode
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">case</span> FILL:
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// from top to bottom
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">float</span> y <span style="color:#f92672">=</span> y0; y <span style="color:#f92672">&lt;</span> y0 <span style="color:#f92672">+</span> h; y<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// render horizontal line
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#a6e22e">line</span>(r, x0, y, x0 <span style="color:#f92672">+</span> w, y);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Note that both line and rectangle functions are provided for educational purposes.
+You can use them, of course, but I haven&rsquo;t benchmarked them, so I can&rsquo;t tell you
+whether they will be fast enough for your purposes.
+It is generally recomended to use SDL functions wherever possible and/or appropriate.
+I personally use SDL functions to draw both lines and rectangles and would
+advise you to do so as well.</p>
+<p>Now for more interesting part. With simple stuff out of the way, we need to make more general
+stuff not covered with SDL library.</p>
+<p>The first thing we&rsquo;ll cover is ellipse. Here is an ellipse equation:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-txt" data-lang="txt"><span style="display:flex;"><span>(x, y) = (a cos(t), b sin(t))   for 0 &lt;= t &lt;= 2 * pi
+</span></span></code></pre></div><p>Consider that we have parameters called <code>h</code> and <code>k</code>, horizontal and vertical shift, respectively.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-txt" data-lang="txt"><span style="display:flex;"><span>x = x + h
+</span></span><span style="display:flex;"><span>y = y + k
+</span></span></code></pre></div><p>We&rsquo;ll need the pi number here, so it&rsquo;s a good idea to include it into the <code>graphics.h</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define PI 3.14159265F
+</span></span></span></code></pre></div><p>With this equation in mind, let&rsquo;s try to draw our ellipse.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ellipse</span>(<span style="color:#66d9ef">render_t</span> <span style="color:#f92672">*</span>r, <span style="color:#66d9ef">int</span> m, <span style="color:#66d9ef">float</span> a, <span style="color:#66d9ef">float</span> b, <span style="color:#66d9ef">float</span> h, <span style="color:#66d9ef">float</span> k) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span> (m) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> LINE:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">float</span> t <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; t <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> PI; t<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">float</span> x <span style="color:#f92672">=</span> a <span style="color:#f92672">*</span> (<span style="color:#66d9ef">float</span>) <span style="color:#a6e22e">cos</span>(t) <span style="color:#f92672">+</span> h;
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">float</span> y <span style="color:#f92672">=</span> b <span style="color:#f92672">*</span> (<span style="color:#66d9ef">float</span>) <span style="color:#a6e22e">sin</span>(t) <span style="color:#f92672">+</span> k;
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">point</span>(r, x, y);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>If you try to draw ellipse now, you&rsquo;ll see that it&rsquo;s sparsely dotted.
+This is because the angle sampling step is too large.
+Change the loop iteration step to <code>0.01f</code>. Everything should be working fine now.</p>
+<p>If you are curious, here is another equation for ellipse:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-txt" data-lang="txt"><span style="display:flex;"><span>x2 / a2 + y2 / b2 = 1
+</span></span><span style="display:flex;"><span>y2 / b2 =  1 - x2 / a2
+</span></span><span style="display:flex;"><span>y2 = b2 * (1 - x2 / a2)
+</span></span><span style="display:flex;"><span>y  = b  * sqrt(1 - x2 / a2)
+</span></span></code></pre></div><p>Notation like <code>x2</code> here is used to denote a square of <code>x</code>.</p>
+<p>Note that since we are taking the square root, the solution expands into two clauses:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-txt" data-lang="txt"><span style="display:flex;"><span>y = +1 * b * sqrt(1 - x2 / a2)
+</span></span><span style="display:flex;"><span>y = -1 * b * sqrt(1 - x2 / a2)
+</span></span></code></pre></div><p>As an exercise, try to draw ellipse with this equation.</p>
+<p>Now let&rsquo;s tackle the filled ellipse.
+To do that, we need to slightly rearrange the equation above.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-txt" data-lang="txt"><span style="display:flex;"><span>x2 / a2 + y2 / b2 = 1
+</span></span><span style="display:flex;"><span>x2 / a2 =  1 - y2 / b2
+</span></span><span style="display:flex;"><span>x2 = a2 * (1 - y2 / b2)
+</span></span><span style="display:flex;"><span>x  = a  * sqrt(1 - y2 / b2)
+</span></span></code></pre></div><p>Note the square root expansion</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-txt" data-lang="txt"><span style="display:flex;"><span>x = +1 * a * sqrt(1 - y2 / b2)
+</span></span><span style="display:flex;"><span>x = -1 * a * sqrt(1 - y2 / b2)
+</span></span></code></pre></div><p>Now we&rsquo;re ready to implement the algorithm.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">ellipse</span>(<span style="color:#66d9ef">render_t</span> <span style="color:#f92672">*</span>r, <span style="color:#66d9ef">int</span> m, <span style="color:#66d9ef">float</span> a, <span style="color:#66d9ef">float</span> b, <span style="color:#66d9ef">float</span> h, <span style="color:#66d9ef">float</span> k) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span> (m) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> LINE:
+</span></span><span style="display:flex;"><span>        ...
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> FILL:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">float</span> y <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>b; y <span style="color:#f92672">&lt;</span> b; y<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">float</span> x <span style="color:#f92672">=</span> a <span style="color:#f92672">*</span> (<span style="color:#66d9ef">float</span>) <span style="color:#a6e22e">sqrt</span>(<span style="color:#ae81ff">1</span> <span style="color:#f92672">-</span> (y <span style="color:#f92672">*</span> y) <span style="color:#f92672">/</span> (b <span style="color:#f92672">*</span> b));
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">line</span>(r, <span style="color:#f92672">-</span>x <span style="color:#f92672">+</span> h, y <span style="color:#f92672">+</span> k, x <span style="color:#f92672">+</span> h, y <span style="color:#f92672">+</span> k);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now let&rsquo;s try to tackle something even more interesting.
+Given a list of points, how would you render an outlined polygon?
+Try to think about this before you look at the solution.
+Yes, grab your pen and paper (or open the notepad), and go through it.
+Try to write the function and see if it works. I&rsquo;ll wait.</p>
+<p>Done? Let&rsquo;s look at the solution.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">polygon</span>(<span style="color:#66d9ef">render_t</span> <span style="color:#f92672">*</span>r, <span style="color:#66d9ef">int</span> m, <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>v, <span style="color:#66d9ef">int</span> n) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (m <span style="color:#f92672">==</span> LINE) {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> n; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">line</span>(r, v[<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">0</span>], v[<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>], 
+</span></span><span style="display:flex;"><span>				v[<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> ((i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">%</span> n) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0</span>], v[<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> ((i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">%</span> n) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>There is not much special about the algorithm so far.
+We store polygon point coordinates at the <code>v</code> pointer, and use <code>n</code> to specify the number of points.
+We then iterate through points, drawing lines between them.
+Note that the last line connects the last point to the first point.
+We use <code>(i + 1) mod n</code> index to achieve this effect.</p>
+<p>Now let&rsquo;s consider how to draw filled polygons.
+There are many algorithms that you can use here.
+I&rsquo;m going to use perhaps rather intuitive and simple one called <a href="https://en.wikipedia.org/wiki/Scanline_rendering">Scanline Rendering</a>.</p>
+<p>The core idea of the algorithm is simple.
+We iterate the polygon row by row, from top to bottom, and then examine each edge of the polygon.
+For each edge that intersects with the row, we write down the intersection point.
+After that, we sort those points in ascending order.
+Finally, we iterate through alternate pairs of points and draw line between them.</p>
+<p>Here is a picture that will make things a bit more clear.</p>
+<p><img src="../polygon.png" alt="Polygon"></p>
+<p>You may ask: how are we going to determine whether the row intersects with the edge?
+A great question. To answer it, we need to consider the line equation again.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-txt" data-lang="txt"><span style="display:flex;"><span>k = (y1 - y0) / (x1 - x0)
+</span></span><span style="display:flex;"><span>y = y0 + k(x - x0)
+</span></span><span style="display:flex;"><span>y0 - y + k(x - x0) = 0
+</span></span><span style="display:flex;"><span>k(x - x0) = y - y0
+</span></span><span style="display:flex;"><span>x - x0 = (y - y0) / k
+</span></span><span style="display:flex;"><span>x = x0 + (y - y0) / k   for ymin &lt; y &lt;= ymax
+</span></span></code></pre></div><p>Look at the <code>polygon</code> function interface above. Recall that we use a pointer <code>v</code> to specify the polygon point coordinates and n to denote the number of said points.
+For each edge of the polygon we need to know:</p>
+<ul>
+<li>line slope <code>k</code></li>
+<li>line point coordinates <code>x0</code> and <code>y0</code></li>
+<li>line vertical borders <code>ymin</code> and <code>ymax</code></li>
+</ul>
+<p>Let&rsquo;s write the first part of the function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">polygon</span>(<span style="color:#66d9ef">render_t</span> <span style="color:#f92672">*</span>r, <span style="color:#66d9ef">int</span> m, <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>v, <span style="color:#66d9ef">int</span> n) {
+</span></span><span style="display:flex;"><span>	...
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// edge will store data related to the polygon edge
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> { <span style="color:#66d9ef">float</span> k, x0, y0, ymin, ymax; } edge;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// allocate memory to store edge data
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	edge <span style="color:#f92672">*</span>e <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(n <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(edge));
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// ymin and ymax are polygon vertical borders
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">float</span> ymin <span style="color:#f92672">=</span> v[<span style="color:#ae81ff">0</span>], ymax <span style="color:#f92672">=</span> v[<span style="color:#ae81ff">1</span>];
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// iterate through polygon edges
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> n; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// set polygon edge coordinates
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#66d9ef">float</span> x0 <span style="color:#f92672">=</span> v[<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">0</span>];
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">float</span> y0 <span style="color:#f92672">=</span> v[<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>];
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">float</span> x1 <span style="color:#f92672">=</span> v[<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> ((i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">%</span>n) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0</span>];
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">float</span> y1 <span style="color:#f92672">=</span> v[<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> ((i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">%</span>n) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// pick vertical borders for the edge
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#66d9ef">float</span> eymin <span style="color:#f92672">=</span> (y0 <span style="color:#f92672">&lt;</span> y1) <span style="color:#f92672">?</span> y0 : y1;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">float</span> eymax <span style="color:#f92672">=</span> (y0 <span style="color:#f92672">&gt;</span> y1) <span style="color:#f92672">?</span> y0 : y1;
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// swap points so that (x0, y0) is on the left from (x1, y1)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#66d9ef">if</span> (x0 <span style="color:#f92672">&gt;</span> x1) {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">swap</span>(<span style="color:#66d9ef">float</span>, x0, x1);
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">swap</span>(<span style="color:#66d9ef">float</span>, y0, y1);
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// calculate slope
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#66d9ef">float</span> k <span style="color:#f92672">=</span> (y1 <span style="color:#f92672">-</span> y0) <span style="color:#f92672">/</span> (x1 <span style="color:#f92672">-</span> x0);
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// store data
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		e[i] <span style="color:#f92672">=</span> (edge) { k, x0, y0, eymin, eymax };
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// set polygon vertical borders
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (eymin <span style="color:#f92672">&lt;</span> ymin) ymin <span style="color:#f92672">=</span> eymin;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (eymax <span style="color:#f92672">&gt;</span> ymax) ymax <span style="color:#f92672">=</span> eymax;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>You may notice familiar modulo trick that we use to ensure proper polygon behavior.
+Note that we select vertical borders on two levels.
+<code>ymin</code> and <code>ymax</code> are vertical borders of the whole polygon.
+We&rsquo;ll use them to set rendering iteration borders.
+<code>eymin</code> and <code>eymax</code> however are borders of particular edge.
+We&rsquo;ll use them to determine whether row intersects with the edge.
+We also sort edge points by increasing y-coordinate to provide consistent calculations.</p>
+<p>So far, so good. Take a look at the second part.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">polygon</span>(<span style="color:#66d9ef">render_t</span> <span style="color:#f92672">*</span>r, <span style="color:#66d9ef">int</span> m, <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>v, <span style="color:#66d9ef">int</span> n) {
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// xi stores row intersection coordinates
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>xi <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(n <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// iterate row by row
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">float</span> y <span style="color:#f92672">=</span> ymin; y <span style="color:#f92672">&lt;</span> ymax; y<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// xn is a number of row intersections
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">int</span> xn <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// iterate through edges
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> n; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// if slope is not zero and row y coordinate is between edge borders
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#66d9ef">if</span> (e[i].k <span style="color:#f92672">&amp;&amp;</span> y <span style="color:#f92672">&gt;</span> e[i].ymin <span style="color:#f92672">&amp;&amp;</span> y <span style="color:#f92672">&lt;=</span> e[i].ymax) {
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// write down edge intersection
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                xi[xn<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> e[i].x0 <span style="color:#f92672">+</span> (y <span style="color:#f92672">-</span> e[i].y0) <span style="color:#f92672">/</span> e[i].k;
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// sort row intersections in increasing order
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#a6e22e">qsort</span>(xi, xn, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">float</span>), cmp);
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// iterate through alternate intersection point pairs
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> xn; i <span style="color:#f92672">+=</span> <span style="color:#ae81ff">2</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// draw line between points
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#a6e22e">line</span>(r, xi[i], y, xi[i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>], y);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// free intersection storage
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">free</span>(xi);
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// free edge storage
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">free</span>(e);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Since I use the standard library <code>qsort</code> function, here is a comparison function.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">cmp</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>x, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>y) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> (<span style="color:#66d9ef">int</span>) (<span style="color:#f92672">*</span>(<span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>) x <span style="color:#f92672">-</span> <span style="color:#f92672">*</span>(<span style="color:#66d9ef">float</span> <span style="color:#f92672">*</span>) y);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Note that we deliberately use asymmetric edge borders (<code>ymin &lt; y &lt;= ymax</code>).
+This allows to gracefully handle polygon vertices.
+Also note that we ignore edges with the slope of zero since we divide by slope.</p>
+<p>Try to draw a triangle with outlined and filled drawing mode.
+Verify that it works correctly in both cases.</p>
+<p>I wanted to show you wireframe mesh rendering as well, however, this post is already too long for that. I&rsquo;ll cover it in the next part. Check out the <a href="../graphics.c">source code</a>, <a href="../graphics.h">header file</a>, and <a href="../main.c">main file</a>.</p>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://localhost:1313/" >
+    &copy;  My Blog 2025 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

@@ -9,7 +9,7 @@
     <meta name="description" content="C Language
 For some unknown reason, I often find myself drawn to C. It&rsquo;s hard for me to tell exactly why&hellip; Above all, I think that the most important reason is the simplicity of this language. It is fairly small and can be learned relatively fast. It is also very close to assembly with very close mapping between C code and assembly instructions.
 Do not be fooled by this simplicity, though, reader. Even if the language and standard library are pretty minimal and even if they are close enough to primitive instructions, this language is not simple to use.">
-    <meta name="generator" content="Hugo 0.141.0">
+    <meta name="generator" content="Hugo 0.144.1">
     
     
     
@@ -121,8 +121,7 @@ program to write is the same for all languages:
 <code>hello, world</code>
 This is a big hurdle; to leap over it you have to be able to create the program text somewhere,
 compile it successfully, load it, run it, and find out where your output went. With these
-mechanical details mastered, everything else is comparatively easy.</p>
-</blockquote>
+mechanical details mastered, everything else is comparatively easy.</p></blockquote>
 <p>Let us now do just that. The source code of the C language is stored in files with the <code>.c</code> extension. Create this file somewhere:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir hello
 </span></span><span style="display:flex;"><span>cd hello
@@ -197,8 +196,7 @@ that too is taken to mean that nothing is to be assumed about the arguments of <
 parameter checking is turned off. This special meaning of the empty argument list is intended
 to permit older C programs to compile with new compilers. But it&rsquo;s a bad idea to use it with
 new C programs. If the function takes arguments, declare them; if it takes no arguments, use
-<code>void</code>.</p>
-</blockquote>
+<code>void</code>.</p></blockquote>
 <p>Well, what is this <em>declaration</em> and what does it look like? The declaration is a statement that tells the compiler the type of variable (or type of return value and arguments in a function). Here is how our file looks with a declaration:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">foo</span>(<span style="color:#66d9ef">void</span>);
 </span></span><span style="display:flex;"><span>
