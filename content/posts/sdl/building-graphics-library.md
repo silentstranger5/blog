@@ -235,7 +235,7 @@ It's called [Bresenham Line Algorithm](https://en.wikipedia.org/wiki/Bresenham%2
 
 Given lines, it's quite easy to implement rectangles. 
 Before we proceed, let's add a new enum into `graphics.h`. 
-We'll use it to denote *drawing mode*: outlined or filled.
+We'll use it to denote a *drawing mode*: outlined or filled.
 
 ```c
 enum {LINE, FILL};
@@ -370,157 +370,137 @@ void ellipse(render_t *r, int m, float a, float b, float h, float k) {
 }
 ```
 
-Now let's try to tackle something even more interesting. 
-Given a list of points, how would you render an outlined polygon? 
-Try to think about this before you look at the solution. 
-Yes, grab your pen and paper (or open the notepad), and go through it. 
-Try to write the function and see if it works. I'll wait.
-
-Done? Let's look at the solution.
+Notice that since we know how to draw an ellipse, drawing a circle is trivial.
 
 ```c
-void polygon(render_t *r, int m, float *v, int n) {
-	if (m == LINE) {
-		for (int i = 0; i < n; i++) {
-			line(r, v[2 * i + 0], v[2 * i + 1], 
-				v[2 * ((i+1) % n) + 0], v[2 * ((i+1) % n) + 1]);
-		}
-		return;
-	}
+void circle(render_t *re, int m, int r, int h, int k) {
+    ellipse(re, m, r, r, h, k);
 }
 ```
 
-There is not much special about the algorithm so far. 
-We store polygon point coordinates at the `v` pointer, and use `n` to specify the number of points. 
-We then iterate through points, drawing lines between them. 
-Note that the last line connects the last point to the first point. 
-We use the `(i + 1) mod n` index to achieve this effect.
+Let's try to draw a triangle.
 
-Now let's consider how to draw filled polygons. 
-There are many algorithms that you can use here. 
-I'm going to use perhaps a rather intuitive and simple one called [Scanline Rendering](https://en.wikipedia.org/wiki/Scanline_rendering).
+The outline case is quite trivial. We just draw edges between triangle vertices.
 
-The core idea of the algorithm is simple. 
-We iterate the polygon row by row, from top to bottom, and then examine each edge of the polygon. 
-For each edge that intersects with the row, we write down the intersection point. 
-After that, we sort those points in ascending order. 
-Finally, we iterate through alternate pairs of points and draw a line between them.
+```c
+void triangle(render_t *r, int m, float *v) {
+    switch (m) {
+    case LINE:
+        for (int i = 0; i < 3; i++) {
+            line(r, v[2 * i + 0], v[2 * i + 1],
+                v[2 * ((i+1)%3) + 0], v[2 * ((i+1)%3) + 1]);
+        }
+        break;
+    }
+}
+```
 
-Here is a picture that will make things a bit more clear.
+Notice that we use a modulo index so that the last edge connects the last vertex to the first one.
 
-![Polygon](../polygon.png)
+Now let's consider the filled triangle.
 
-You may ask: how are we going to determine whether the row intersects with the edge? 
-A great question. To answer it, we need to consider the line equation again.
+1. Sort triangle vertices such that p0.y <= p1.y <= p2.y
+2. Iterate y from p0.y to p2.y:
+    - If y > p1.y, x1 = Ax(y)
+    - Else, x1 = Bx(y)
+    - x2 = Cx(y)
+    - Draw line between (x1, y) and (x2, y)
+
+Here Ex(t) is a linear interpolation function that yields x-coordinate of edge E at y = t.
+Ex is defined for E <- {A, B, C}.
+
+Given two points (x0, y0) and (x1, y1), x-coordinate of the point at y can be computed using a linear interpolation function.
 
 ```txt
-k = (y1 - y0) / (x1 - x0)
-y = y0 + k(x - x0)
-y0 - y + k(x - x0) = 0
-k(x - x0) = y - y0
-x - x0 = (y - y0) / k
-x = x0 + (y - y0) / k   for ymin < y <= ymax
+(y - y0) / (x  - x0) = (y1 - y0) / (x1 - x0)
+(x - x0) * (y1 - y0) = (x1 - x0) * (y  - y0)
+(x - x0) = (x1 - x0) * (y  - y0) / (y1 - y0)
+ x = x0  + (x1 - x0) * (y  - y0) / (y1 - y0)
 ```
 
-Look at the `polygon` function interface above. Recall that we use a pointer `v` to specify the polygon point coordinates and n to denote the number of said points. 
-For each edge of the polygon we need to know:
+Try to think about what we are doing here. 
+For y between top and bottom triangle points, we need to compute x1 and x2.
+x1 is x-coordinate of either of two short edges (A or B).
+If y is less than y-coordinate of the second point 
+(which is between two other points on the y-axis), 
+then we compute x1 for A. Otherwise, we compute x1 for B.
+x2 is x-coordinate of the long edge(C).
+Then, we draw a line between x1 and x2.
 
-- line slope `k`
-- line point coordinates `x0` and `y0`
-- line vertical borders `ymin` and `ymax`
+Here is a picture for clarity.
 
-Let's write the first part of the function:
+![triangle](../triangle.png)
 
-```c
-void polygon(render_t *r, int m, float *v, int n) {
-	...
-    // edge will store data related to the polygon edge
-	typedef struct { float k, x0, y0, ymin, ymax; } edge;
-    // allocate memory to store edge data
-	edge *e = malloc(n * sizeof(edge));
-    // ymin and ymax are polygon vertical borders
-	float ymin = v[0], ymax = v[1];
-    // iterate through polygon edges
-	for (int i = 0; i < n; i++) {
-        // set polygon edge coordinates
-		float x0 = v[2 * i + 0];
-		float y0 = v[2 * i + 1];
-		float x1 = v[2 * ((i+1)%n) + 0];
-		float y1 = v[2 * ((i+1)%n) + 1];
-        // pick vertical borders for the edge
-		float eymin = (y0 < y1) ? y0 : y1;
-		float eymax = (y0 > y1) ? y0 : y1;
-        // swap points so that (x0, y0) is on the left from (x1, y1)
-		if (x0 > x1) {
-			swap(float, x0, x1);
-			swap(float, y0, y1);
-		}
-        // calculate slope
-		float k = (y1 - y0) / (x1 - x0);
-        // store data
-		e[i] = (edge) { k, x0, y0, eymin, eymax };
-        // set polygon vertical borders
-        if (eymin < ymin) ymin = eymin;
-        if (eymax > ymax) ymax = eymax;
-	}
-}
-```
-
-You may notice the familiar modulo trick that we use to ensure proper polygon behavior.
-Note that we select vertical borders on two levels. 
-`ymin` and `ymax` are vertical borders of the whole polygon. 
-We'll use them to set rendering iteration borders. 
-`eymin` and `eymax` however are borders of a particular edge. 
-We'll use them to determine whether the row intersects with the edge. 
-We also sort edge points by increasing the y-coordinate to provide consistent calculations.
-
-So far, so good. Take a look at the second part.
+Now let's take a look at the code.
 
 ```c
-void polygon(render_t *r, int m, float *v, int n) {
-    ...
-    // xi stores row intersection coordinates
-    float *xi = malloc(n * sizeof(float));
-    // iterate row by row
-    for (float y = ymin; y < ymax; y++) {
-        // xn is a number of row intersections
-        int xn = 0;
-        // iterate through edges
-        for (int i = 0; i < n; i++) {
-            // if slope is not zero and row y coordinate is between edge borders
-            if (e[i].k && y > e[i].ymin && y <= e[i].ymax) {
-                // write down edge intersection
-                xi[xn++] = e[i].x0 + (y - e[i].y0) / e[i].k;
-            }
+void triangle(render_t *r, int m, float *v) {
+    switch (m) {
+    case LINE:
+        ...
+        break;
+    case FILL:
+        // sort vertices by ascending y-coordinate
+        qsort(v, 3, 2 * sizeof(float), cmpy);
+        // iterate y between top and bottom
+        for (float y = v[1]; y < v[5]; y++) {
+            // compare y with height of the middle point
+            float x1 = (y < v[3]) ?
+                // if it's higher, set x1 to x-coordinate of A
+                v[0] + (v[2] - v[0]) * (y - v[1]) / (v[3] - v[1]) :
+                // otherwise,      set x1 to x-coordinate of B
+                v[2] + (v[4] - v[2]) * (y - v[3]) / (v[5] - v[3]) ;
+            // set x2 to x-coordinate of C
+            float x2 = v[0] + (v[4] - v[0]) * (y - v[1]) / (v[5] - v[1]);
+            // draw line between x1 and x2
+            line(r, x1, y, x2, y);
         }
-        // sort row intersections in increasing order
-        qsort(xi, xn, sizeof(float), cmp);
-        // iterate through alternate intersection point pairs
-        for (int i = 0; i < xn; i += 2) {
-            // draw line between points
-            line(r, xi[i], y, xi[i + 1], y);
-        }
+        break;
     }
-    // free intersection storage
-    free(xi);
-    // free edge storage
-    free(e);
 }
 ```
 
-Since I use the standard library `qsort` function, here is a comparison function.
+Since we use the standard library `qsort` function, here is a comparison function.
 
 ```c
-int cmp(const void *x, const void *y) {
-	return (int) (*(float *) x - *(float *) y);
+int cmpy(const void *x, const void *y) {
+    return (int) (((float *) x)[1] - ((float *) y)[1]);
 }
 ```
 
-Note that we deliberately use asymmetric edge borders (`ymin < y <= ymax`).
-This allows to gracefully handle polygon vertices.
-Also, note that we ignore edges with a slope of zero since we divide by slope.
+This code is quite hard to read because all vertex coordinates are in the raw float pointer
+instead of some convenient abstraction like `vec2`.
+Despite that, x-coordinates of the line are computed using the linear interpolation function given above.
 
-Try to draw a triangle with outlined and filled drawing mode.
-Verify that it works correctly in both cases.
+Try to use this function to render some triangle and check if it works.
 
-I wanted to show you wireframe mesh rendering as well, however, this post is already too long for that. I'll cover it in the next part. Check out the [source code](../graphics.c), [header file](../graphics.h), and [main file](../main.c).
+Given the triangle rendering algorithm, we can render polygons using a [fan triangulation](https://en.wikipedia.org/wiki/Fan_triangulation) algorithm. 
+The algorithm is simple: pick some polygon vertex and then draw diagonals from this vertex to other vertices of the polygon. 
+This algorithm works best for [convex polygons](https://en.wikipedia.org/wiki/Convex_polygon). 
+To put it simply, convex polygons are such polygons that line between any two points of the polygon is either inside of the polygon or lies on its border. 
+There is a special case of [concave polygon](https://en.wikipedia.org/wiki/Concave_polygon) (fancy word for non-convex polygon), that also can be triangulated with this algorithm. 
+It is a polygon with exactly one [concave vertex](https://en.wikipedia.org/wiki/Vertex_(geometry)#Of_a_polytope) (which is a vertex with angle > 180 between adjacent edges).
+In this case, we must pick this concave vertex for our algorithm.
+
+The code is simple.
+
+```c
+// for concave polygon, v[0] and v[1] contain the only concave vertex
+// vertices are given in ordered list
+void polygon(render_t *r, int m, float *v, int n) {
+    for (int i = 0; i < n - 2; i++) {
+        triangle(r, m, (float []) {
+            v[0], v[1],
+            v[2 * (i+1) + 0], v[2 * (i+1) + 1],
+            v[2 * (i+2) + 0], v[2 * (i+2) + 1],
+        });
+    }
+}
+```
+
+Note that this algorithm triangulates outlined polygons as well.
+If you want to display only the edges of the polygon, you can generalize outlined triangle rendering (section `LINE`). I'll leave this as an exercise for you.
+
+Try to render some polygon with this algorithm and see if it works.
+
+Check out the [source code](../graphics.c), [header file](../graphics.h), and [main.c](../main.c).

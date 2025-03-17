@@ -62,5 +62,6 @@ void kill(void) {
 
 void draw(void) {
     color(renderer, 255, 255, 255, 255);
-    polygon(renderer, FILL, (float[]){50, 50, 100, 100, 200, 50}, 3);
+    polygon(renderer, LINE, 
+        (float[]){25, 50, 100, 25, 125, 100, 50, 125}, 4);
 }

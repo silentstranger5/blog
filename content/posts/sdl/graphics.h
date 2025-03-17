@@ -18,9 +18,11 @@
 
 enum {LINE, FILL};
 
-void my_line(render_t *renderer, float x0, float y0, float x1, float y1);
-void my_rectangle(render_t *renderer, int m, float x0, float y0, float w, float h);
+void my_line(render_t *r, float x0, float y0, float x1, float y1);
+void my_rectangle(render_t *r, int m, float x0, float y0, float w, float h);
 void ellipse(render_t *r, int m, float a, float b, float h, float k);
+void circle(render_t *re, int m, float r, float h, float k);
+void triangle(render_t *r, int m, float *v);
 void polygon(render_t *r, int m, float *v, int n);
 
 #endif
