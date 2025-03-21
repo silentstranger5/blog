@@ -119,7 +119,7 @@ This value is called *interpolant* and it describes where we are located between
 
 Bezier curves of higher order expand this idea to more points. Take a look at the picture below.
 
-[!bezier](../bezier.gif)
+![bezier](../bezier.gif)
 
 We have three points that describe the curve. Those points can be connected with two lines.
 Let's call them A and B. They are the grey lines between points.
